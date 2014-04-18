@@ -47,12 +47,19 @@ FogRuntime.prototype.init = function(cb) {
   });
 };
 
-FogRuntime.prototype.loadScouts = function(cb) {
+FogRuntime.prototype.loadScouts = function(scouts, cb) {
+  if (typeof scouts === 'function') {
+    cb = scouts;
+    scouts = this.scouts;
+  }
+
   var self = this;
   var count = 0;
-  var max = this.scouts.length;
-  this.scouts.forEach(function(scout) {
-    scout = new scout();
+  var max = scouts.length;
+  scouts.forEach(function(scout) {
+    if (typeof scout === 'function') {
+      scout = new scout();
+    }
 
     scout.on('discover', function() {
       var machine = Scientist.create.apply(null,arguments);

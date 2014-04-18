@@ -1,14 +1,15 @@
 var fs = require('fs');
 var path = require('path');
 var argo = require('argo');
-var spdy = require('spdy');
-var titan = require('titan');
-var siren = require('argo-formatter-siren');
 var multiparty = require('argo-multiparty');
+var spdy = require('spdy');
+var siren = require('argo-formatter-siren');
+var titan = require('titan');
 var CloudClient = require('./cloud_client');
 var FogRuntime = require('./fog_runtime');
-var PubSubResource = require('./pubsub_resource');
 var Logger = require('./logger');
+var PubSubResource = require('./pubsub_resource');
+var RegistrationResource = require('./registration_resource.js');
 
 module.exports = function run(appName, parentServer){
   var file = appName || 'app';
@@ -60,6 +61,8 @@ module.exports = function run(appName, parentServer){
 
   l.emit('log', 'fog-bootstrapper', 'bootstrapping fog siren hypermedia API.');
   var fog = new FogRuntime(server, scouts);
+
+  server = server.add(RegistrationResource, fog, dir);
 
   fs.stat(configPath, function(err, stat) {
     if (!err) {
