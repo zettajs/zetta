@@ -1,0 +1,23 @@
+{
+  "name": "zetta-runtime",
+  "version": "0.0.0",
+  "description": "",
+  "main": "zetta_runtime.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "argo-formatter-siren": "0.0.0",
+    "argo-multiparty": "0.0.3",
+    "colors": "^0.6.2",
+    "strftime": "^0.8.0",
+    "spdy": "^1.25.1",
+    "multiparty": "^3.2.4",
+    "argo": "^0.4.9",
+    "rx": "^2.2.20",
+    "titan": "^0.1.1",
+    "bunyan": "^0.22.3"
+  }
+}

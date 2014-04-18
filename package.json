@@ -1,0 +1,35 @@
+{
+  "name": "zetta-runtime",
+  "version": "0.0.0",
+  "description": "The runtime components for Zetta.",
+  "main": "zetta_runtime.js",
+  "dependencies": {
+    "argo-formatter-siren": "~0.0.0",
+    "argo": "~0.4.9",
+    "argo-multiparty": "~0.0.3",
+    "bunyan": "~0.22.3",
+    "colors": "~0.6.2",
+    "multiparty": "~3.2.4",
+    "rx": "~2.2.20",
+    "spdy": "~1.25.1",
+    "titan": "~0.1.1",
+    "strftime": "~0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/zettajs/zetta-runtime.git"
+  },
+  "keywords": [
+    "zetta"
+  ],
+  "author": "Kevin Swiber <kswiber@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zettajs/zetta-runtime/issues"
+  },
+  "homepage": "https://github.com/zettajs/zetta-runtime"
+}
