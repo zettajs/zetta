@@ -205,17 +205,20 @@ ZettaCloud.prototype.setupEventSocket = function(ws){
   });
 
   ws.on('error',function(err){
-    console.error(err);
+    console.error('ws error:', err);
     closeSocket();
   });
   
   function onEventMessage (data){
     var msg = null;
-    try{
-     msg = JSON.parse(data);
-    }catch(err){
-      console.error(err);
-      return;
+    if (typeof data === 'string') {
+      try {
+        msg = JSON.parse(data.toString());
+      } catch(err) {
+        return;
+      }
+    } else {
+      msg = data;
     }
 
     if(msg.cmd === 'subscribe' && msg.name){
