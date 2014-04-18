@@ -173,7 +173,6 @@ ZettaCloud.prototype.init = function(cb) {
   });
 };
 
-
 ZettaCloud.prototype.setupEventSocket = function(ws){
   var self = this;
 
@@ -231,6 +230,8 @@ ZettaCloud.prototype.setupEventSocket = function(ws){
       if (isNew) {
         self._subscribe(msg.name);
       }
+    } else if (msg.cmd === 'publish' && msg.name && msg.data) {
+      self._publish(msg.name, msg.data);
     }
   };
 }
