@@ -13,7 +13,8 @@
     "rx": "~2.2.20",
     "spdy": "~1.25.1",
     "titan": "~0.1.1",
-    "strftime": "~0.8.0"
+    "strftime": "~0.8.0",
+    "ws": "^0.4.31"
   },
   "devDependencies": {},
   "scripts": {
