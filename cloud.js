@@ -187,15 +187,21 @@ ZettaCloud.prototype.setupEventSocket = function(ws){
 
       if (self.subscriptions[channel].length === 0) {
         delete self.subscriptions[channel];
-        if (!self.isLocal) {
-          var con = self.eventRequests[channel].connection;
+        //if (!self.isLocal) {
+          var channel = self.eventRequests[channel];
+          if (channel) {
+            var con = self.eventRequests[channel].connection;
 
-          self.agent.removeSocket(con, self.agent.host + ':' + self.agent.port,
-            self.agent.host, self.agent.port, self.agent.host);
+            if (con) {
+              self.agent.removeSocket(
+                con, self.agent.host + ':' + self.agent.port,
+                self.agent.host, self.agent.port, self.agent.host);
 
-          delete self.eventRequests[channel];
-          con.end();
-        }
+              delete self.eventRequests[channel];
+              con.end();
+            }
+          }
+        //}
       }
     });
   }

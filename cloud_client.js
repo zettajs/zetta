@@ -17,6 +17,7 @@ function createSocket(url, server) {
     connected = true;
     l.emit('log', 'cloud-client', 'Cloud connection established (' + url + ')');
     server.emit('connection', socket);
+    // set up exchange of device registry data.
   });
 
   ws.on('error', function(err) {
