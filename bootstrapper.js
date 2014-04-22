@@ -37,7 +37,7 @@ module.exports = function run(appName, parentServer){
   }
 
   var parent = (parentServer || argo());
-  var server = parent
+  /*var server = parent
     .use(function(handle) {
       handle('request', function(env, next) {
         next(env);
@@ -45,10 +45,13 @@ module.exports = function run(appName, parentServer){
     })
     .use(titan)
     .allow('*')
-    .use(multiparty);
+    .use(multiparty);*/
 
   if (!parentServer) {
-    server = server.add(PubSubResource);
+    server = parent 
+      .use(titan)
+      .allow('*')
+      .add(PubSubResource);
   }
 
   server = server

@@ -21,7 +21,23 @@ var ZettaCloud = module.exports = function() {
   this.agents = {};
 
   this.server = http.createServer();
-  this.cloud = argo();
+
+  this.cloud = argo()
+    .use(titan)
+    .allow({
+      methods: ['DELETE', 'PUT', 'PATCH', 'POST'],
+      origins: ['*'],
+      headers: ['accept', 'content-type'],
+      maxAge: '432000'
+    })
+    .use(function(handle) {
+      handle('request', function(env, next) {
+        if (env.request.method === 'OPTIONS') {
+          env.argo._routed = true;
+        }
+        next(env);
+      });
+    });
 };
 
 ZettaCloud.prototype.setup = function(cb) {
@@ -38,6 +54,27 @@ ZettaCloud.prototype.setup = function(cb) {
 
 ZettaCloud.prototype.init = function(cb) {
   var self = this;
+  this.cloud = this.cloud.use(function(handle) {
+    handle('request', function(env, next) {
+      if (!(env.request.method === 'POST' && env.request.url === '/registration')) {
+        return next(env);
+      }
+
+      env.request.getBody(function(err, body) {
+        body = JSON.parse(body.toString());
+        var agent = self.agents[body.target];
+
+        if (!agent) {
+          env.response.statusCode = 404;
+          return next(env);
+        }
+
+        env.request.body = new Buffer(JSON.stringify(body.device));
+        env.zettaAgent = agent;
+        next(env);
+      });
+    });
+  });
   this.cloud = this.cloud.route('*', function(handle) {
     handle('request', function(env, next) {
       var req = env.request;
@@ -55,7 +92,7 @@ ZettaCloud.prototype.init = function(cb) {
       req.headers['zetta-message-id'] = messageId;
 
       var appName = req.url.split('/')[1];
-      var agent = self.agents[appName];
+      var agent = env.zettaAgent || self.agents[appName];
 
       var opts = { method: req.method, headers: req.headers, path: req.url, agent: agent };
       var request = http.request(opts, function(response) {
@@ -82,7 +119,11 @@ ZettaCloud.prototype.init = function(cb) {
 
       });
 
-      req.pipe(request);
+      if (req.body) {
+        request.end(req.body);
+      } else {
+        req.pipe(request);
+      }
     });
   })
   .build();
