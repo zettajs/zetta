@@ -36,7 +36,8 @@ module.exports = function run(appName, parentServer){
     scouts = [];
   }
 
-  var server = (parentServer || argo())
+  var parent = (parentServer || argo());
+  var server = parent
     .use(function(handle) {
       handle('request', function(env, next) {
         next(env);

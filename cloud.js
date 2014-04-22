@@ -49,6 +49,7 @@ ZettaCloud.prototype.init = function(cb) {
       }
       var messageId = ++self.idCounter;
 
+      // change this to handle multiple fogs
       self.clients[messageId] = res;//req.socket; Will need socket for event broadcast.
 
       req.headers['zetta-message-id'] = messageId;
@@ -61,6 +62,11 @@ ZettaCloud.prototype.init = function(cb) {
         var id = response.headers['zetta-message-id'];
         var res = self.clients[id];
 
+        if (!res) {
+          response.statusCode = 404;
+          return;
+        }
+
         Object.keys(response.headers).forEach(function(header) {
           if (header !== 'zetta-message-id') {
             res.setHeader(header, response.headers[header]);
@@ -70,10 +76,10 @@ ZettaCloud.prototype.init = function(cb) {
         response.pipe(res);
 
         response.on('finish', function() {
+          delete self.clients[id];
           next(env);
         });
 
-        delete self.clients[id];
       });
 
       req.pipe(request);
