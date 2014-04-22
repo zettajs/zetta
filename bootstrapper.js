@@ -36,7 +36,8 @@ module.exports = function run(appName, parentServer){
     scouts = [];
   }
 
-  var server = (parentServer || argo())
+  var parent = (parentServer || argo());
+  /*var server = parent
     .use(function(handle) {
       handle('request', function(env, next) {
         next(env);
@@ -44,10 +45,13 @@ module.exports = function run(appName, parentServer){
     })
     .use(titan)
     .allow('*')
-    .use(multiparty);
+    .use(multiparty);*/
 
   if (!parentServer) {
-    server = server.add(PubSubResource);
+    server = parent 
+      .use(titan)
+      .allow('*')
+      .add(PubSubResource);
   }
 
   server = server
@@ -72,7 +76,7 @@ module.exports = function run(appName, parentServer){
 
     fog.init(function(err) {
       var apps = [app];
-      fog.loadApps(apps, function() {
+      fog.loadApps(apps, function(names) {
         var host;
         var shouldRunServer = true;
         if (!parentServer) {
@@ -81,7 +85,7 @@ module.exports = function run(appName, parentServer){
         } else {
           shouldRunServer = false;
         }
-        CloudClient(server, host, shouldRunServer, function(server){
+        CloudClient(server, host, names, shouldRunServer, function(server){
           //server.listen(3002);
         });
       });

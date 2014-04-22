@@ -113,13 +113,15 @@ FogRuntime.prototype.loadApps = function(apps, cb) {
   var self = this;
   var length = apps.length;
 
+  var names = [];
   apps.forEach(function(constructor) {
     var app = new constructor();
     var loader = new FogAppLoader(self);
     loader.load(app);
+    names.push(app.name);
   });
 
-  cb();
+  cb(names);
 };
 
 FogRuntime.prototype.get = function(name, cb) {

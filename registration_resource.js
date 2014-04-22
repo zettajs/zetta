@@ -22,7 +22,9 @@ RegistrationResource.prototype.register = function(env, next) {
   var self = this;
 
   env.request.getBody(function(err, body) {
+    console.log('err:', err);
     body = JSON.parse(body.toString());
+    console.log('registration body:', body);
     
     var dir = path.join(self.basedir, 'drivers');
     var found;
@@ -54,6 +56,8 @@ RegistrationResource.prototype.register = function(env, next) {
         env.response.statusCode = 404;
       }
 
+      console.log('headers:', env.request.headers);
+      console.log('calling next with code:', env.response.statusCode);
       next(env);
     });
   });
