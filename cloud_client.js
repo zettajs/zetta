@@ -1,3 +1,4 @@
+var path = require('path');
 var spdy = require('spdy');
 var argo = require('argo');
 var WebSocket = require('./web_socket');
@@ -47,11 +48,17 @@ function createSocket(url, server) {
   };
 };
 
-module.exports = function(argo, url, shouldRunServer, cb) {
+module.exports = function(argo, url, names, shouldRunServer, cb) {
   if (typeof shouldRunServer === 'function') {
     cb = shouldRunServer;
     shouldRunServer = true;
   }
+
+  var appName = names[0];
+
+  //url = path.join(url, '/peers/', appName).replace(/\\/g, '/');
+  url = url + '/peers/' + appName;
+  url = url.replace(/^http/, 'ws');
 
   var app = argo
     .use(function(handle) {

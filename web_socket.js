@@ -10,6 +10,7 @@ var WebSocket = module.exports = function(address) {
   var parsed = url.parse(address);
   var host = parsed.hostname;
   var port = parsed.port;
+  var path = parsed.path;
 
   // begin handshake
   var key = new Buffer('13' + '-' + Date.now()).toString('base64');
@@ -20,6 +21,7 @@ var WebSocket = module.exports = function(address) {
   var opts = {
     host: host,
     port: port,
+    path: path,
     method: 'GET',
     headers: {
       'Connection': 'Upgrade',

@@ -72,7 +72,7 @@ module.exports = function run(appName, parentServer){
 
     fog.init(function(err) {
       var apps = [app];
-      fog.loadApps(apps, function() {
+      fog.loadApps(apps, function(names) {
         var host;
         var shouldRunServer = true;
         if (!parentServer) {
@@ -81,7 +81,7 @@ module.exports = function run(appName, parentServer){
         } else {
           shouldRunServer = false;
         }
-        CloudClient(server, host, shouldRunServer, function(server){
+        CloudClient(server, host, names, shouldRunServer, function(server){
           //server.listen(3002);
         });
       });
