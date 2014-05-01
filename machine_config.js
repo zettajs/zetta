@@ -86,10 +86,13 @@ MachineConfig.prototype.call = function(/* type, ...args */) {
   var type = args[0];
   var next = args[args.length-1];
 
-  if(typeof next !== 'function')
+  var rest = null;
+  if(typeof next !== 'function') {
     next = function(err){};
-
-  var rest = args.slice(1, args.length-1);
+    rest = args.slice(1, args.length);
+  } else {
+    rest = args.slice(1, args.length - 1);
+  }
 
   var self = this;
   var cb = function callback() {
@@ -116,7 +119,6 @@ MachineConfig.prototype.call = function(/* type, ...args */) {
 
     next.apply(arguments);
   };
-
   var handlerArgs = rest.concat([cb]);
   
   if (this.transitions[type]) {
