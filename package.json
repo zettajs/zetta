@@ -1,6 +1,6 @@
 {
   "name": "zetta-runtime",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "The runtime components for Zetta.",
   "main": "zetta_runtime.js",
   "dependencies": {
