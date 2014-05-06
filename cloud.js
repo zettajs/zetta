@@ -93,7 +93,12 @@ ZettaCloud.prototype.init = function(cb) {
 
       var appName = req.url.split('/')[1];
       var agent = env.zettaAgent || self.agents[appName];
-
+      if(!agent){
+	res.statusCode = 404;
+	res.end();
+	return;
+      }
+      
       var opts = { method: req.method, headers: req.headers, path: req.url, agent: agent };
       var request = http.request(opts, function(response) {
         var id = response.headers['zetta-message-id'];
