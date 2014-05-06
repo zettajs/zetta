@@ -28,13 +28,16 @@ module.exports = function run(appName, parentServer){
       if (/^.+\.js$/.test(scoutPath)) {
         return scoutPath;
       }
-    }).map(function(scoutPath) {
-      return require(path.join(dir, 'scouts', scoutPath));
     });
   } catch(e) {
     l.emit('log', 'fog-bootstrapper', 'Scout directory not found. Skipping.');
     scouts = [];
   }
+  
+  scouts = scouts.map(function(scoutPath) {
+    return require(path.join(dir, 'scouts', scoutPath));
+  });
+
 
   var parent = (parentServer || argo());
   var server = parent
