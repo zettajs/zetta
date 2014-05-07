@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var url = require('url');
 var HTTPScout = require('./http_scout');
 var Scientist = require('./scientist');
 
@@ -39,9 +40,12 @@ RegistrationResource.prototype.register = function(env, next) {
         }
         var fullPath = path.join(dir, file);
         var driver = require(fullPath);
+        console.log(fullPath);
         var instance = new driver();
 
-        if (instance.type === body.type) {
+        console.log(instance.type);
+        console.log(body);
+        if (instance.type === body.device.type) {
           self.scout.drivers.push(instance.type);
           self.scout.driverFunctions.push(driver);
           found = driver;
@@ -50,8 +54,18 @@ RegistrationResource.prototype.register = function(env, next) {
 
       if (found) {
         //var driver = Scientist.configure(found, body);
-        self.scout.emit('discover', found, body);
+        self.scout.emit('discover', found, body.device);
         env.response.statusCode = 201;
+        var currentUrl = env.helpers.url.current();
+        var parsed = url.parse(currentUrl);
+        var parsedPath = parsed.pathname.split('/');
+        parsedPath.pop();
+        parsedPath.push(body.target);
+        parsedPath.push(body.device.name);
+
+        parsed.pathname = parsedPath.join('/');
+        var endpoint = url.format(parsed);
+        env.response.setHeader('Location', endpoint);
       } else {
         env.response.statusCode = 404;
       }
