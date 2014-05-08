@@ -46,7 +46,7 @@ var MachineConfig = module.exports = function(machine) {
 MachineConfig.prototype.stream = function(queueName, handler) {
   var emitter = new EventEmitter();
 
-  queueName = this.machine.type + '/' + queueName;
+  queueName = this.machine.type + '/' + this.machine.name + '/' + queueName;
 
   this.machine.streams.push(queueName);
   
