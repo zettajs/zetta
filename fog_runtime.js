@@ -56,6 +56,12 @@ FogRuntime.prototype.loadScouts = function(scouts, cb) {
   var self = this;
   var count = 0;
   var max = scouts.length;
+
+  if (max === 0) {
+    cb();
+    return;
+  }
+
   scouts.forEach(function(scout) {
     if (typeof scout === 'function') {
       scout = new scout();
@@ -64,7 +70,7 @@ FogRuntime.prototype.loadScouts = function(scouts, cb) {
     scout.on('discover', function() {
       var machine = Scientist.create.apply(null,arguments);
       var found = self.deviceInRegistry(machine,scout.compare);
-      if(!found){
+      if (!found) {
         var initializedMachine = Scientist.init(machine);
         self.registry.add(initializedMachine,function(){
           l.emit('log', 'fog-runtime', 'Device ready '+initializedMachine.type);
@@ -74,34 +80,35 @@ FogRuntime.prototype.loadScouts = function(scouts, cb) {
       }
     });
 
-    scout.init(function(err){
-      if(err)
+    scout.init(function(err) {
+      if (err) {
         throw err;
+      }
 
-      setImmediate(function(){
+      setImmediate(function() {
         self.registry.json_devices.forEach(function(device){
-          if(scout.drivers.indexOf(device.type) === -1)
+          if (scout.drivers.indexOf(device.type) === -1)
             return;
 
           var ret = scout.provision(device);
-          if(!ret)
+          if (!ret)
             return;
 
           var machine = Scientist.configure.apply(null,ret);
           self.registry.devices.push(machine);
           l.emit('log', 'fog-runtime', 'Device ready '+machine.type+' initialized from registry');
           self.emit('deviceready', machine);
-	  self.registry.save(function(){});
+
+          self.registry.save(function(){});
         });
       });
-      
     });
 
     count++;
+
     if (count == max) {
       cb();
     }
-
   });
 };
 
