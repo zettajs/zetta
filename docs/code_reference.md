@@ -8,7 +8,6 @@ zetta-runtime
 ├── bootstrapper.js
 ├── cloud.js
 ├── cloud_client.js
-├── device.js
 ├── fog_agent.js
 ├── fog_app_loader.js
 ├── fog_runtime.js
@@ -54,10 +53,6 @@ This file represents a lot of functionality.  This is where the SPDY connection 
 ## cloud_client.js
 
 When using `zetta run` via the CLI, `CloudClient` runs a SPDY server and opens a WebSocket connection for a peering request.  When run by `Cloud#setup`, the `CloudClient` doesn't appear to be doing much, except setting a correlation ID, which may not be needed.  Consider altering that functionality.
-
-## device.js
-
-Appears to not be in use.
 
 ## fog_agent.js
 
