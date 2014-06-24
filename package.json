@@ -15,11 +15,15 @@
     "spdy": "~1.25.1",
     "strftime": "~0.8.0",
     "titan": "~0.1.1",
-    "ws": "^0.4.31"
+    "ws": "^0.4.31",
+    "node-uuid": "^1.4.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^1.20.1"
+  },
   "scripts": {
-    "test": "./node_modules/.bin/mocha -R spec"
+    "test": "./node_modules/.bin/mocha -R spec",
+    "coverage":"bin/_coverage"
   },
   "repository": {
     "type": "git",

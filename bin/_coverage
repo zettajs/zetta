@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ $(which jscoverage) ] 
+then
+  echo "Running test coverage..."
+  rm -rf ./zetta-runtime-HEAD
+  rm -rf ./zetta-runtime-jscoverage
+  git archive --format=tar --prefix=zetta-runtime-HEAD/ HEAD | tar x
+  jscoverage --exclude=node_modules ./zetta-runtime-HEAD ./zetta-runtime-jscoverage
+  cd ./zetta-runtime-jscoverage/
+  npm install
+  mocha --reporter html-cov > coverage.html
+  open coverage.html
+else
+  echo "jscoverage is not installed"
+  echo "if on OS X:"
+  echo "  use brew install jscoverage"
+  echo "if on linux:"
+  echo "  use sudo apt-get install jscoverage"
+fi
+

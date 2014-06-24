@@ -9,3 +9,5 @@ registry.json
 *~
 *.log
 *.heapsnapshot
+zetta-runtime-HEAD
+zetta-runtime-jscoverage
