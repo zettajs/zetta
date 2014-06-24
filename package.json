@@ -9,21 +9,22 @@
     "argo-multiparty": "~0.0.3",
     "bunyan": "~0.22.3",
     "colors": "~0.6.2",
+    "level": "^0.18.0",
     "mocha": "^1.20.1",
     "multiparty": "~3.2.4",
+    "node-uuid": "^1.4.1",
     "rx": "~2.2.20",
     "spdy": "~1.25.1",
     "strftime": "~0.8.0",
     "titan": "~0.1.1",
-    "ws": "^0.4.31",
-    "node-uuid": "^1.4.1"
+    "ws": "^0.4.31"
   },
   "devDependencies": {
     "mocha": "^1.20.1"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec",
-    "coverage":"bin/_coverage"
+    "coverage": "bin/_coverage"
   },
   "repository": {
     "type": "git",

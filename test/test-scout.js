@@ -7,6 +7,7 @@ var GoodScout = function() {
 };
 GoodScout.prototype.init = function(cb) { return cb(); };
 util.inherits(GoodScout, zetta.Scout);
+
   
 describe('Scout', function() {
 
@@ -21,28 +22,33 @@ describe('Scout', function() {
       assert.ok(scout.discover);
     });
 
-  });
-
-
-  describe('#discover()', function() {
-
-    it('it should pass arguments to discover event', function(cb) {
+    it('it should implement provision prototype', function() {
       var scout = new GoodScout();
-
-      scout.once('discover', function(device, arg1, arg2, arg3){
-	assert.equal(device, Device);
-	assert.equal(arg1, 1);
-	assert.equal(arg2, 2);
-	assert.equal(arg3, 3);
-	cb();
-      });
-      
-      var Device = function(){};
-      scout.discover(Device, 1, 2, 3);
+      assert.ok(scout.provision);
     });
 
   });
 
+
+  describe('#discover()', function() {
+    it.skip('it should pass arguments to device', function(cb) {
+    });
+
+    it.skip('it should add a new device to the registry', function(cb) {
+    });
+  });
+
+
+  describe('#provision()', function() {
+    it.skip('it should pass arguments to device', function(cb) {
+    });
+
+    it.skip('it should initiate device with registry information', function(cb) {
+    });
+
+    it.skip('should not return a device that has been already initialized', function(cb) {
+    });
+  });
 
 
 
