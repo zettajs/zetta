@@ -1,6 +1,6 @@
 module.exports = {
-  bootstrapper: require('./bootstrapper'),
-  ZettaCloud: require('./cloud.js'),
-  scientist: require('./scientist.js'),
-  Scout: require('./scout.js')
+  bootstrapper: require('./lib/bootstrapper'),
+  ZettaCloud: require('./lib/cloud'),
+  scientist: require('./lib/scientist'),
+  Scout: require('./lib/scout')
 };
