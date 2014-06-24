@@ -11,3 +11,4 @@ registry.json
 *.heapsnapshot
 zetta-runtime-HEAD
 zetta-runtime-jscoverage
+.registry
