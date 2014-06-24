@@ -130,6 +130,24 @@ MachineConfig.prototype.call = function(/* type, ...args */) {
   }
 };
 
+MachineConfig.prototype.monitor = function(queueName) {
+  var propName = queueName;
+
+  queueName = this.machine.type + '/' + this.properties.id + '/' + propName;
+
+  this.machine.streams.push(queueName);
+
+  Object.defineProperty(this.machine, propName, {
+    get: function(){
+      return this.machine.properties[propName];
+    },
+    set: function(newValue){
+      pubsub.publish(queueName, newValue);
+      this.machine.properties[propName] = newValue;
+    }
+  });
+};
+
 MachineConfig.create = function(machine) {
   return new MachineConfig(machine);
 };
