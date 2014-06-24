@@ -22,21 +22,33 @@ describe('Scout', function() {
       assert.ok(scout.discover);
     });
 
-  });
-
-
-  describe('#discover()', function() {
-
-    it.skip('it should pass arguments to discover event', function(cb) {
+    it('it should implement provision prototype', function() {
       var scout = new GoodScout();
-
-      var Device = function(){};
-      Device.prototype.init = function(config) {};
-      scout.discover(Device, 1, 2, 3);
+      assert.ok(scout.provision);
     });
 
   });
 
+
+  describe('#discover()', function() {
+    it.skip('it should pass arguments to device', function(cb) {
+    });
+
+    it.skip('it should add a new device to the registry', function(cb) {
+    });
+  });
+
+
+  describe('#provision()', function() {
+    it.skip('it should pass arguments to device', function(cb) {
+    });
+
+    it.skip('it should initiate device with registry information', function(cb) {
+    });
+
+    it.skip('should not return a device that has been already initialized', function(cb) {
+    });
+  });
 
 
 
