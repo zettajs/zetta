@@ -12,7 +12,7 @@ module.exports = function(){
 
 var Zetta = function() {
   this.id = uuid.v4(); // unique id of server
-  this.name = null; // optional name
+  this._name = null; // optional name
 
   this._exposeQuery = '';
   this._scouts = [];
@@ -27,21 +27,25 @@ var Zetta = function() {
 };
 
 Zetta.prototype.name = function(name) {
-  this.name = name;
+  this._name = name;
+  return this;
 };
 
 Zetta.prototype.use = function() {
   var scout = scientist.create.apply(null, arguments);
   scout.server = this.runtime;
   this._scouts.push(scout);
+  return this;
 };
 
 Zetta.prototype.expose = function(query) {
   this._exposeQuery = query;
+  return this;
 };
 
 Zetta.prototype.load = function(app) {
   this._apps.push(app);
+  return this;
 };
 
 Zetta.prototype.link = function(peers) {
@@ -53,9 +57,13 @@ Zetta.prototype.link = function(peers) {
   peers.forEach(function(peer) {
     self._peers.push(new PeerClient(peer, self.httpServer));
   });
+
+  return this;
 };
 
 Zetta.prototype.listen = function(port, callback) {
+  var origArguments = arguments;
+
   var self = this;
 
   async.series([
@@ -66,7 +74,7 @@ Zetta.prototype.listen = function(port, callback) {
       self._initApps(next);
     },
     function(next) {
-      var args = Array.prototype.slice.apply(arguments, 0);
+      var args = Array.prototype.slice.call(origArguments);
       args.pop();
       args.push(next);
       self._initHttpServer.apply(self, args);
@@ -74,8 +82,11 @@ Zetta.prototype.listen = function(port, callback) {
     function(next) {
       self._initPeers(next);
     }
-  ], callback);
 
+  ], callback);
+  
+
+  return this;
 };
 
 Zetta.prototype._initScouts = function(callback) {
