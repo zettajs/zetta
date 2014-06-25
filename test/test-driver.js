@@ -17,8 +17,8 @@ TestDriver.prototype.init = function(config) {
     .state('ready')
     .type('testdriver')
     .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change'] })
-    .when('changed', { allow: ['prepare'] })
+    .when('ready', { allow: ['change', 'current'] })
+    .when('changed', { allow: ['prepare', 'current'] })
     .map('change', this.change)
     .map('prepare', this.prepare);
 };
