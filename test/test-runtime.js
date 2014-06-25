@@ -9,7 +9,7 @@ describe('Runtime', function() {
   });
 
 
-  it('should be attached to the zetta as a function', function() {
+  it('basic zetta server functionality should not break', function() {
     zetta()
       .name('local')
       .expose('*')
