@@ -2,7 +2,7 @@ var util = require('util');
 var Registry = require('../lib/registry');
 var scientist = require('../lib/scientist');
 var Scout = require('../zetta_runtime').Scout;
-var HueScout = require('./fixture/example_scout.js');
+var HueScout = require('../test/fixture/example_scout.js');
 
 
 function Server() {
