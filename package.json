@@ -7,6 +7,7 @@
     "argo": "~0.4.9",
     "argo-formatter-siren": "~0.0.0",
     "argo-multiparty": "~0.0.3",
+    "async": "^0.9.0",
     "bunyan": "~0.22.3",
     "colors": "~0.6.2",
     "level": "^0.18.0",
