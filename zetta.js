@@ -2,7 +2,7 @@ var uuid = require('node-uuid');
 var async = require('async');
 var scientist = require('./lib/scientist');
 var Runtime = require('./lib/runtime');
-var HttpServer = require('./lib/http_server');
+var HttpServer = require('./lib/test_http_server');
 var PeerClient = require('./lib/peer_client');
 
 module.exports = function(){
@@ -22,7 +22,7 @@ var Zetta = function() {
   // runtime instance
   this.runtime = new Runtime();
 
-  this.httpServer = new HttpServer();
+  this.httpServer = new HttpServer(this.runtime);
 
 };
 
@@ -40,6 +40,7 @@ Zetta.prototype.use = function() {
 
 Zetta.prototype.expose = function(query) {
   this._exposeQuery = query;
+  this.runtime.expose(query);
   return this;
 };
 
@@ -53,7 +54,7 @@ Zetta.prototype.link = function(peers) {
   if(!Array.isArray(peers)) {
     peers = [peers];
   }
-  
+
   peers.forEach(function(peer) {
     self._peers.push(new PeerClient(peer, self.httpServer));
   });
@@ -84,7 +85,7 @@ Zetta.prototype.listen = function(port, callback) {
     }
 
   ], callback);
-  
+
 
   return this;
 };
@@ -102,7 +103,7 @@ Zetta.prototype._initApps = function(callback) {
   this._apps.forEach(function(app) {
     app(self.runtime);
   });
-  
+
   callback();
 };
 
@@ -116,4 +117,3 @@ Zetta.prototype._initPeers = function(callback) {
   });
   callback();
 };
-
