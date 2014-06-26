@@ -4,7 +4,15 @@ var Scientist = Runtime.scientist;
 var assert = require('assert');
 var TestDriver = require('./fixture/example_driver');
 
+
+pubsub.publish = function(){};
+
 describe('Driver', function() {
+  var machine = null;
+
+  beforeEach(function(){
+    machine = Scientist.configure(TestDriver);
+  });
 
   it('should be attached to the zetta runtime', function() {
     assert.ok(Runtime.Device);
@@ -12,20 +20,18 @@ describe('Driver', function() {
 
   describe('Configuration', function() {
     it('should be configured by Scientist#configure', function() {
-      var machine = Scientist.configure(TestDriver);
       assert.ok(machine.call);
       assert.equal(machine.type, 'testdriver');
       assert.equal(machine.state, 'ready');
       assert.equal(machine.name, 'Matt\'s Test Device');
     });
+
+    it('should have an id automatically generated for it', function(){
+      assert.ok(machine.id);
+    });
   });
 
   describe('Transitions', function() {
-    var machine = null;
-
-    beforeEach(function(){
-      machine = Scientist.configure(TestDriver);
-    });
 
     it('should change the state from ready to changed when calling change.', function(done) {
       machine.call('change', function() {
@@ -44,5 +50,31 @@ describe('Driver', function() {
         }
       });
     });
+  });
+
+  describe('Streams', function(){
+
+    function wireUpPubSub(stream, done){
+      pubsub.publish = function(name, data){
+        assert.ok(name);
+        assert.ok(data);
+        assert.ok(name.indexOf(stream) > -1);
+        done();
+
+      }
+    }
+
+    it('should stream values of foo once configured', function(done){
+      assert.ok(machine.streams.length == 2);
+      wireUpPubSub('foo', done);
+      machine.foo++;
+    });
+
+
+    it('should stream values of bar once configured', function(done){
+      assert.ok(machine.streams.length == 2);
+      wireUpPubSub('bar', done);
+      machine.incrementStreamValue();
+    })
   });
 });
