@@ -1,5 +1,5 @@
 var Scout = require('../../../../zetta_runtime').Scout;
-var LedDriver = require('./led');
+var LedDriver = require('./led_driver');
 var util = require('util');
 
 var ArduinoScout = module.exports = function() {
