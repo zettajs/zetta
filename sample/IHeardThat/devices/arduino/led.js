@@ -3,6 +3,11 @@ var util = require('util');
 
 var Led = module.exports = function() {
   Device.call(this);
+
+  this.foo = 'bar';
+  this.bar = 1;
+  this.baz = '3';
+  this.quux = 'blahblah';
 };
 util.inherits(Led, Device);
 

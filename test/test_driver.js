@@ -1,37 +1,8 @@
 var pubsub = require('../lib/pubsub_service');
-var util = require('util');
 var Runtime = require('../zetta_runtime');
-var Device = Runtime.Device;
 var Scientist = Runtime.scientist;
 var assert = require('assert');
-
-
-var TestDriver = function(){
-  Device.call(this);
-  this.data = 0;
-};
-util.inherits(TestDriver, Device);
-
-TestDriver.prototype.init = function(config) {
-  config
-    .state('ready')
-    .type('testdriver')
-    .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change', 'current'] })
-    .when('changed', { allow: ['prepare', 'current'] })
-    .map('change', this.change)
-    .map('prepare', this.prepare);
-};
-
-TestDriver.prototype.change = function(cb) {
-  this.state = 'changed';
-  cb();
-};
-
-TestDriver.prototype.prepare = function(cb) {
-  this.state = 'ready';
-  cb();
-};
+var TestDriver = require('./fixture/example_driver');
 
 describe('Driver', function() {
 
@@ -44,14 +15,19 @@ describe('Driver', function() {
       var machine = Scientist.configure(TestDriver);
       assert.ok(machine.call);
       assert.equal(machine.type, 'testdriver');
-      assert.equal(machine.properties.state, 'ready');
-      assert.equal(machine.properties.name, 'Matt\'s Test Device');
+      assert.equal(machine.state, 'ready');
+      assert.equal(machine.name, 'Matt\'s Test Device');
     });
   });
 
   describe('Transitions', function() {
+    var machine = null;
+
+    beforeEach(function(){
+      machine = Scientist.configure(TestDriver);
+    });
+
     it('should change the state from ready to changed when calling change.', function(done) {
-      var machine = Scientist.configure(TestDriver);
       machine.call('change', function() {
         assert.equal(machine.properties.state, 'changed');
         done();
@@ -59,7 +35,6 @@ describe('Driver', function() {
     });
 
     it('should throw an error when a disallowed transition tries to happen.', function(done) {
-      var machine = Scientist.configure(TestDriver);
       machine.call('change', function() {
         try {
           machine.call('change');
