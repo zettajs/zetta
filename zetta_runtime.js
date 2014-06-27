@@ -1,7 +1,12 @@
-module.exports = {
-  bootstrapper: require('./lib/bootstrapper'),
-  ZettaCloud: require('./lib/http_server'),
-  scientist: require('./lib/scientist'),
-  Scout: require('./lib/scout'),
-  Device: require('./lib/device')
-};
+var Runtime = require('./zetta');
+
+var exp = function(options) {
+  var zetta = new Runtime(options);
+  return zetta;
+}
+
+exp.Device = require('./lib/Device');
+exp.Scout = require('./lib/Scout');
+exp.Scientist = require('./lib/scientist');
+
+module.exports = exp;

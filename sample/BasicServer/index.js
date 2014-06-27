@@ -1,4 +1,4 @@
-var zetta = require('../../zetta.js');
+var zetta = require('../../zetta_runtime.js');
 var Arduino = require('./devices/arduino');
 var Spark = require('./devices/spark');
 var IHeardThat = require('./apps');
