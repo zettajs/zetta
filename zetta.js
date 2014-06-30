@@ -7,10 +7,10 @@ var PeerClient = require('./lib/peer_client');
 
 module.exports = function(){
   var args = Array.prototype.concat.apply([Zetta], arguments);
-  return scientist.create.apply(null, args)
+  return scientist.create.apply(null, args);
 };
 
-var Zetta = function() {
+var Zetta = function(opts) {
   this.id = uuid.v4(); // unique id of server
   this._name = null; // optional name
 
@@ -19,8 +19,11 @@ var Zetta = function() {
   this._apps = [];
   this._peers = [];
 
-  // runtime instance
-  this.runtime = new Runtime();
+  if(opts && opts.registry) {
+    this.runtime = new Runtime({registry: opts.registry});
+  } else {
+    this.runtime = new Runtime();
+  }
 
   this.httpServer = new HttpServer(this.runtime);
 
@@ -67,6 +70,10 @@ Zetta.prototype.listen = function(port, callback) {
 
   var self = this;
 
+  if(!callback) {
+    callback = function(){};
+  }
+
   async.series([
     function(next) {
       self._initScouts(next);
@@ -76,7 +83,9 @@ Zetta.prototype.listen = function(port, callback) {
     },
     function(next) {
       var args = Array.prototype.slice.call(origArguments);
-      args.pop();
+      if(args.length > 1) {
+        args.pop();
+      }
       args.push(next);
       self._initHttpServer.apply(self, args);
     },
