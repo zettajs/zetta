@@ -50,17 +50,8 @@ MockRegistry.prototype.save = function(machine, cb){
 };
 
 MockRegistry.prototype.find = function(query, cb) {
-  var propertiesMatch = function(query, data) {
-    for(var k in query){
-      if(query[k] !== data[k]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   this.machines.forEach(function(machine) {
-    if(propertiesMatch(query, machine)) {
+    if(query.match(machine)) {
       cb(null, [machine]);
     }
   });
