@@ -2,7 +2,7 @@ var uuid = require('node-uuid');
 var async = require('async');
 var scientist = require('./lib/scientist');
 var Runtime = require('./lib/runtime');
-var HttpServer = require('./lib/test_http_server');
+var HttpServer = require('./lib/http_server');
 var PeerClient = require('./lib/peer_client');
 
 module.exports = function(){
@@ -117,6 +117,7 @@ Zetta.prototype._initApps = function(callback) {
 };
 
 Zetta.prototype._initHttpServer = function() {
+  this.httpServer.init();
   this.httpServer.listen.apply(this.httpServer, arguments);
 };
 
