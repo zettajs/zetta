@@ -55,8 +55,22 @@ describe('Zetta', function() {
     assert.ok(z._exposeQuery);
   });
 
+  it('will call init on the server prototype to ensure everything is wired up correctly.', function(done) {
+    function MockHttp(){}
+    MockHttp.prototype.init = function() {
+      done();
+    };
+    MockHttp.prototype.listen = function(port) {};
+
+    var z = zetta({registry: reg});
+    z.httpServer = new MockHttp();
+    z.listen(3000);
+
+  });
+
   it('will apply arguments to httpServer when listen() is called', function(done) {
     function MockHttp(){}
+    MockHttp.prototype.init = function(){};
     MockHttp.prototype.listen = function(port) {
       assert.equal(port, 3000);
       done();
@@ -70,6 +84,7 @@ describe('Zetta', function() {
 
   it('will correctly apply the callback to httpServer when listen() is called', function(done) {
     function MockHttp(){}
+    MockHttp.prototype.init = function(){};
     MockHttp.prototype.listen = function(port, cb) {
       assert.equal(port, 3000);
       cb(null);
