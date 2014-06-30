@@ -25,5 +25,13 @@ describe('Query', function() {
 
       assert.ok(!q.match(obj));
     });
+
+    it('will match everything when an asterisk is the only parameter provided.', function() {
+      var q = new Query('*');
+      var obj = { test: 'quux', bar: 'baz' };
+      var obj2 = { test: 'foo', baz: 'bar' };
+      assert.ok(q.match(obj));
+      assert.ok(q.match(obj2));
+    });
   });
 });
