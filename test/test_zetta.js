@@ -41,11 +41,10 @@ describe('Zetta', function() {
   it('will load a scout with the use() function', function() {
     var z = zetta({registry: reg});
     function TestScout(){}
-    TestScout.prototype.init = function(){ 
-      assert.equal(z._scouts.length, 1);
-      assert.equal(this.server, z.runtime);
-      done(); 
-    };
+    z.use(TestScout);
+    assert.equal(z._scouts.length, 1);
+    var s = z._scouts[0];
+    assert.equal(s.server, z.runtime);
   });
 
   it('will set the what query is used for expose()', function() {
