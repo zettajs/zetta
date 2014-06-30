@@ -50,6 +50,14 @@ describe('Driver', function() {
         }
       });
     });
+
+    it('should have transitions emitted like events.', function(done) {
+      machine.on('change', function() {
+        done();
+      });
+
+      machine.call('change');
+    });
   });
 
   describe('Streams', function(){
