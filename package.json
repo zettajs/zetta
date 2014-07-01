@@ -21,8 +21,9 @@
     "ws": "^0.4.31"
   },
   "devDependencies": {
+    "leveldown": "^0.10.2",
     "mocha": "^1.20.1",
-    "leveldown": "^0.10.2"
+    "supertest": "^0.13.0"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec",
