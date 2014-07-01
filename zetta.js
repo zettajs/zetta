@@ -7,10 +7,10 @@ var PeerClient = require('./lib/peer_client');
 
 module.exports = function(){
   var args = Array.prototype.concat.apply([Zetta], arguments);
-  return scientist.create.apply(null, args)
+  return scientist.create.apply(null, args);
 };
 
-var Zetta = function() {
+var Zetta = function(opts) {
   this.id = uuid.v4(); // unique id of server
   this._name = null; // optional name
 
@@ -19,10 +19,13 @@ var Zetta = function() {
   this._apps = [];
   this._peers = [];
 
-  // runtime instance
-  this.runtime = new Runtime();
+  if(opts && opts.registry) {
+    this.runtime = new Runtime({registry: opts.registry});
+  } else {
+    this.runtime = new Runtime();
+  }
 
-  this.httpServer = new HttpServer();
+  this.httpServer = new HttpServer(this.runtime);
 
 };
 
@@ -40,6 +43,7 @@ Zetta.prototype.use = function() {
 
 Zetta.prototype.expose = function(query) {
   this._exposeQuery = query;
+  this.runtime.expose(query);
   return this;
 };
 
@@ -53,7 +57,7 @@ Zetta.prototype.link = function(peers) {
   if(!Array.isArray(peers)) {
     peers = [peers];
   }
-  
+
   peers.forEach(function(peer) {
     self._peers.push(new PeerClient(peer, self.httpServer));
   });
@@ -66,6 +70,10 @@ Zetta.prototype.listen = function(port, callback) {
 
   var self = this;
 
+  if(!callback) {
+    callback = function(){};
+  }
+
   async.series([
     function(next) {
       self._initScouts(next);
@@ -75,7 +83,9 @@ Zetta.prototype.listen = function(port, callback) {
     },
     function(next) {
       var args = Array.prototype.slice.call(origArguments);
-      args.pop();
+      if(args.length > 1) {
+        args.pop();
+      }
       args.push(next);
       self._initHttpServer.apply(self, args);
     },
@@ -84,7 +94,7 @@ Zetta.prototype.listen = function(port, callback) {
     }
 
   ], callback);
-  
+
 
   return this;
 };
@@ -102,11 +112,12 @@ Zetta.prototype._initApps = function(callback) {
   this._apps.forEach(function(app) {
     app(self.runtime);
   });
-  
+
   callback();
 };
 
 Zetta.prototype._initHttpServer = function() {
+  this.httpServer.init();
   this.httpServer.listen.apply(this.httpServer, arguments);
 };
 
@@ -116,4 +127,3 @@ Zetta.prototype._initPeers = function(callback) {
   });
   callback();
 };
-
