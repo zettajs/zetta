@@ -37,11 +37,10 @@ HubScout.prototype.search = function() {
 
   var hubs = [{id: '1234567890', 'ipaddress': '192.168.1.0'}];
 
-  setTimeout(function() {
-    hubs.forEach(function(hub) {
-      self._foundHub(hub);
-    });
-  }, 200);
+  hubs.forEach(function(hub) {
+    self._foundHub(hub);
+  });
+
 };
 
 HubScout.prototype._foundHub = function(hueHub) {
