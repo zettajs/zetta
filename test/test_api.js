@@ -64,8 +64,82 @@ describe('Zetta Api', function() {
   beforeEach(function() {
     reg = new Registry();
   });
+
+
+  describe('/servers/<peer id> ', function() {
+    var app = null;
+    var url = null;
+    beforeEach(function(done) {
+      app = zetta({registry: reg})
+        .use(Scout)
+	.name('local')
+	.expose('*')
+        ._run(done);
+
+      url = '/servers/'+app.id;
+    });
+
+    it('should have content type application/vnd.siren+json', function(done){
+      request(getHttpServer(app))
+	.get(url)
+	.expect('Content-Type', 'application/vnd.siren+json', done);
+    });
+
+    it('should return status code 200', function(done){
+      request(getHttpServer(app))
+	.get(url)
+        .expect(200, done);
+    });
+
+    it('should have class ["server"]', function(done){
+      request(getHttpServer(app))
+	.get(url)
+        .expect(getBody(function(res, body){
+	  assert.deepEqual(body.class, ['server']);
+	}))
+        .end(done);
+    });
+
+    it('should have proper name and id property', function(done){
+      request(getHttpServer(app))
+	.get(url)
+        .expect(getBody(function(res, body){
+	  assert.equal(body.properties.id, app.id);
+	  assert.equal(body.properties.name, 'local');
+	}))
+        .end(done);
+    });
+
+    it('should have self link and log link', function(done){
+      request(getHttpServer(app))
+	.get(url)
+        .expect(getBody(function(res, body){
+	  assert(body.links);
+	  hasLinkRel(body.links, 'self');
+	  hasLinkRel(body.links, 'monitor');
+	}))
+        .end(done);
+    });
+
+    it('should have valid entities', function(done){
+      request(getHttpServer(app))
+	.get(url)
+        .expect(getBody(function(res, body){
+	  assert(body.entities);
+	  assert.equal(body.entities.length, 1);
+	  checkDeviceOnRootUri(body.entities[0]);
+	}))
+        .end(done);
+    });
+
+
+  });
+
+
+
+
   
-  describe.skip('/ of server', function() {
+  describe('/', function() {
     var app = null;
     beforeEach(function() {
       app = zetta({registry: reg})
