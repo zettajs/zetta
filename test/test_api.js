@@ -6,7 +6,6 @@ var Scout = require('./fixture/example_scout');
 var request = require('supertest');
 
 function getHttpServer(app){
-  app.httpServer.init(function(){});
   return app.httpServer.server;
 }
 
@@ -29,10 +28,36 @@ function checkDeviceOnRootUri(entity){
   assert(entity.properties.name);
   assert(entity.properties.type);
   assert(entity.properties.state);
+  assert(!entity.actions); // should not have actions on it
+
   assert(entity.links);
+  hasLinkRel(entity.links, 'self');
+  hasLinkRel(entity.links, 'http://rels.zettajs.io/server');
 }
 
-describe('Zetta', function() {
+function hasLinkRel(links, rel, title, href){
+  var found = false;
+  links.forEach(function(link){
+    if(link.rel.indexOf(rel) != -1) {
+      found = true;
+      
+      if(title !== undefined && link.title !== title) {
+	throw new Error('link title does not match');
+      }
+
+      if(href !== undefined && link.href !== href) {
+	throw new Error('link href does not match');
+      }
+    }
+  });
+
+  if(!found) {
+    throw new Error('Link rel:'+rel+' not found in links');
+  }
+}
+
+
+describe('Zetta Api', function() {
   
   var reg = null;
   
@@ -40,13 +65,14 @@ describe('Zetta', function() {
     reg = new Registry();
   });
   
-  describe('/ of server', function() {
+  describe.skip('/ of server', function() {
     var app = null;
     beforeEach(function() {
       app = zetta({registry: reg})
         .use(Scout)
 	.name('local')
-	.expose('*');
+	.expose('*')
+        ._run();
     });
 
     it('should have content type application/vnd.siren+json', function(done){
@@ -61,48 +87,83 @@ describe('Zetta', function() {
 	.expect(200, done);
     });
 
-    it('body should contain class', function(done){
+    it('body should contain class ["root"]', function(done){
       request(getHttpServer(app))
 	.get('/')
         .expect(getBody(function(res, body){
-	  assert.deepEqual(body.class, ['server']);
+	  assert.deepEqual(body.class, ['root']);
 	}))
 	.end(done)
     });
 
-    it('body should contain properties with id and name', function(done){
-      request(getHttpServer(app))
-	.get('/')
-        .expect(getBody(function(res, body){
-	  assert(body.properties.id);
-	  assert(body.properties.name);
-	}))
-	.end(done)
-    });
-
-
-    it('body should contain valid entity properties', function(done){
-      request(getHttpServer(app))
-	.get('/')
-        .expect(getBody(function(res, body){
-	  assert(body.entities);
-	  assert.equal(body.entities.length, 1);
-	  checkDeviceOnRootUri(body.entities[0]);
-	}))
-	.end(done)
-    });
 
     it('body should contain links property', function(done){
       request(getHttpServer(app))
 	.get('/')
         .expect(getBody(function(res, body){
-	  assert.equal(body.links.length, 1);
+	  assert.equal(body.links.length, 2);
+	  hasLinkRel(body.links, 'self');
 	}))
 	.end(done)
     });
 
-
+    it('links should contain rel to server', function(done){
+      request(getHttpServer(app))
+	.get('/')
+        .expect(getBody(function(res, body){
+	  hasLinkRel(body.links, 'http://rels.zettajs.io/server');
+	}))
+	.end(done)
+    });
 
   });
+
+
+
+
+  describe('/devices of server', function() {
+    var app = null;
+    beforeEach(function(done) {
+      app = zetta({registry: reg})
+        .use(Scout)
+	.name('local')
+	.expose('*')
+        ._run(done);
+    });
+
+    it('should have content type application/vnd.siren+json', function(done){
+      request(getHttpServer(app))
+	.get('/devices')
+	.expect('Content-Type', 'application/vnd.siren+json', done);
+    });
+
+    it('should return status code 200', function(done){
+      request(getHttpServer(app))
+	.get('/devices')
+        .expect(200, done);
+    });
+
+    it('should have class ["devices"]', function(done){
+      request(getHttpServer(app))
+	.get('/devices')
+        .expect(getBody(function(res, body){
+	  assert.deepEqual(body.class, ['devices']);
+	}))
+        .end(done);
+    });
+
+    it('should have one valid entity', function(done){
+      request(getHttpServer(app))
+	.get('/devices')
+        .expect(getBody(function(res, body){
+	  assert(body.entities);
+	  assert.equal(body.entities.length, 1);
+	  checkDeviceOnRootUri(body.entities[0]);
+	  hasLinkRel(body.links, 'self');
+	}))
+        .end(done);
+    });
+  });
+
 
 });
