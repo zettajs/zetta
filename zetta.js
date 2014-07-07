@@ -25,8 +25,8 @@ var Zetta = function(opts) {
     this.runtime = new Runtime();
   }
 
-  this.httpServer = new HttpServer(this.runtime);
-
+  this.httpServer = new HttpServer(this);
+  
 };
 
 Zetta.prototype.name = function(name) {
