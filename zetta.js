@@ -25,8 +25,8 @@ var Zetta = function(opts) {
     this.runtime = new Runtime();
   }
 
-  this.httpServer = new HttpServer(this.runtime);
-
+  this.httpServer = new HttpServer(this);
+  
 };
 
 Zetta.prototype.name = function(name) {
@@ -65,9 +65,27 @@ Zetta.prototype.link = function(peers) {
   return this;
 };
 
-Zetta.prototype.listen = function(port, callback) {
-  var origArguments = arguments;
 
+Zetta.prototype.listen = function(port, callback) {
+  var self = this;
+
+  if(!callback) {
+    callback = function() {};
+  }
+
+  this._run(function(err){
+    if(err) {
+      return callback(err);
+    }
+
+    self.httpServer.listen(port, callback);
+  });
+
+  return this;
+};
+
+// run scouts/apps init server but do not listening on http port
+Zetta.prototype._run = function(callback) {
   var self = this;
 
   if(!callback) {
@@ -82,19 +100,17 @@ Zetta.prototype.listen = function(port, callback) {
       self._initApps(next);
     },
     function(next) {
-      var args = Array.prototype.slice.call(origArguments);
-      if(args.length > 1) {
-        args.pop();
-      }
-      args.push(next);
-      self._initHttpServer.apply(self, args);
+      self._initHttpServer(next);
     },
     function(next) {
       self._initPeers(next);
     }
 
-  ], callback);
-
+  ], function(err){
+    setImmediate(function() {
+      callback(err);
+    });
+  });
 
   return this;
 };
@@ -105,6 +121,8 @@ Zetta.prototype._initScouts = function(callback) {
   }, function(err) {
     callback(err);
   });
+
+  return this;
 };
 
 Zetta.prototype._initApps = function(callback) {
@@ -112,13 +130,16 @@ Zetta.prototype._initApps = function(callback) {
   this._apps.forEach(function(app) {
     app(self.runtime);
   });
-
   callback();
+
+  return this;
 };
 
-Zetta.prototype._initHttpServer = function() {
+Zetta.prototype._initHttpServer = function(callback) {
   this.httpServer.init();
-  this.httpServer.listen.apply(this.httpServer, arguments);
+  callback();
+  
+  return this;
 };
 
 Zetta.prototype._initPeers = function(callback) {
@@ -126,4 +147,6 @@ Zetta.prototype._initPeers = function(callback) {
     peer.start();
   });
   callback();
+
+  return this;
 };
