@@ -73,14 +73,14 @@ describe('Driver', function() {
     }
 
     it('should stream values of foo once configured', function(done){
-      assert.ok(machine.streams.length == 2);
+      assert.ok(machine.streams.foo);
       wireUpPubSub('foo', done);
       machine.foo++;
     });
 
 
     it('should stream values of bar once configured', function(done){
-      assert.ok(machine.streams.length == 2);
+      assert.ok(machine.streams.bar);
       wireUpPubSub('bar', done);
       machine.incrementStreamValue();
     })
