@@ -1,6 +1,6 @@
 var pubsub = require('../lib/pubsub_service');
 var Runtime = require('../zetta_runtime');
-var Scientist = Runtime.Scientist;
+var Scientist = require('../lib/scientist');
 var assert = require('assert');
 var TestDriver = require('./fixture/example_driver');
 

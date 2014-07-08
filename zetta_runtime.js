@@ -1,12 +1,11 @@
-var Runtime = require('./zetta');
+var Zetta = require('./zetta');
 
 var exp = function(options) {
-  var zetta = new Runtime(options);
+  var zetta = new Zetta(options);
   return zetta;
 }
 
 exp.Device = require('./lib/device');
 exp.Scout = require('./lib/scout');
-exp.Scientist = require('./lib/scientist');
 
 module.exports = exp;
