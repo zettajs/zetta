@@ -23,7 +23,6 @@ function getBody(fn){
 
 function checkDeviceOnRootUri(entity){
   assert.deepEqual(entity.class, ['device']);
-  assert.deepEqual(entity.rel, ['http://rels.zettajs.io/device']);
   assert(entity.properties.id);
   assert(entity.properties.name);
   assert(entity.properties.type);
