@@ -3,7 +3,7 @@ var Arduino = require('./devices/arduino');
 var Spark = require('./devices/spark');
 var IHeardThat = require('./apps');
 
-var app = zetta()
+zetta()
   .name('local')
   .expose('*')
   .use(Arduino)
@@ -14,5 +14,3 @@ var app = zetta()
       console.log(err);
     }
   });
-
-app.id = 'fb828855-e442-4fbb-b6a9-6f965feaf53b';
