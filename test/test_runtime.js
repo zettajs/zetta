@@ -202,16 +202,13 @@ describe('Runtime', function(){
         runtime.emit('deviceready', d2);
         runtime.emit('deviceready', d1);
         runtime.emit('deviceready', d2);
-        
         emitter.emit('complete');
       });
 
       it('will only fire take one time', function(done) {
         var d = { type: 'test' };
-        
         var fired = 0;
         var emitter = new EventEmitter();
-        
         runtime
           .take(1)
           .subscribe(function(x) {
@@ -229,10 +226,8 @@ describe('Runtime', function(){
 
       it('will only fire take twice.', function(done) {
         var d = { type: 'test' };
-        
         var fired = 0;
         var emitter = new EventEmitter();
-        
         runtime
           .take(2)
           .subscribe(function(x) {
