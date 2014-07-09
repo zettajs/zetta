@@ -1,6 +1,5 @@
 var util = require('util');
 var zetta = require('../../zetta_runtime');
-var Runtime = require('../../lib/runtime');
 
 //Mock device single transition. Also takes constructor params optionally.
 var GoodDevice = function() {
