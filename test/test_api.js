@@ -1,9 +1,11 @@
 var assert = require('assert');
-
-var zetta = require('../zetta');
-var Registry = require('./fixture/scout_test_mocks').MockRegistry;
-var Scout = require('./fixture/example_scout');
+var os = require('os');
 var request = require('supertest');
+var zetta = require('../zetta');
+
+var Registry = require('./fixture/scout_test_mocks').MockRegistry;
+var rels = require('../lib/api_rels');
+var Scout = require('./fixture/example_scout');
 
 function getHttpServer(app) {
   return app.httpServer.server;
@@ -30,8 +32,8 @@ function checkDeviceOnRootUri(entity) {
   assert(!entity.actions); // should not have actions on it
 
   assert(entity.links);
-  hasLinkRel(entity.links, 'self');
-  hasLinkRel(entity.links, 'http://rels.zettajs.io/server');
+  hasLinkRel(entity.links, rels.self);
+  hasLinkRel(entity.links, rels.server);
 }
 
 function hasLinkRel(links, rel, title, href) {
@@ -180,9 +182,24 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get('/')
         .expect(getBody(function(res, body) {
-          hasLinkRel(body.links, 'http://rels.zettajs.io/server');
+          hasLinkRel(body.links, rels.server);
         }))
         .end(done)
+    });
+
+    it('should use a default server name if none has been provided', function(done) {
+      var app = zetta()._run();
+
+      request(getHttpServer(app))
+        .get('/')
+        .expect(getBody(function(res, body) {
+          var self = body.links.filter(function(link) {
+            return link.rel.indexOf(rels.server) !== -1;
+          })[0];
+
+          assert.equal(self.title, os.hostname());
+        }))
+        .end(done);
     });
   });
 

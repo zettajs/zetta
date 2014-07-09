@@ -1,3 +1,4 @@
+var os = require('os');
 var uuid = require('node-uuid');
 var async = require('async');
 var scientist = require('./lib/scientist');
@@ -12,7 +13,7 @@ module.exports = function(){
 
 var Zetta = function(opts) {
   this.id = uuid.v4(); // unique id of server
-  this._name = null; // optional name
+  this._name = os.hostname(); // optional name, defaults to OS hostname
 
   this._exposeQuery = '';
   this._scouts = [];
