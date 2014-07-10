@@ -250,4 +250,33 @@ describe('Zetta Api', function() {
         .end(done);
     });
   });
+
+
+
+
+  describe('/servers/:id/devices/:id', function() {
+    var app = null;
+    var url = null;
+    var device = null;
+    
+    beforeEach(function(done) {
+      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .use(Scout)
+        .name('local')
+        .expose('*')
+        ._run(function() {
+          device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
+          url = '/servers/' + app.id + '/devices/' + device.id;
+          done();
+        });
+    });
+
+    it('should have content type application/vnd.siren+json', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect('Content-Type', 'application/vnd.siren+json', done);
+    });
+  });
+
+
 });
