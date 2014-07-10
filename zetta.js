@@ -65,7 +65,7 @@ Zetta.prototype.link = function(peers) {
   }
 
   peers.forEach(function(peer) {
-    self._peers.push(new PeerClient(peer, self.httpServer));
+    self._peers.push(new PeerClient(peer, self));
   });
 
   return this;
@@ -149,10 +149,22 @@ Zetta.prototype._initHttpServer = function(callback) {
 };
 
 Zetta.prototype._initPeers = function(callback) {
-  this._peers.forEach(function(peer) {
-    peer.start();
+  var self = this;
+
+  this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+    results.forEach(function(peer) {
+      peer.status = "disconnected";
+      if (peer.direction === 'in' && peer.url) {
+        self._peers.push(new PeerClient(peer.url, self));
+      }
+    });
+
+    self._peers.forEach(function(peer) {
+      peer.start();
+    });
+
+    callback();
   });
-  callback();
 
   return this;
 };
