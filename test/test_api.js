@@ -258,7 +258,7 @@ describe('Zetta Api', function() {
     var app = null;
     var url = null;
     var device = null;
-    
+
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .use(Scout)
@@ -276,7 +276,76 @@ describe('Zetta Api', function() {
         .get(url)
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
-  });
+
+    it('class should be ["device"]', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert.deepEqual(body.class, ['device']);
+        }))
+        .end(done);
+    });
+
+    /*
+          checkDeviceOnRootUri(body.entities[0]);
+          hasLinkRel(body.links, 'self');
+
+     */
+
+    it('properties should match expected', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert(body.properties);
+          assert.equal(body.properties.name, device.properties.name);
+          assert.equal(body.properties.type, device.properties.type);
+          assert.equal(body.properties.id, device.properties.id);
+          assert.equal(body.properties.state, device.properties.state);
+        }))
+        .end(done);
+    });
+
+    it('device should have action change', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(body.actions.length, 1);
+          var action = body.actions[0];
+          assert.equal(action.name, 'change');
+          assert.equal(action.method, 'POST');
+          assert(action.href);
+          assert.deepEqual(action.fields[0], { name: 'action', type: 'hidden', value: 'change' });
+        }))
+        .end(done);
+    });
+
+    it('device should have self link', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, 'self');
+        }))
+        .end(done);
+    });
+
+    it('device should have up link to server', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, 'up');
+        }))
+        .end(done);
+    });
+
+    it('device should have monitor link for bar', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, 'monitor');
+        }))
+        .end(done);
+    });
+ });
 
 
 });
