@@ -3,6 +3,7 @@ var os = require('os');
 var request = require('supertest');
 var zetta = require('../zetta');
 
+var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 var rels = require('../lib/api_rels');
 var Scout = require('./fixture/example_scout');
@@ -61,9 +62,11 @@ function hasLinkRel(links, rel, title, href) {
 
 describe('Zetta Api', function() {
   var reg = null;
+  var peerRegistry = null;
   
   beforeEach(function() {
     reg = new Registry();
+    peerRegistry = new PeerRegistry();
   });
 
 
@@ -72,7 +75,7 @@ describe('Zetta Api', function() {
     var url = null;
 
     beforeEach(function(done) {
-      app = zetta({ registry: reg })
+      app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .use(Scout)
         .name('local')
         .expose('*')
@@ -139,7 +142,7 @@ describe('Zetta Api', function() {
     var app = null;
 
     beforeEach(function() {
-      app = zetta({ registry: reg })
+      app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .use(Scout)
         .name('local')
         .expose('*')
@@ -207,7 +210,7 @@ describe('Zetta Api', function() {
     var app = null;
 
     beforeEach(function(done) {
-      app = zetta({ registry: reg })
+      app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .use(Scout)
         .name('local')
         .expose('*')
