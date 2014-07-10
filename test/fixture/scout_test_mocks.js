@@ -58,6 +58,24 @@ MockRegistry.prototype.find = function(query, cb) {
   cb(null, []);
 };
 
+var MockPeerRegistry = function() {
+  this.peers = [];
+};
+
+MockPeerRegistry.prototype.save = function(peer, cb) {
+  this.peers.push(peer);
+  cb(null);
+};
+
+MockPeerRegistry.prototype.find = function(query, cb) {
+  var results = this.peers.filter(function(peer) {
+    return query.match(peer);
+  });
+
+  cb(null, results);
+};
+
 exports.MockRegistry = MockRegistry;
+exports.MockPeerRegistry = MockPeerRegistry;
 exports.GoodScout = GoodScout;
 exports.GoodDevice = GoodDevice;
