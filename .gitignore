@@ -12,3 +12,4 @@ registry.json
 zetta-runtime-HEAD
 zetta-runtime-jscoverage
 .registry
+.peers
