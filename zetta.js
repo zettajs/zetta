@@ -5,6 +5,7 @@ var scientist = require('./lib/scientist');
 var Runtime = require('./lib/runtime');
 var HttpServer = require('./lib/http_server');
 var PeerClient = require('./lib/peer_client');
+var PeerRegistry = require('./lib/peer_registry');
 
 module.exports = function(){
   var args = Array.prototype.concat.apply([Zetta], arguments);
@@ -12,6 +13,8 @@ module.exports = function(){
 };
 
 var Zetta = function(opts) {
+  opts = opts || {};
+
   this.id = uuid.v4(); // unique id of server
   this._name = os.hostname(); // optional name, defaults to OS hostname
 
@@ -19,6 +22,8 @@ var Zetta = function(opts) {
   this._scouts = [];
   this._apps = [];
   this._peers = [];
+
+  this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
   if(opts && opts.registry) {
     this.runtime = new Runtime({registry: opts.registry});
@@ -95,10 +100,10 @@ Zetta.prototype._run = function(callback) {
 
   async.series([
     function(next) {
-      self._initScouts(next);
+      self._initApps(next);
     },
     function(next) {
-      self._initApps(next);
+      self._initScouts(next);
     },
     function(next) {
       self._initHttpServer(next);
