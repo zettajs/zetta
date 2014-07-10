@@ -1,13 +1,16 @@
 var assert = require('assert');
 
 var zetta = require('../zetta');
+var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 
 describe('Zetta', function() {
-  
   var reg = null;
+  var peerRegistry = null;
+
   beforeEach(function() {
     reg = new Registry();
+    peerRegistry = new PeerRegistry();
   });
   
   it('should be attached to the zetta as a function', function() {
@@ -16,7 +19,7 @@ describe('Zetta', function() {
 
 
   it('basic zetta server functionality should not break', function() {
-    zetta({registry: reg})
+    zetta({ registry: reg, peerRegistry: peerRegistry })
       .name('local')
       .expose('*')
       .load(function(server) {})
@@ -25,13 +28,13 @@ describe('Zetta', function() {
   });
 
   it('has the name set using the name() function.', function() {
-    var z = zetta({registry: reg}).name('local');
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local');
 
     assert.equal(z._name, 'local');
   });
 
   it('will load an app with the load() function', function() {
-    zetta({registry: reg})
+    zetta({ registry: reg, peerRegistry: peerRegistry })
       .load(function(server) {
         assert.ok(server);
         done();
@@ -39,7 +42,7 @@ describe('Zetta', function() {
   });
 
   it('will load a scout with the use() function', function() {
-    var z = zetta({registry: reg});
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     function TestScout(){}
     z.use(TestScout);
     assert.equal(z._scouts.length, 1);
@@ -48,7 +51,7 @@ describe('Zetta', function() {
   });
 
   it('will set the what query is used for expose()', function() {
-    var z = zetta({registry: reg});
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.expose('*');
 
     assert.ok(z._exposeQuery);
@@ -61,7 +64,7 @@ describe('Zetta', function() {
     };
     MockHttp.prototype.listen = function(port) {};
 
-    var z = zetta({registry: reg});
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.httpServer = new MockHttp();
     z.listen(3000);
 
@@ -75,7 +78,7 @@ describe('Zetta', function() {
       done();
     };
 
-    var z = zetta({registry: reg});
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.httpServer = new MockHttp();
     z.listen(3000);
 
@@ -89,7 +92,7 @@ describe('Zetta', function() {
       cb(null);
     };
 
-    var z = zetta({registry: reg});
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.httpServer = new MockHttp();
     z.listen(3000, function(err) {
       assert.ok(!err);
