@@ -6,6 +6,8 @@ var Runtime = require('./lib/runtime');
 var HttpServer = require('./lib/http_server');
 var PeerClient = require('./lib/peer_client');
 var PeerRegistry = require('./lib/peer_registry');
+var PubSub = require('./lib/pubsub_service');
+var Logger = require('./lib/logger');
 
 module.exports = function(){
   var args = Array.prototype.concat.apply([Zetta], arguments);
@@ -25,14 +27,17 @@ var Zetta = function(opts) {
 
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
-  if(opts && opts.registry) {
-    this.runtime = new Runtime({registry: opts.registry});
-  } else {
-    this.runtime = new Runtime();
+  this.pubsub = opts.pubsub || new PubSub();
+  this.log = new Logger({pubsub: this.pubsub});
+
+  var runtimeOpts = { pubsub: this.pubsub, log: this.log };
+  if (opts && opts.registry) {
+    runtimeOpts.registry = opts.registry;
   }
+  this.runtime = new Runtime(runtimeOpts);
 
   this.httpServer = new HttpServer(this);
-  
+
 };
 
 Zetta.prototype.name = function(name) {
@@ -145,7 +150,7 @@ Zetta.prototype._initApps = function(callback) {
 Zetta.prototype._initHttpServer = function(callback) {
   this.httpServer.init();
   callback();
-  
+
   return this;
 };
 
