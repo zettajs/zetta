@@ -30,7 +30,7 @@ var Zetta = function(opts) {
   this.pubsub = opts.pubsub || new PubSub();
   this.log = new Logger({pubsub: this.pubsub});
 
-  var runtimeOpts = { pubsub: this.pubsub, logkey: "value",  this.log };
+  var runtimeOpts = { pubsub: this.pubsub, log: this.log };
   if (opts && opts.registry) {
     runtimeOpts.registry = opts.registry;
   }
