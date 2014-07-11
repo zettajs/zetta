@@ -156,13 +156,33 @@ Zetta.prototype._initPeers = function(callback) {
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
     results.forEach(function(peer) {
       peer.status = 'disconnected';
-      if (peer.direction === 'in' && peer.url) {
+
+      if (peer.direction === 'initiator' && peer.url) {
         var client = new PeerClient(peer.url, self);
         peer.status = 'connecting'
         self.peerRegistry.save(peer, function() {
           client.on('connected', function() {
             peer.status = 'connected';
             self.peerRegistry.save(peer);
+          });
+
+          client.on('error', function(error) {
+            self.peerRegistry.get(peer.id, function(err, result) {
+              result = JSON.parse(result);
+              result.status = 'failed';
+              result.error = error;
+              self.peerRegistry.save(result);
+            });
+          });
+
+          client.on('closed', function() {
+            self.peerRegistry.get(peer.id, function(err, result) {
+              result = JSON.parse(result);
+              result.status = 'connecting';
+              self.peerRegistry.save(result, function() {
+                client.start();
+              });
+            });
           });
 
           client.start();
@@ -177,14 +197,33 @@ Zetta.prototype._initPeers = function(callback) {
     .forEach(function(peerUrl) {
       var peerData = {
         url: peerUrl,
-        direction: 'in'
+        direction: 'initiator'
       }; 
 
       self.peerRegistry.add(peerData, function(err, newPeer) {
         var peerClient = new PeerClient(peerUrl, self);
         peerClient.on('connected', function() {
           newPeer.status = 'connected';
-          peerRegistry.save(newPeer);
+          self.peerRegistry.save(newPeer);
+        });
+
+        peerClient.on('error', function(error) {
+          self.peerRegistry.get(newPeer.id, function(err, result) {
+            result = JSON.parse(result);
+            result.status = 'failed';
+            result.error = error;
+            self.peerRegistry.save(result);
+          });
+        });
+
+        peerClient.on('closed', function() {
+          self.peerRegistry.get(newPeer.id, function(err, result) {
+            result = JSON.parse(result);
+            result.status = 'connecting';
+            self.peerRegistry.save(result, function() {
+              peerClient.start();
+            });
+          });
         });
 
         peerClient.start();
