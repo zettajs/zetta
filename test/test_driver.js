@@ -93,6 +93,6 @@ describe('Driver', function() {
       assert.ok(machine.streams.bar);
       wireUpPubSub('bar', done);
       machine.incrementStreamValue();
-    })
+    });
   });
 });

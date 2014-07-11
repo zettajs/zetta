@@ -70,7 +70,8 @@ Zetta.prototype.link = function(peers) {
   }
 
   peers.forEach(function(peer) {
-    self._peers.push(new PeerClient(peer, self));
+    //self._peers.push(new PeerClient(peer, self));
+    self._peers.push(peer);
   });
 
   return this;
@@ -155,17 +156,45 @@ Zetta.prototype._initHttpServer = function(callback) {
 
 Zetta.prototype._initPeers = function(callback) {
   var self = this;
+  var existingUrls = [];
 
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
     results.forEach(function(peer) {
-      peer.status = "disconnected";
+      peer.status = 'disconnected';
       if (peer.direction === 'in' && peer.url) {
-        self._peers.push(new PeerClient(peer.url, self));
+        var client = new PeerClient(peer.url, self);
+        peer.status = 'connecting'
+        self.peerRegistry.save(peer, function() {
+          client.on('connected', function() {
+            peer.status = 'connected';
+            self.peerRegistry.save(peer);
+          });
+
+          client.start();
+        });
+        existingUrls.push(peer.url);
       }
     });
 
-    self._peers.forEach(function(peer) {
-      peer.start();
+    self._peers.filter(function(peer) {
+      return existingUrls.indexOf(peer) === -1;
+    })
+    .forEach(function(peerUrl) {
+      var peerData = {
+        url: peerUrl,
+        direction: 'in'
+      }; 
+
+      self.peerRegistry.add(peerData, function(err, newPeer) {
+        var peerClient = new PeerClient(peerUrl, self);
+        peerClient.on('connected', function() {
+          newPeer.status = 'connected';
+          peerRegistry.save(newPeer);
+        });
+
+        peerClient.start();
+      });
+
     });
 
     callback();

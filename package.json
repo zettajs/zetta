@@ -1,5 +1,5 @@
 {
-  "name": "zetta-runtime",
+  "name": "zetta",
   "version": "0.0.13",
   "description": "The runtime components for Zetta.",
   "main": "zetta_runtime.js",
