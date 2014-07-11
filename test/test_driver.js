@@ -1,17 +1,28 @@
-var pubsub = require('../lib/pubsub_service');
+var PubSub = require('../lib/pubsub_service');
+var Logger = require('../lib/logger');
 var Runtime = require('../zetta_runtime');
 var Scientist = require('../lib/scientist');
 var assert = require('assert');
 var TestDriver = require('./fixture/example_driver');
 
 
-pubsub.publish = function(){};
 
 describe('Driver', function() {
   var machine = null;
+  var pubsub = null;
+  var log = null;
 
   beforeEach(function(){
-    machine = Scientist.configure(TestDriver);
+    pubsub = new PubSub();
+    log = new Logger({pubsub: pubsub});
+    
+    // create machine
+    machine = Scientist.create(TestDriver);
+    machine._pubsub = pubsub; // setup pubsub and log
+    machine._log = log;
+    
+    // init machine
+    machine = Scientist.init(machine);
   });
 
   it('should be attached to the zetta runtime', function() {
@@ -68,7 +79,6 @@ describe('Driver', function() {
         assert.ok(data);
         assert.ok(name.indexOf(stream) > -1);
         done();
-
       }
     }
 
@@ -83,6 +93,6 @@ describe('Driver', function() {
       assert.ok(machine.streams.bar);
       wireUpPubSub('bar', done);
       machine.incrementStreamValue();
-    })
+    });
   });
 });

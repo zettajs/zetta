@@ -6,6 +6,8 @@ var Runtime = require('./lib/runtime');
 var HttpServer = require('./lib/http_server');
 var PeerClient = require('./lib/peer_client');
 var PeerRegistry = require('./lib/peer_registry');
+var PubSub = require('./lib/pubsub_service');
+var Logger = require('./lib/logger');
 
 module.exports = function(){
   var args = Array.prototype.concat.apply([Zetta], arguments);
@@ -25,14 +27,17 @@ var Zetta = function(opts) {
 
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
-  if(opts && opts.registry) {
-    this.runtime = new Runtime({registry: opts.registry});
-  } else {
-    this.runtime = new Runtime();
+  this.pubsub = opts.pubsub || new PubSub();
+  this.log = new Logger({pubsub: this.pubsub});
+
+  var runtimeOpts = { pubsub: this.pubsub, log: this.log };
+  if (opts && opts.registry) {
+    runtimeOpts.registry = opts.registry;
   }
+  this.runtime = new Runtime(runtimeOpts);
 
   this.httpServer = new HttpServer(this);
-  
+
 };
 
 Zetta.prototype.name = function(name) {
@@ -65,7 +70,8 @@ Zetta.prototype.link = function(peers) {
   }
 
   peers.forEach(function(peer) {
-    self._peers.push(new PeerClient(peer, self.httpServer));
+    //self._peers.push(new PeerClient(peer, self));
+    self._peers.push(peer);
   });
 
   return this;
@@ -144,15 +150,55 @@ Zetta.prototype._initApps = function(callback) {
 Zetta.prototype._initHttpServer = function(callback) {
   this.httpServer.init();
   callback();
-  
+
   return this;
 };
 
 Zetta.prototype._initPeers = function(callback) {
-  this._peers.forEach(function(peer) {
-    peer.start();
+  var self = this;
+  var existingUrls = [];
+
+  this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+    results.forEach(function(peer) {
+      peer.status = 'disconnected';
+      if (peer.direction === 'in' && peer.url) {
+        var client = new PeerClient(peer.url, self);
+        peer.status = 'connecting'
+        self.peerRegistry.save(peer, function() {
+          client.on('connected', function() {
+            peer.status = 'connected';
+            self.peerRegistry.save(peer);
+          });
+
+          client.start();
+        });
+        existingUrls.push(peer.url);
+      }
+    });
+
+    self._peers.filter(function(peer) {
+      return existingUrls.indexOf(peer) === -1;
+    })
+    .forEach(function(peerUrl) {
+      var peerData = {
+        url: peerUrl,
+        direction: 'in'
+      }; 
+
+      self.peerRegistry.add(peerData, function(err, newPeer) {
+        var peerClient = new PeerClient(peerUrl, self);
+        peerClient.on('connected', function() {
+          newPeer.status = 'connected';
+          peerRegistry.save(newPeer);
+        });
+
+        peerClient.start();
+      });
+
+    });
+
+    callback();
   });
-  callback();
 
   return this;
 };
