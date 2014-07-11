@@ -10,8 +10,8 @@ var PeerSocket = require('../lib/peer_socket');
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 
 var Ws = function() {
-  this._socket = new net.Socket();
   EventEmitter.call(this)
+  this._socket = new net.Socket();
 };
 util.inherits(Ws, EventEmitter);
 Ws.prototype.send = function(data, options, cb) {
@@ -64,9 +64,9 @@ describe('EventBroker', function() {
     var client = new EventSocket(ws, 'some-topic');
     broker.client(client);
     
-    var recieved = false;
+    var recieved = 0;
     ws.on('onsend', function(buf) {
-      recieved = true;
+      recieved++;
       var msg = JSON.parse(buf);
       assert.equal(msg.topic, 'some-topic');
       assert(msg.date);
@@ -74,28 +74,25 @@ describe('EventBroker', function() {
     });
     
     setTimeout(function() {
-      assert(recieved);
+      assert.equal(recieved, 1);
       done();
     }, 2);
 
     app.pubsub.publish('some-topic', {somedata: 1});
   });
 
-  it('it should keep local pubsub subscription open when more then one client is active', function() {
-
-    var wsA = new Ws();
-    var wsB = new Ws();
-    var clientA = new EventSocket(wsA, 'some-topic');
-    var clientB = new EventSocket(wsB, 'some-topic');
+  it('should keep local pubsub subscription open when more than one client is active', function(done) {
+    var clientA = new EventSocket(new Ws(), 'some-topic');
+    var clientB = new EventSocket(new Ws(), 'some-topic');
     broker.client(clientA);
     broker.client(clientB);
-    
+
     var recievedA = 0;
     var recievedB = 0;
-    wsA.on('onsend', function(buf) {
+    clientA.ws.on('onsend', function(buf) {
       recievedA++;
     });
-    wsB.on('onsend', function(buf) {
+    clientB.ws.on('onsend', function(buf) {
       recievedB++;
     });
     
@@ -105,19 +102,19 @@ describe('EventBroker', function() {
 
       clientA.emit('close');
 
+      done();
+      return;
+
       setTimeout(function() {
         assert.equal(recievedA, 1);
         assert.equal(recievedB, 2);
-
         done();
       }, 2);
 
       app.pubsub.publish('some-topic', {somedata: 1});
-
     }, 2);
 
     app.pubsub.publish('some-topic', {somedata: 1});
   });
-  
 
 });
