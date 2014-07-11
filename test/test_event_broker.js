@@ -3,7 +3,6 @@ var util = require('util');
 var net = require('net');
 var EventEmitter = require('events').EventEmitter;
 var zetta = require('../');
-var pubsub = require('../lib/pubsub_service');
 var EventSocket = require('../lib/event_socket');
 var EventBroker = require('../lib/event_broker');
 var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
@@ -79,7 +78,7 @@ describe('EventBroker', function() {
       done();
     }, 2);
 
-    pubsub.publish('some-topic', {somedata: 1});
+    app.pubsub.publish('some-topic', {somedata: 1});
   });
 
   it('it should keep local pubsub subscription open when more then one client is active', function() {
@@ -113,11 +112,11 @@ describe('EventBroker', function() {
         done();
       }, 2);
 
-      pubsub.publish('some-topic', {somedata: 1});
+      app.pubsub.publish('some-topic', {somedata: 1});
 
     }, 2);
 
-    pubsub.publish('some-topic', {somedata: 1});
+    app.pubsub.publish('some-topic', {somedata: 1});
   });
   
 
