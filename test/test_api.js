@@ -206,6 +206,46 @@ describe('Zetta Api', function() {
     });
   });
 
+  describe('/peer-management', function() {
+    var app = null;
+
+    before(function(done) {
+      peerRegistry.save({
+        id: '12341234',
+        name: 'test-peer'
+      }, done);
+    });
+
+    beforeEach(function(done) {
+      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .use(Scout)
+        .name('local')
+        .expose('*')
+        ._run(done);
+    });
+
+    it('should have content type application/vnd.siren+json', function(done) {
+      request(getHttpServer(app))
+        .get('/peer-management')
+        .expect('Content-Type', 'application/vnd.siren+json', done);
+    });
+
+    it('should return status code 200', function(done) {
+      request(getHttpServer(app))
+        .get('/peer-management')
+        .expect(200, done);
+    });
+
+    it('should have class ["peer-management"]', function(done) {
+      request(getHttpServer(app))
+        .get('/peer-management')
+        .expect(getBody(function(res, body) {
+          assert.deepEqual(body.class, ['peer-management']);
+        }))
+        .end(done);
+    });
+  });
+
   describe('/devices of server', function() {
     var app = null;
 
