@@ -141,7 +141,22 @@ describe('Runtime', function(){
           runtime.emit('deviceready', d1);
       });
 
+      it('will fire if a device exists in the registry and doesn\'t call deviceready', function(done) {
+        runtime._jsDevices['1'] = { id: '1', type: 'test1' };
 
+        var q1 = runtime.where({ type: 'test1' });
+        var q2 = runtime.where({ type: 'test2' });
+
+        var d2 = { type: 'test2' };
+
+        runtime.observe([q1, q2], function(one, two) {
+          assert.equal(one.type, 'test1');
+          assert.equal(two.type, 'test2');
+          done();
+        });
+
+        runtime.emit('deviceready', d2);
+      });
   });
 
   describe('Extended reactive syntax', function() {
@@ -245,7 +260,8 @@ describe('Runtime', function(){
         runtime.emit('deviceready', d);
         runtime.emit('deviceready', d);
         emitter.emit('complete');
-      });  
+      });
+
 
 
     });
