@@ -43,7 +43,7 @@ function hasLinkRel(links, rel, title, href) {
   links.forEach(function(link) {
     if(link.rel.indexOf(rel) != -1) {
       found = true;
-      
+
       if(title !== undefined && link.title !== title) {
         throw new Error('link title does not match');
       }
@@ -63,7 +63,7 @@ function hasLinkRel(links, rel, title, href) {
 describe('Zetta Api', function() {
   var reg = null;
   var peerRegistry = null;
-  
+
   beforeEach(function() {
     reg = new Registry();
     peerRegistry = new PeerRegistry();
@@ -137,7 +137,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
   });
-  
+
   describe('/', function() {
     var app = null;
 
@@ -191,7 +191,7 @@ describe('Zetta Api', function() {
     });
 
     it('should use a default server name if none has been provided', function(done) {
-      var app = zetta()._run();
+      var app = zetta({ registry: reg, peerRegistry: peerRegistry })._run();
 
       request(getHttpServer(app))
         .get('/')
