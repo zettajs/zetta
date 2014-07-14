@@ -106,10 +106,10 @@ Zetta.prototype._run = function(callback) {
 
   async.series([
     function(next) {
-      self._initApps(next);
+      self._initScouts(next);
     },
     function(next) {
-      self._initScouts(next);
+      self._initApps(next);
     },
     function(next) {
       self._initHttpServer(next);
