@@ -12,10 +12,20 @@ Microphone.prototype.init = function(config) {
     .name('sound-sensor')
     .type('microphone')
     .state('ready')
-    .monitor('amplitude');
+    .monitor('amplitude')
+    .stream('somevar', this.streamSomeVar, { binary: true});
 
   var self = this;
   setInterval(function(){
     self.amplitude = Math.floor(Math.random() * 100);
   }, 200);
+};
+
+Microphone.prototype.streamSomeVar = function(stream) {
+
+  setTimeout(function() {
+    var file = require('fs').createReadStream('./package.json');
+    file.pipe(stream);
+  }, 10000);
+
 };
