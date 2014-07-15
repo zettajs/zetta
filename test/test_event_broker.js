@@ -19,6 +19,7 @@ Ws.prototype.send = function(data, options, cb) {
 };
 
 describe('EventBroker', function() {
+  var msg = JSON.stringify({topic: 'some-topic', data: {somedata: 1}, date: new Date().getTime()});
   var app = null;
   var broker = null;
   beforeEach(function() {
@@ -40,7 +41,7 @@ describe('EventBroker', function() {
     var client = new EventSocket(ws, 'some-topic');
     broker.client(client);
     assert.equal(broker.clients.length, 1);
-    assert.equal(broker.subscriptionCounts['some-topic'], 1);
+    assert.equal(broker.subscriptions['some-topic'].count, 1);
   });
 
   it('it should remove subscription when client closes', function(done) {
@@ -48,13 +49,13 @@ describe('EventBroker', function() {
     var client = new EventSocket(ws, 'some-topic');
     broker.client(client);
     assert.equal(broker.clients.length, 1);
-    assert.equal(broker.subscriptionCounts['some-topic'], 1);
+    assert.equal(broker.subscriptions['some-topic'].count, 1);
 
     client.emit('close');
 
     setTimeout(function() {
       assert.equal(broker.clients.length, 0);
-      assert(!broker.subscriptionCounts['some-topic']);
+      assert(!broker.subscriptions['some-topic']);
       done();
     }, 1);
   });
@@ -78,7 +79,7 @@ describe('EventBroker', function() {
       done();
     }, 2);
 
-    app.pubsub.publish('some-topic', {somedata: 1});
+    app.pubsub.publish('some-topic', msg);
   });
 
   it('should keep local pubsub subscription open when more than one client is active', function(done) {
@@ -111,10 +112,10 @@ describe('EventBroker', function() {
         done();
       }, 2);
 
-      app.pubsub.publish('some-topic', {somedata: 1});
+      app.pubsub.publish('some-topic', msg);
     }, 2);
 
-    app.pubsub.publish('some-topic', {somedata: 1});
+    app.pubsub.publish('some-topic', msg);
   });
 
 });
