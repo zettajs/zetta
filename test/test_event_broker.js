@@ -19,6 +19,7 @@ Ws.prototype.send = function(data, options, cb) {
 };
 
 describe('EventBroker', function() {
+  var msg = JSON.stringify({topic: 'some-topic', data: {somedata: 1}, date: new Date().getTime()});
   var app = null;
   var broker = null;
   beforeEach(function() {
@@ -78,7 +79,7 @@ describe('EventBroker', function() {
       done();
     }, 2);
 
-    app.pubsub.publish('some-topic', {somedata: 1});
+    app.pubsub.publish('some-topic', msg);
   });
 
   it('should keep local pubsub subscription open when more than one client is active', function(done) {
@@ -111,10 +112,10 @@ describe('EventBroker', function() {
         done();
       }, 2);
 
-      app.pubsub.publish('some-topic', {somedata: 1});
+      app.pubsub.publish('some-topic', msg);
     }, 2);
 
-    app.pubsub.publish('some-topic', {somedata: 1});
+    app.pubsub.publish('some-topic', msg);
   });
 
 });
