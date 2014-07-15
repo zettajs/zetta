@@ -22,6 +22,24 @@ describe('Peer Registry', function() {
     }
   });
 
+  it('should save a peer', function(done) {
+    var reg = new PeerRegistry(db);
+    reg.save({ id: 0 }, function(err) {
+      assert.ifError(err);
+      done();
+    });
+  });
+
+  it('should remove error property on peer save when status is not failed', function(done) {
+    var reg = new PeerRegistry(db);
+    reg.save({ id: 0, error: new Error() }, function() {
+      reg.get(0, function(err, result) {
+        assert.equal(result.error, undefined);
+        done();
+      });
+    });
+  })
+
   it('should find multiple peers', function(done) {
     var reg = new PeerRegistry(db);
     reg.save({ id: 0 }, function() {
@@ -67,7 +85,7 @@ describe('Peer Registry', function() {
   describe('#add', function() {
     it('should save new peers', function(done) {
       var reg = new PeerRegistry(db);
-      var peer = { id: 012345 };
+      var peer = {};
       
       reg.add(peer, function(err, result) {
         assert.ok(result);
@@ -77,7 +95,7 @@ describe('Peer Registry', function() {
 
     it('should generate an ID for new peers', function(done) {
       var reg = new PeerRegistry(db);
-      var peer = { id: 012345 };
+      var peer = {};
       
       reg.add(peer, function(err, result) {
         assert.ok(result.id);
@@ -94,6 +112,34 @@ describe('Peer Registry', function() {
           assert.equal(result.id, peer.id);
           done();
         });
+      });
+    });
+
+    it('propagates errors from #find', function(done) {
+      var reg = new PeerRegistry(db);
+      var peer = {};
+      
+      reg.find = function(key, cb) {
+        cb(new Error());
+      };
+
+      reg.add(peer, function(err, result) {
+        assert.ok(err);
+        done();
+      });
+    });
+
+    it('propagates errors from #save', function(done) {
+      var reg = new PeerRegistry(db);
+      var peer = {};
+      
+      reg.save = function(key, cb) {
+        cb(new Error());
+      };
+
+      reg.add(peer, function(err, result) {
+        assert.ok(err);
+        done();
       });
     });
   });
