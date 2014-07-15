@@ -10,6 +10,7 @@ app
   .name('local')
   .expose('*')
   .use(Arduino)
+  .load(IHeardThat)
   .listen(3000, function(err) {
     if(err) {
       console.log(err);
