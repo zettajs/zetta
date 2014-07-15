@@ -388,7 +388,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions.length, 2);
           var action = body.actions[0];
           assert.equal(action.name, 'change');
           assert.equal(action.method, 'POST');
@@ -424,6 +424,18 @@ describe('Zetta Api', function() {
         }))
         .end(done);
     });
+
+    it('device action should work', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .send({ action: 'test', value: 123 })
+        .expect(getBody(function(res, body) {
+          assert.equal(body.properties.value, 123);
+          hasLinkRel(body.links, 'monitor');
+        }))
+        .end(done);
+    });
+
  });
 
 

@@ -6,6 +6,7 @@ var TestDriver = module.exports = function(){
   Device.call(this);
   this.foo = 0;
   this.bar = 0;
+  this.value = 0;
 };
 util.inherits(TestDriver, Device);
 
@@ -14,12 +15,18 @@ TestDriver.prototype.init = function(config) {
     .state('ready')
     .type('testdriver')
     .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change'] })
-    .when('changed', { allow: ['prepare'] })
+    .when('ready', { allow: ['change', 'test'] })
+    .when('changed', { allow: ['prepare', 'test'] })
     .map('change', this.change)
     .map('prepare', this.prepare)
+    .map('test', this.test, [{ name: 'value', type: 'number'}])
     .monitor('foo')
     .stream('bar', this.streamBar);
+};
+
+TestDriver.prototype.change = function(value, cb) {
+  this.value = value;
+  cb();
 };
 
 TestDriver.prototype.change = function(cb) {
