@@ -239,10 +239,21 @@ describe('Zetta Api', function() {
     it('should have class ["peer-management"]', function(done) {
       request(getHttpServer(app))
         .get('/peer-management')
-        .expect(getBody(function(res, body) {
+        .expect(getBody(function(err, body) {
           assert.deepEqual(body.class, ['peer-management']);
         }))
         .end(done);
+    });
+
+    it('should list saved peers', function(done) {
+      peerRegistry.save({ id: '0' }, function() {
+        request(getHttpServer(app))
+          .get('/peer-management')
+          .expect(getBody(function(err, body) {
+            assert.equal(body.entities.length, 1);
+          }))
+          .end(done);
+      });
     });
   });
 
