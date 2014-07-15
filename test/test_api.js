@@ -272,6 +272,17 @@ describe('Zetta Api', function() {
           .end(done);
       });
     });
+
+    describe('#show', function() {
+      it('should return the peer item representation', function(done) {
+        var id = '1234-5678-9ABCD';
+        peerRegistry.save({ id: id }, function() {
+          request(getHttpServer(app))
+            .get('/peer-management/' + id)
+            .expect(200, done);
+        });
+      });
+    });
   });
 
   describe('/devices of server', function() {
