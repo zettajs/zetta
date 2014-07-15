@@ -255,6 +255,23 @@ describe('Zetta Api', function() {
           .end(done);
       });
     });
+
+    describe('#link', function() {
+      it('should return status code 202', function(done) {
+        request(getHttpServer(app))
+          .post('/peer-management')
+          .send('url=http://testurl')
+          .expect(202, done);
+      });
+
+      it('should return a Location header', function(done) {
+        request(getHttpServer(app))
+          .post('/peer-management')
+          .send('url=http://testurl')
+          .expect('Location', /^http.+/)
+          .end(done);
+      });
+    });
   });
 
   describe('/devices of server', function() {

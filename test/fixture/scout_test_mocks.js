@@ -1,4 +1,5 @@
 var util = require('util');
+var uuid = require('node-uuid');
 var zetta = require('../../zetta_runtime');
 
 //Mock device single transition. Also takes constructor params optionally.
@@ -65,6 +66,15 @@ var MockPeerRegistry = function() {
 MockPeerRegistry.prototype.save = function(peer, cb) {
   this.peers.push(peer);
   cb(null);
+};
+
+MockPeerRegistry.prototype.add = function(peer, cb) {
+  if (!peer.id) {
+    peer.id = uuid.v4();
+  }
+
+  this.peers.push(peer);
+  cb(null, peer);
 };
 
 MockPeerRegistry.prototype.find = function(query, cb) {
