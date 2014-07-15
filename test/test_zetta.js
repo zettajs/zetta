@@ -4,6 +4,8 @@ var zetta = require('../zetta');
 var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 
+var TEST_PORT = process.env.TEST_PORT || Math.floor(1000 + Math.random() * 1000);
+
 describe('Zetta', function() {
   var reg = null;
   var peerRegistry = null;
@@ -23,7 +25,7 @@ describe('Zetta', function() {
       .name('local')
       .expose('*')
       .load(function(server) {})
-      .listen(3000, function(err){
+      .listen(TEST_PORT, function(err){
       });
   });
 
