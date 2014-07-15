@@ -41,7 +41,7 @@ describe('EventBroker', function() {
     var client = new EventSocket(ws, 'some-topic');
     broker.client(client);
     assert.equal(broker.clients.length, 1);
-    assert.equal(broker.subscriptionCounts['some-topic'], 1);
+    assert.equal(broker.subscriptions['some-topic'].count, 1);
   });
 
   it('it should remove subscription when client closes', function(done) {
@@ -49,13 +49,13 @@ describe('EventBroker', function() {
     var client = new EventSocket(ws, 'some-topic');
     broker.client(client);
     assert.equal(broker.clients.length, 1);
-    assert.equal(broker.subscriptionCounts['some-topic'], 1);
+    assert.equal(broker.subscriptions['some-topic'].count, 1);
 
     client.emit('close');
 
     setTimeout(function() {
       assert.equal(broker.clients.length, 0);
-      assert(!broker.subscriptionCounts['some-topic']);
+      assert(!broker.subscriptions['some-topic']);
       done();
     }, 1);
   });

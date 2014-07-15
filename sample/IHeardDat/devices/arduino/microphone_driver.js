@@ -22,10 +22,9 @@ Microphone.prototype.init = function(config) {
 };
 
 Microphone.prototype.streamSomeVar = function(stream) {
-
-  setTimeout(function() {
-    var file = require('fs').createReadStream('./package.json');
-    file.pipe(stream);
-  }, 10000);
-
+  setInterval(function(){
+    var buf = new Buffer(1);
+    buf[0] = Math.floor(Math.random() * 255);
+    stream.write(buf);
+  }, 25);
 };
