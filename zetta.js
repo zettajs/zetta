@@ -28,16 +28,14 @@ var Zetta = function(opts) {
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
   this.pubsub = opts.pubsub || new PubSub();
-  this.log = new Logger({pubsub: this.pubsub});
+  this.log = opts.log || new Logger({pubsub: this.pubsub});
 
   var runtimeOpts = { pubsub: this.pubsub, log: this.log };
   if (opts && opts.registry) {
     runtimeOpts.registry = opts.registry;
   }
   this.runtime = new Runtime(runtimeOpts);
-
   this.httpServer = new HttpServer(this);
-
 };
 
 Zetta.prototype.name = function(name) {

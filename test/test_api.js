@@ -428,6 +428,7 @@ describe('Zetta Api', function() {
     it('device action should work', function(done) {
       request(getHttpServer(app))
         .post(url)
+        .type('form')
         .send({ action: 'test', value: 123 })
         .expect(getBody(function(res, body) {
           assert.equal(body.properties.value, 123);

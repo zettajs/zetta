@@ -24,7 +24,7 @@ TestDriver.prototype.init = function(config) {
     .stream('bar', this.streamBar);
 };
 
-TestDriver.prototype.change = function(value, cb) {
+TestDriver.prototype.test = function(value, cb) {
   this.value = value;
   cb();
 };
