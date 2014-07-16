@@ -34,8 +34,9 @@ describe('EventBroker', function() {
   it('it should add peer by server name', function() {
     var ws = new Ws();
     var peer = new PeerSocket(ws, 'some-peer');
+    peer.serverId = 'some-peer2';
     broker.peer(peer);
-    assert.equal(peer, broker.peers['some-peer']);
+    assert.equal(peer, broker.peers['some-peer2']);
   });
 
   it('it should add client and subscribe to topic', function() {

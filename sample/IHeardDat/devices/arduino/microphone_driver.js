@@ -23,8 +23,9 @@ Microphone.prototype.init = function(config) {
 
 Microphone.prototype.streamSomeVar = function(stream) {
   setInterval(function(){
-    var buf = new Buffer(1);
+    var buf = new Buffer(2);
     buf[0] = Math.floor(Math.random() * 255);
+    buf[1] = 255-buf[0];
     stream.write(buf);
   }, 25);
 };
