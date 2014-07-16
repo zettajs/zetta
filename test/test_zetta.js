@@ -68,7 +68,7 @@ describe('Zetta', function() {
 
     var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.httpServer = new MockHttp();
-    z.listen(3000);
+    z.listen(TEST_PORT);
 
   });
 
@@ -76,13 +76,13 @@ describe('Zetta', function() {
     function MockHttp(){}
     MockHttp.prototype.init = function(){};
     MockHttp.prototype.listen = function(port) {
-      assert.equal(port, 3000);
+      assert.equal(port, TEST_PORT);
       done();
     };
 
     var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.httpServer = new MockHttp();
-    z.listen(3000);
+    z.listen(TEST_PORT);
 
   });
 
@@ -90,13 +90,13 @@ describe('Zetta', function() {
     function MockHttp(){}
     MockHttp.prototype.init = function(){};
     MockHttp.prototype.listen = function(port, cb) {
-      assert.equal(port, 3000);
+      assert.equal(port, TEST_PORT);
       cb(null);
     };
 
     var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.httpServer = new MockHttp();
-    z.listen(3000, function(err) {
+    z.listen(TEST_PORT, function(err) {
       assert.ok(!err);
       done();
     });

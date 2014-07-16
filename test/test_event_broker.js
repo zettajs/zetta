@@ -20,25 +20,28 @@ Ws.prototype.send = function(data, options, cb) {
 
 describe('EventBroker', function() {
   var msg = JSON.stringify({topic: 'some-topic', data: {somedata: 1}, date: new Date().getTime()});
+  var query = null;
   var app = null;
   var broker = null;
   beforeEach(function() {
     var reg = new Registry();
     var peerRegistry = new PeerRegistry();
     app = zetta({ registry: reg, peerRegistry: peerRegistry });
+    query = { topic: 'some-topic', serverId: app.id };
     broker = new EventBroker(app);
   });
   
   it('it should add peer by server name', function() {
     var ws = new Ws();
     var peer = new PeerSocket(ws, 'some-peer');
+    peer.serverId = 'some-peer2';
     broker.peer(peer);
-    assert.equal(peer, broker.peers['some-peer']);
+    assert.equal(peer, broker.peers['some-peer2']);
   });
 
   it('it should add client and subscribe to topic', function() {
     var ws = new Ws();
-    var client = new EventSocket(ws, 'some-topic');
+    var client = new EventSocket(ws, query);
     broker.client(client);
     assert.equal(broker.clients.length, 1);
     assert.equal(broker.subscriptions['some-topic'].count, 1);
@@ -46,7 +49,7 @@ describe('EventBroker', function() {
 
   it('it should remove subscription when client closes', function(done) {
     var ws = new Ws();
-    var client = new EventSocket(ws, 'some-topic');
+    var client = new EventSocket(ws, query);
     broker.client(client);
     assert.equal(broker.clients.length, 1);
     assert.equal(broker.subscriptions['some-topic'].count, 1);
@@ -62,7 +65,7 @@ describe('EventBroker', function() {
 
   it('it should pass data from local pubsub to clients', function(done) {
     var ws = new Ws();
-    var client = new EventSocket(ws, 'some-topic');
+    var client = new EventSocket(ws, query);
     broker.client(client);
     
     var recieved = 0;
@@ -83,8 +86,8 @@ describe('EventBroker', function() {
   });
 
   it('should keep local pubsub subscription open when more than one client is active', function(done) {
-    var clientA = new EventSocket(new Ws(), 'some-topic');
-    var clientB = new EventSocket(new Ws(), 'some-topic');
+    var clientA = new EventSocket(new Ws(), query);
+    var clientB = new EventSocket(new Ws(), query);
     broker.client(clientA);
     broker.client(clientB);
 
