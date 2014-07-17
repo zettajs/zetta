@@ -7,6 +7,7 @@ var TestDriver = module.exports = function(){
   this.foo = 0;
   this.bar = 0;
   this.value = 0;
+  this._fooBar = 0;
 };
 util.inherits(TestDriver, Device);
 
@@ -21,7 +22,8 @@ TestDriver.prototype.init = function(config) {
     .map('prepare', this.prepare)
     .map('test', this.test, [{ name: 'value', type: 'number'}])
     .monitor('foo')
-    .stream('bar', this.streamBar);
+    .stream('bar', this.streamBar)
+    .stream('foobar', this.streamFooBar, {binary: true});
 };
 
 TestDriver.prototype.test = function(value, cb) {
@@ -48,4 +50,14 @@ TestDriver.prototype.incrementStreamValue = function() {
 
 TestDriver.prototype.streamBar = function(stream) {
   this._stream = stream;
+}
+
+TestDriver.prototype.incrementFooBar = function(stream) {
+  this._fooBar++;
+  var buf = new Buffer([this._fooBar]);
+  this._streamFooBar.write(buf);
+}
+
+TestDriver.prototype.streamFooBar = function(stream) {
+  this._streamFooBar = stream;
 }
