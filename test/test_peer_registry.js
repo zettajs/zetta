@@ -1,6 +1,6 @@
 var assert = require('assert');
 var path = require('path');
-var level = require('level');
+var levelup = require('levelup');
 var leveldown = require('leveldown');
 var PeerRegistry = require('../lib/peer_registry');
 
@@ -10,7 +10,7 @@ describe('Peer Registry', function() {
   var db;
 
   beforeEach(function(done) {
-    db = level(dbPath);
+    db = levelup(dbPath);
     done();
   });
 

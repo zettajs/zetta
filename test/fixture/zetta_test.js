@@ -1,7 +1,7 @@
 var async = require('async');
 var zetta = require('../../zetta');
-var MockRegistry = require('./scout_test_mocks').MockRegistry;
-var MockPeerRegistry = require('./scout_test_mocks').MockPeerRegistry;
+var MemRegistry = require('./mem_registry');
+var MemPeerRegistry = require('./mem_peer_registry');
 
 module.exports = function(opts) {
   return new ZettaTest(opts);
@@ -12,8 +12,8 @@ var ZettaTest = function(opts) {
   this.startPort = opts.startPort || Math.floor(2000 + Math.random() * 1000);
   this._nextPort = this.startPort;
   this.servers = {};
-  this.RegType = opts.Registry || MockRegistry;
-  this.PeerRegType = opts.PeerRegistry || MockPeerRegistry;
+  this.RegType = opts.Registry || MemRegistry;
+  this.PeerRegType = opts.PeerRegistry || MemPeerRegistry;
 };
 
 ZettaTest.prototype.registry = function(Type) {
@@ -47,11 +47,12 @@ ZettaTest.prototype.run = function(callback) {
   var self = this;
   Object.keys(this.servers).forEach(function(key) {
     var server = self.servers[key];
-    server._testPeers.forEach(function(name) {
-      if (!self.servers[name]) {
+    server._testPeers.forEach(function(peerName) {
+      if (!self.servers[peerName]) {
         return;
-      }
-      server.link('http://localhost:' + self.servers[name]._testPort);
+      }     
+      console.log('Server [' + key + '] Linking to ' + 'http://localhost:' + self.servers[peerName]._testPort);
+      server.link('http://localhost:' + self.servers[peerName]._testPort);
     });
   });
   
@@ -62,9 +63,6 @@ ZettaTest.prototype.run = function(callback) {
       if (err) {
         return err;
       }
-      
-
-
       async.whilst(
         function () {
           var allQuery = {

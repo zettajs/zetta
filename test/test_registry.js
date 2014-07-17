@@ -1,4 +1,4 @@
-var level = require('level');
+var levelup = require('levelup');
 var path = require('path');
 var Runtime = require('../zetta_runtime');
 var Scientist = require('../lib/scientist');
@@ -34,7 +34,7 @@ describe('Registry', function() {
 
   beforeEach(function(done) {
     leveldown.destroy(dbPath, function() {
-      db = level(dbPath);
+      db = levelup(dbPath);
       machine = Scientist.configure(TestDriver);
       done();
     });
