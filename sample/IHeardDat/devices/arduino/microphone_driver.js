@@ -27,5 +27,5 @@ Microphone.prototype.streamSomeVar = function(stream) {
     buf[0] = Math.floor(Math.random() * 255);
     buf[1] = 255-buf[0];
     stream.write(buf);
-  }, 25);
+  }, 500);
 };

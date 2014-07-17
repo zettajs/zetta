@@ -64,6 +64,9 @@ var MockPeerRegistry = function() {
 };
 
 MockPeerRegistry.prototype.save = function(peer, cb) {
+  if (!cb) {
+    cb = function(){};
+  }
   this.peers.push(peer);
   cb(null);
 };
@@ -80,7 +83,7 @@ MockPeerRegistry.prototype.add = function(peer, cb) {
 MockPeerRegistry.prototype.get = function(id, cb) {
   this.peers.forEach(function(peer) {
     if (peer.id === id) {
-      cb(null, peer);
+      cb(null, JSON.stringify(peer));
     }
   });
 };
