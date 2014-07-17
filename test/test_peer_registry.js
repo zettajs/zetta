@@ -142,5 +142,24 @@ describe('Peer Registry', function() {
         done();
       });
     });
+
+
+    it('it should not match entries when both .url are undefined or null', function(done) {
+      var reg = new PeerRegistry(db);
+      var peer1 = { name: 'some-peer-1'};
+      var peer2 = { name: 'some-peer-2'};
+      
+      reg.add(peer1, function(err, result1) {
+        assert.ok(result1.id);
+        reg.add(peer2, function(err, result2) {
+          assert.ok(result2.id);
+          assert.ok(result1.id !== result2.id, 'should create two unique peers')
+          done();
+        });
+      });
+    });
+
+
+
   });
 });
