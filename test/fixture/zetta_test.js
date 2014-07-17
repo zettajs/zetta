@@ -14,6 +14,7 @@ var ZettaTest = function(opts) {
   this.servers = {};
   this.RegType = opts.Registry || MemRegistry;
   this.PeerRegType = opts.PeerRegistry || MemPeerRegistry;
+  this._serversUrl = {};
 };
 
 ZettaTest.prototype.registry = function(Type) {
@@ -37,10 +38,29 @@ ZettaTest.prototype.server = function(name, scouts, peers) {
       server.use(Scout);
     });
   }
+
+  server.locatePeer = function(id) {
+    for (var k in server.httpServer.router) {
+      if (server.httpServer.router[k] === id) {
+        return k;
+      }
+    }
+
+    return null;
+  };
+ 
   server._testPeers = peers || [];
   server._testPort = this._nextPort++;
   this.servers[name] = server;
   return this;
+};
+
+ZettaTest.prototype.stop = function(callback) {
+  var self = this;
+  Object.keys(this.servers).forEach(function(key) {
+    var server = self.servers[key];
+    server.httpServer.server.close();
+  });
 };
 
 ZettaTest.prototype.run = function(callback) {
@@ -50,9 +70,12 @@ ZettaTest.prototype.run = function(callback) {
     server._testPeers.forEach(function(peerName) {
       if (!self.servers[peerName]) {
         return;
-      }     
-      console.log('Server [' + key + '] Linking to ' + 'http://localhost:' + self.servers[peerName]._testPort);
-      server.link('http://localhost:' + self.servers[peerName]._testPort);
+      }
+
+      var url = 'http://localhost:' + self.servers[peerName]._testPort;
+      console.log('Server [' + key + '] Linking to ' + url);
+      self._serversUrl[url] = self.servers[peerName];
+      server.link(url);
     });
   });
   
@@ -63,28 +86,51 @@ ZettaTest.prototype.run = function(callback) {
       if (err) {
         return err;
       }
-      async.whilst(
-        function () {
-          var allQuery = {
-            match: function() { return true; }
-          };
-          var ret = false;
-          server.peerRegistry.find(allQuery, function(err, results) {
-            results.forEach(function(peer) {
-              if (ret || !peer.status || peer.status !== 'connected') {
-                ret = true;
-                return;
-              }
-            });
-          });
 
-          return ret;
+
+
+      function check(done) {
+        var allQuery = {
+          match: function() { return true; }
+        };
+        var ret = true;
+        server.peerRegistry.find(allQuery, function(err, results) {
+          results.forEach(function(peer) {
+            if (!peer.status || peer.status !== 'connected') {
+              ret = false;
+              return;
+            }
+            var pServer = self._serversUrl[peer.url];
+            var router = pServer.httpServer.router;
+            var foundInRouter = false;
+            for (var k in router){
+              if (router[k] === self.servers[name].id) {
+                foundInRouter = true;
+                break;
+              }
+            }
+            ret = foundInRouter;
+          });
+          done(ret);
+        });
+      }
+
+
+      async.forever(
+        function(next) {
+          check(function(ready){
+            if (ready) {
+              return next(new Error(''));
+            } else {
+              return next();
+            }
+          });
         },
-        function (callback) {
-          setTimeout(callback, 1000);
-        },
-        next
+        function(err) {
+          next();
+        }
       );
+
     });
   }, callback);
 
