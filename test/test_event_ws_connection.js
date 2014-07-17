@@ -117,24 +117,29 @@ describe('Event Websocket', function() {
         assert.equal(open, true, 'ws should be opened');
 
         var recv = 0;
-        
+        var timer = null;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
           assert(msg.date);
           assert(msg.topic);
           assert.equal(msg.data, recv);
+          if (recv === 3) {
+            clearTimeout(timer);
+            socket.close();
+            done();
+          }
         });
         
         device.incrementStreamValue();
         device.incrementStreamValue();
         device.incrementStreamValue();
         
-        setTimeout(function() {
+        timer = setTimeout(function() {
           assert.equal(recv, 3, 'should have received 3 messages');
           socket.close();
           done();
-        }, 20);
+        }, 100);
         
       }, 20);    
     });
@@ -169,23 +174,28 @@ describe('Event Websocket', function() {
         assert.equal(open, true, 'ws should be opened');
 
         var recv = 0;
-        
+        var timer = null;
         socket.on('message', function(buf, flags) {
           assert(Buffer.isBuffer(buf));
           assert(flags.binary);
           recv++;
           assert.equal(buf[0], recv);
+          if (recv === 3) {
+            clearTimeout(timer);
+            socket.close();
+            done();
+          }
         });
         
         device.incrementFooBar();
         device.incrementFooBar();
         device.incrementFooBar();
         
-        setTimeout(function() {
+        timer = setTimeout(function() {
           assert.equal(recv, 3, 'should have received 3 messages');
           socket.close();
           done();
-        }, 20);
+        }, 100);
         
       }, 20);    
     });
