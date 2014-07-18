@@ -28,7 +28,7 @@ var Zetta = function(opts) {
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
   this.pubsub = opts.pubsub || new PubSub();
-  this.log = opts.log || new Logger({pubsub: this.pubsub});
+  this.log = opts.log || new Logger({ pubsub: this.pubsub });
 
   var runtimeOpts = { pubsub: this.pubsub, log: this.log };
   if (opts && opts.registry) {
@@ -155,63 +155,48 @@ Zetta.prototype._initHttpServer = function(callback) {
 Zetta.prototype._initPeers = function(callback) {
   var self = this;
   var existingUrls = [];
+  var allPeers = [];
 
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
     results.forEach(function(peer) {
       peer.status = 'disconnected';
-
       if (peer.direction === 'initiator' && peer.url) {
-        var client = new PeerClient(peer.url, self);
-        peer.status = 'connecting'
-        self.peerRegistry.save(peer, function() {
-          client.on('connected', function() {
-            peer.status = 'connected';
-            self.peerRegistry.save(peer);
-          });
-
-          client.on('error', function(error) {
-            self.peerRegistry.get(peer.id, function(err, result) {
-              result = JSON.parse(result);
-              result.status = 'failed';
-              result.error = error;
-              self.peerRegistry.save(result);
-            });
-          });
-
-          client.on('closed', function() {
-            self.peerRegistry.get(peer.id, function(err, result) {
-              result = JSON.parse(result);
-              result.status = 'connecting';
-              self.peerRegistry.save(result, function() {
-                client.start();
-              });
-            });
-          });
-
-          client.start();
-        });
+        allPeers.push(peer);
         existingUrls.push(peer.url);
+        return;
       }
     });
 
-    self._peers.filter(function(peer) {
+    // peers added through js api to registry peers if they don't already exist
+    allPeers = allPeers.concat(self._peers.filter(function(peer) {
       return existingUrls.indexOf(peer) === -1;
-    })
-    .forEach(function(peerUrl) {
-      var peerData = {
-        url: peerUrl,
-        direction: 'initiator'
-      }; 
-
-      self.peerRegistry.add(peerData, function(err, newPeer) {
-        var peerClient = new PeerClient(peerUrl, self);
+    }));
+    
+    allPeers.forEach(function(obj) {
+      var existing = (typeof obj === 'object');
+      if (existing) {
+        self.peerRegistry.save(obj, function() {
+          runPeer(obj);
+        });
+      } else {
+        var peerData = {
+          url: obj,
+          direction: 'initiator'
+        }; 
+        self.peerRegistry.add(peerData, function(err, newPeer) {
+          runPeer(newPeer);
+        });
+      }
+      
+      function runPeer(peer) {
+        var peerClient = new PeerClient(peer.url, self);
         peerClient.on('connected', function() {
-          newPeer.status = 'connected';
-          self.peerRegistry.save(newPeer);
+          peer.status = 'connected';
+          self.peerRegistry.save(peer);
         });
 
         peerClient.on('error', function(error) {
-          self.peerRegistry.get(newPeer.id, function(err, result) {
+          self.peerRegistry.get(peer.id, function(err, result) {
             result = JSON.parse(result);
             result.status = 'failed';
             result.error = error;
@@ -219,21 +204,21 @@ Zetta.prototype._initPeers = function(callback) {
           });
         });
 
-        peerClient.on('closed', function() {
-          self.peerRegistry.get(newPeer.id, function(err, result) {
+        peerClient.on('closed', function(reconnect) {
+          self.peerRegistry.get(peer.id, function(err, result) {
             result = JSON.parse(result);
             result.status = 'connecting';
             self.peerRegistry.save(result, function() {
-              peerClient.start();
+              reconnect();
             });
           });
         });
 
         peerClient.start();
-      });
-
+      }
     });
-
+    
+    // end after db read
     callback();
   });
 
