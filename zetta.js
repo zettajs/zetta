@@ -8,6 +8,7 @@ var PeerClient = require('./lib/peer_client');
 var PeerRegistry = require('./lib/peer_registry');
 var PubSub = require('./lib/pubsub_service');
 var Logger = require('./lib/logger');
+var HttpScout = require('./lib/http_scout');
 
 module.exports = function(){
   var args = Array.prototype.concat.apply([Zetta], arguments);
@@ -24,7 +25,7 @@ var Zetta = function(opts) {
   this._scouts = [];
   this._apps = [];
   this._peers = [];
-
+  
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
   this.pubsub = opts.pubsub || new PubSub();
@@ -36,6 +37,13 @@ var Zetta = function(opts) {
   }
   this.runtime = new Runtime(runtimeOpts);
   this.httpServer = new HttpServer(this);
+
+  var httpScout = scientist.create.apply(null, [HttpScout]);
+  httpScout.server = this.runtime;
+  this.httpScout = httpScout;
+  this._scouts.push(httpScout);
+  
+
 };
 
 Zetta.prototype.name = function(name) {
@@ -44,9 +52,19 @@ Zetta.prototype.name = function(name) {
 };
 
 Zetta.prototype.use = function() {
-  var scout = scientist.create.apply(null, arguments);
-  scout.server = this.runtime;
-  this._scouts.push(scout);
+
+  var opts = arguments[arguments.length - 1];
+  if(opts.http_device && opts.http_device === true) {
+    var driver = arguments[0];
+    var instance = new driver();
+    instance.init(instance);
+    console.log('adding new driver:', instance.properties.type);
+    this.httpScout.driverFunctions[instance.type] = driver;
+  } else {
+    var scout = scientist.create.apply(null, arguments);
+    scout.server = this.runtime;
+    this._scouts.push(scout);
+  }
   return this;
 };
 
