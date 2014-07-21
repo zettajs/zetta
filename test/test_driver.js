@@ -4,23 +4,26 @@ var Runtime = require('../zetta_runtime');
 var Scientist = require('../lib/scientist');
 var assert = require('assert');
 var TestDriver = require('./fixture/example_driver');
-
+var MemRegistry = require('./fixture/mem_registry');
 
 
 describe('Driver', function() {
   var machine = null;
   var pubsub = null;
   var log = null;
+  var reg = null;
 
   beforeEach(function(){
+    reg = new MemRegistry();
     pubsub = new PubSub();
     log = new Logger({pubsub: pubsub});
     
     // create machine
     machine = Scientist.create(TestDriver);
-    machine._pubsub = pubsub; // setup pubsub and log
+    machine._pubsub = pubsub; // setup pubsub, log, registry
     machine._log = log;
-    
+    machine._registry = reg;
+
     // init machine
     machine = Scientist.init(machine);
   });
@@ -95,4 +98,36 @@ describe('Driver', function() {
       machine.incrementStreamValue();
     });
   });
+
+  describe('Streams', function() {
+    
+    it('save should be implemented on device', function() {
+      assert.equal(typeof machine.save, 'function');
+    });
+
+    it('save should update the registry with new property values', function(cb) {
+      
+      reg.get(machine.id, function(err, result) {
+        assert(err);
+        
+        machine.someval = 123;
+        machine._hidden = 'some-string';
+        machine.save(function(err) {
+          assert(!err);
+          
+          reg.get(machine.id, function(err, result) {
+            result = JSON.parse(result);
+            assert.equal(err, null);
+            assert.equal(result.id, machine.id);
+            assert.equal(result.someval, 123);
+            assert.equal(typeof result._hidden, 'undefined');
+            cb();
+          });
+        });
+      });
+    });
+    
+  });
+
+
 });
