@@ -209,7 +209,7 @@ Zetta.prototype._initPeers = function(callback) {
             result = JSON.parse(result);
             result.status = 'connecting';
             self.peerRegistry.save(result, function() {
-              reconnect();
+              peerClient.start();
             });
           });
         });
