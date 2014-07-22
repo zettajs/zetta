@@ -1,7 +1,7 @@
 var zetta = require('../../zetta_runtime.js');
 var Arduino = require('./devices/arduino');
 var Spark = require('./devices/spark');
-var iPhone = require('./devices/remote');
+var iPhone = require('./devices/iphone');
 var app = require('./apps');
 
 zetta()
