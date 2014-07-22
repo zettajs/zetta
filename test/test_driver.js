@@ -54,6 +54,16 @@ describe('Driver', function() {
       });
     });
 
+    it('should be able to call transiton afterchange after change was called', function(done) {
+      machine.call('change', function() {
+        assert.equal(machine.properties.state, 'changed');
+        machine.call('prepare', function(err) {
+          assert.equal(machine.properties.state, 'ready');
+          done();
+        });
+      });
+    });
+
     it('should throw an error when a disallowed transition tries to happen.', function(done) {
       machine.call('change', function() {
         try {
