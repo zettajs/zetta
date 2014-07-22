@@ -52,9 +52,8 @@ Zetta.prototype.name = function(name) {
 };
 
 Zetta.prototype.use = function() {
-
   var opts = arguments[arguments.length - 1];
-  if(opts.http_device && opts.http_device === true) {
+  if(opts && opts.http_device && opts.http_device === true) {
     var driver = arguments[0];
     var instance = new driver();
     instance.init(instance);
