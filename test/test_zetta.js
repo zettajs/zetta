@@ -47,7 +47,8 @@ describe('Zetta', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     function TestScout(){}
     z.use(TestScout);
-    assert.equal(z._scouts.length, 1);
+    //This test didn't account for the hardcoded http_scout that is newly added.
+    assert.equal(z._scouts.length, 2);
     var s = z._scouts[0];
     assert.equal(s.server, z.runtime);
   });

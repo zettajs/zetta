@@ -7,6 +7,7 @@ var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 var rels = require('../lib/api_rels');
 var Scout = require('./fixture/example_scout');
+var Driver = require('./fixture/example_driver');
 
 function getHttpServer(app) {
   return app.httpServer.server;
@@ -15,7 +16,11 @@ function getHttpServer(app) {
 function getBody(fn) {
   return function(res) {
     try {
-      var body = JSON.parse(res.text);
+      if(res.text) {
+        var body = JSON.parse(res.text);
+      } else {
+        var body = '';
+      }
     } catch(err) {
       throw new Error('Failed to parse json body');
     }
@@ -77,6 +82,7 @@ describe('Zetta Api', function() {
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .use(Scout)
+        .use(Driver, { http_device: true })
         .name('local')
         .expose('*')
         ._run(done);
@@ -133,6 +139,52 @@ describe('Zetta Api', function() {
           assert(body.entities);
           assert.equal(body.entities.length, 1);
           checkDeviceOnRootUri(body.entities[0]);
+        }))
+        .end(done);
+    });
+
+    it('should have one action', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert(body.actions);
+          assert.equal(body.actions.length, 1);
+        }))
+        .end(done);
+    });
+
+    it('should accept remote devices of type testdriver', function(done) {
+      request(getHttpServer(app))
+        .post(url + '/devices')
+        .send('type=testdriver')
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 201);
+          assert.equal(reg.machines.length, 2);
+          assert.equal(reg.machines[1].type, 'testdriver');
+        }))
+        .end(done);
+    });
+
+    it('should not accept a remote device of type foo', function(done) {
+      request(getHttpServer(app))
+        .post(url + '/devices')
+        .send('type=foo')
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 404);
+        }))
+        .end(done);
+    });
+
+    it('should accept remote devices of type testdriver, and allow them to set their own name and id properties', function(done) {
+      request(getHttpServer(app))
+        .post(url + '/devices')
+        .send('type=testdriver&id=12345&name=test')
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 201);
+          assert.equal(reg.machines.length, 2);
+          assert.equal(reg.machines[1].type, 'testdriver');
+          assert.equal(reg.machines[1].id, '12345');
+          assert.equal(app.runtime._jsDevices['12345'].name, 'test');
         }))
         .end(done);
     });
