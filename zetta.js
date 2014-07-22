@@ -58,7 +58,6 @@ Zetta.prototype.use = function() {
     var driver = arguments[0];
     var instance = new driver();
     instance.init(instance);
-    console.log('adding new driver:', instance.properties.type);
     this.httpScout.driverFunctions[instance.type] = driver;
   } else {
     var scout = scientist.create.apply(null, arguments);
