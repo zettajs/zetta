@@ -30,7 +30,8 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec",
-    "coverage": "bin/_coverage"
+    "coverage": "bin/_coverage",
+    "tag": "bin/_tag"
   },
   "repository": {
     "type": "git",
