@@ -2,16 +2,18 @@
 
 [![Build Status](https://travis-ci.org/zettajs/zetta.svg?branch=master)](https://travis-ci.org/zettajs/zetta) 
 
-##What are we?
+##What is it?
 
-Zetta is an open source Node.js based platform for the internet of things. Our full documentation, and community website can be found at [http://zettajs.github.io](http://zettajs.github.io).
+Zetta is an open source Node.js based platform for the internet of things. Our full documentation, and community website can be found at [http://zettajs.github.io/](http://zettajs.github.io/).
 
 Install zetta using npm.
 
 ```bash
 $ npm install zetta
 ```
+##Docs
 
+Visit our site at [http://zettajs.github.io/](http://zettajs.github.io/) for documentation, and recipes for building systems with Zetta. 
 
 ##Tests
 
