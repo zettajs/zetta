@@ -45,7 +45,7 @@ var MockRegistry = function() {
 }
 
 MockRegistry.prototype.save = function(machine, cb){
-  this.machines.push(machine.properties);
+  this.machines.push(machine.properties());
   cb(null, this.machines);
 };
 

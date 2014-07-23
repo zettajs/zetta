@@ -428,10 +428,10 @@ describe('Zetta Api', function() {
         .get(url)
         .expect(getBody(function(res, body) {
           assert(body.properties);
-          assert.equal(body.properties.name, device.properties.name);
-          assert.equal(body.properties.type, device.properties.type);
-          assert.equal(body.properties.id, device.properties.id);
-          assert.equal(body.properties.state, device.properties.state);
+          assert.equal(body.properties.name, device.name);
+          assert.equal(body.properties.type, device.type);
+          assert.equal(body.properties.id, device.id);
+          assert.equal(body.properties.state, device.state);
         }))
         .end(done);
     });
