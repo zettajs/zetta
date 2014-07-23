@@ -20,12 +20,13 @@ describe('Zetta', function() {
   });
 
 
-  it('basic zetta server functionality should not break', function() {
+  it('basic zetta server functionality should not break', function(done) {
     zetta({ registry: reg, peerRegistry: peerRegistry })
       .name('local')
       .expose('*')
       .load(function(server) {})
       .listen(TEST_PORT, function(err){
+        done();
       });
   });
 
