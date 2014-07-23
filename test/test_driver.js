@@ -43,22 +43,32 @@ describe('Driver', function() {
     it('should have an id automatically generated for it', function(){
       assert.ok(machine.id);
     });
+
+    it('should have properties function', function() {
+      assert.equal(typeof machine.properties, 'function');
+    });
+
+    it('properties function should return filtered property list', function() {
+      machine._foo = 123;
+      var p = machine.properties();
+      assert.equal(p._foo, undefined);
+    });
   });
 
   describe('Transitions', function() {
 
     it('should change the state from ready to changed when calling change.', function(done) {
       machine.call('change', function() {
-        assert.equal(machine.properties.state, 'changed');
+        assert.equal(machine.state, 'changed');
         done();
       });
     });
 
     it('should be able to call transiton afterchange after change was called', function(done) {
       machine.call('change', function() {
-        assert.equal(machine.properties.state, 'changed');
+        assert.equal(machine.state, 'changed');
         machine.call('prepare', function(err) {
-          assert.equal(machine.properties.state, 'ready');
+          assert.equal(machine.state, 'ready');
           done();
         });
       });

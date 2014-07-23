@@ -56,7 +56,7 @@ Zetta.prototype.use = function() {
   if(opts && opts.http_device && opts.http_device === true) {
     var driver = arguments[0];
     var instance = new driver();
-    instance.init(instance);
+    instance = scientist.init(instance);
     this.httpScout.driverFunctions[instance.type] = driver;
   } else {
     var scout = scientist.create.apply(null, arguments);
