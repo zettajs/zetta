@@ -121,7 +121,7 @@ describe('Event Websocket', function() {
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
-          assert(msg.date);
+          assert(msg.timestamp);
           assert(msg.topic);
           assert.equal(msg.data, recv);
           if (recv === 3) {

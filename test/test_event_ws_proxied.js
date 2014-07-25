@@ -20,7 +20,7 @@ describe('Event Websocket Proxied Through Peer', function() {
         done(err);
       })
   });
-  
+
   afterEach(function(done) {
     cluster.stop();
     setTimeout(done, 10); // fix issues with server not being closed before a new one starts
@@ -56,7 +56,7 @@ describe('Event Websocket Proxied Through Peer', function() {
         assert.equal(error, 0);
         assert.equal(open, true, 'ws should be opened');
         done();
-      }, 20);    
+      }, 20);
     });
 
   });
@@ -83,13 +83,13 @@ describe('Event Websocket Proxied Through Peer', function() {
       setTimeout(function() {
         assert.equal(error, 0);
         assert.equal(open, true, 'ws should be opened');
-        
+
         var timer = null;
         var recv = 0;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
-          assert(msg.date);
+          assert(msg.timestamp);
           assert(msg.topic);
           assert.equal(msg.data, recv);
           if (recv === 3) {
@@ -153,18 +153,18 @@ describe('Event Websocket Proxied Through Peer', function() {
             done();
           }
         });
-        
+
         device.incrementFooBar();
         device.incrementFooBar();
         device.incrementFooBar();
-        
+
         timer = setTimeout(function() {
           assert.equal(recv, 3, 'should have received 3 messages');
           socket.close();
           done();
         }, 100);
-        
-      }, 20);    
+
+      }, 20);
     });
 
   });
@@ -172,5 +172,3 @@ describe('Event Websocket Proxied Through Peer', function() {
 
 
 });
-
-

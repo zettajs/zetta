@@ -19,7 +19,7 @@ Ws.prototype.send = function(data, options, cb) {
 };
 
 describe('EventBroker', function() {
-  var msg = JSON.stringify({topic: 'some-topic', data: {somedata: 1}, date: new Date().getTime()});
+  var msg = JSON.stringify({topic: 'some-topic', data: {somedata: 1}, timestamp: new Date().getTime()});
   var query = null;
   var app = null;
   var broker = null;
@@ -30,7 +30,7 @@ describe('EventBroker', function() {
     query = { topic: 'some-topic', serverId: app.id };
     broker = new EventBroker(app);
   });
-  
+
   it('it should add peer by server name', function() {
     var ws = new Ws();
     var peer = new PeerSocket(ws, 'some-peer');
@@ -67,16 +67,16 @@ describe('EventBroker', function() {
     var ws = new Ws();
     var client = new EventSocket(ws, query);
     broker.client(client);
-    
+
     var recieved = 0;
     ws.on('onsend', function(buf) {
       recieved++;
       var msg = JSON.parse(buf);
       assert.equal(msg.topic, 'some-topic');
-      assert(msg.date);
+      assert(msg.timestamp);
       assert.deepEqual(msg.data, {somedata: 1});
     });
-    
+
     setTimeout(function() {
       assert.equal(recieved, 1);
       done();
@@ -99,7 +99,7 @@ describe('EventBroker', function() {
     clientB.ws.on('onsend', function(buf) {
       recievedB++;
     });
-    
+
     setTimeout(function() {
       assert.equal(recievedA, 1);
       assert.equal(recievedB, 1);

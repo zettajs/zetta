@@ -98,9 +98,12 @@ describe('Driver', function() {
       
       var recv = 0;
       pubsub.subscribe(topic, function(topic, msg) {
-        assert.ok(msg.date);
+        assert.ok(msg.timestamp);
         assert.ok(msg.topic);
-        assert.ok(msg.data);
+        assert.ok(!msg.data);
+        assert.ok(msg.properties);
+        assert.ok(msg.input);
+        assert.ok(msg.transition);
         recv++;
       });
       machine.call('change');
@@ -113,9 +116,12 @@ describe('Driver', function() {
     it('should publish transitions to logs', function(done) {
       var recv = 0;
       pubsub.subscribe('logs', function(topic, msg) {
-        assert.ok(msg.date);
+        assert.ok(msg.timestamp);
         assert.ok(msg.topic);
-        assert.ok(msg.data);
+        assert.ok(!msg.data);
+        assert.ok(msg.properties);
+        assert.ok(msg.input);
+        assert.ok(msg.transition);
         recv++;
       });
       machine.call('change');
