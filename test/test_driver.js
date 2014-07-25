@@ -112,7 +112,7 @@ describe('Driver', function() {
 
     it('should publish transitions to logs', function(done) {
       var recv = 0;
-      pubsub.subscribe('_logs', function(topic, msg) {
+      pubsub.subscribe('logs', function(topic, msg) {
         assert.ok(msg.date);
         assert.ok(msg.topic);
         assert.ok(msg.data);
