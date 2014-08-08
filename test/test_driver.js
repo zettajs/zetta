@@ -17,7 +17,7 @@ describe('Driver', function() {
     reg = new MemRegistry();
     pubsub = new PubSub();
     log = new Logger({pubsub: pubsub});
-    
+    log.pubsub = pubsub;
     // create machine
     machine = Scientist.create(TestDriver);
     machine._pubsub = pubsub; // setup pubsub, log, registry
@@ -92,6 +92,45 @@ describe('Driver', function() {
 
       machine.call('change');
     });
+
+    it('should publish transitions to pubsub', function(done) {
+      var topic = machine.type + '/' + machine.id + '/logs';
+      
+      var recv = 0;
+      pubsub.subscribe(topic, function(topic, msg) {
+        assert.ok(msg.timestamp);
+        assert.ok(msg.topic);
+        assert.ok(!msg.data);
+        assert.ok(msg.properties);
+        assert.ok(msg.input);
+        assert.ok(msg.transition);
+        recv++;
+      });
+      machine.call('change');
+      setImmediate(function() {
+        assert.equal(recv, 1);
+        done();
+      });
+    });
+
+    it('should publish transitions to logs', function(done) {
+      var recv = 0;
+      pubsub.subscribe('logs', function(topic, msg) {
+        assert.ok(msg.timestamp);
+        assert.ok(msg.topic);
+        assert.ok(!msg.data);
+        assert.ok(msg.properties);
+        assert.ok(msg.input);
+        assert.ok(msg.transition);
+        recv++;
+      });
+      machine.call('change');
+      setImmediate(function() {
+        assert.equal(recv, 1);
+        done();
+      });
+    });
+
   });
 
   describe('Streams', function(){
