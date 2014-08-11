@@ -20,7 +20,8 @@
     "strftime": "~0.8.0",
     "titan": "~0.1.1",
     "ws": "^0.4.31",
-    "api-media-type": "^0.1.0"
+    "api-media-type": "^0.1.0",
+    "medeadown": "^1.0.12"
   },
   "devDependencies": {
     "leveldown": "^0.10.2",
