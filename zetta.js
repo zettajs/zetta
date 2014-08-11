@@ -10,12 +10,11 @@ var PubSub = require('./lib/pubsub_service');
 var Logger = require('./lib/logger');
 var HttpScout = require('./lib/http_scout');
 
-module.exports = function(){
-  var args = Array.prototype.concat.apply([Zetta], arguments);
-  return scientist.create.apply(null, args);
-};
+var Zetta = module.exports = function(opts) {
+  if (!(this instanceof Zetta)) {
+    return new Zetta(opts);
+  }
 
-var Zetta = function(opts) {
   opts = opts || {};
 
   this.id = uuid.v4(); // unique id of server
@@ -42,8 +41,21 @@ var Zetta = function(opts) {
   httpScout.server = this.runtime;
   this.httpScout = httpScout;
   this._scouts.push(httpScout);
-  
 
+  this._wireUpDatabaseCleanup();
+};
+
+Zetta.prototype._wireUpDatabaseCleanup = function() {
+  var self = this;
+  ['SIGINT', 'SIGTERM'].forEach(function(signal) {
+    process.on(signal, function() {
+      self.runtime.registry.close(function() {
+        self.peerRegistry.close(function() {
+          process.exit();
+        });
+      });
+    });
+  });
 };
 
 Zetta.prototype.name = function(name) {

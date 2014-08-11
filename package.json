@@ -10,7 +10,6 @@
     "async": "^0.9.0",
     "bunyan": "~0.22.3",
     "colors": "~0.6.2",
-    "leveldown": "^0.10.2",
     "levelup": "^0.18.5",
     "mocha": "^1.20.1",
     "multiparty": "~3.2.4",
@@ -20,10 +19,10 @@
     "strftime": "~0.8.0",
     "titan": "~0.1.1",
     "ws": "^0.4.31",
-    "api-media-type": "^0.1.0"
+    "api-media-type": "^0.1.0",
+    "medeadown": "^1.0.12"
   },
   "devDependencies": {
-    "leveldown": "^0.10.2",
     "memdown": "^0.10.2",
     "mocha": "^1.20.1",
     "supertest": "^0.13.0"

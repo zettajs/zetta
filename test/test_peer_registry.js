@@ -1,7 +1,7 @@
 var assert = require('assert');
 var path = require('path');
 var levelup = require('levelup');
-var leveldown = require('leveldown');
+var memdown = require('memdown');
 var PeerRegistry = require('../lib/peer_registry');
 
 var dbPath = path.join(__dirname, './.peers');
@@ -10,15 +10,13 @@ describe('Peer Registry', function() {
   var db;
 
   beforeEach(function(done) {
-    db = levelup(dbPath);
+    db = levelup(dbPath, { db: memdown });
     done();
   });
 
   afterEach(function(done) {
     if (db) {
-      db.close(function() {
-        leveldown.destroy(dbPath, done);
-      });
+      db.close(done);
     }
   });
 
