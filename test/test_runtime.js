@@ -96,6 +96,18 @@ describe('Runtime', function(){
     });
 
     describe('Runtime#observe', function() {
+      it('will take a single query as the first argument', function(done) {
+        var q = runtime.where({ type: 'test' });
+        var d = { type: 'test' };
+
+        runtime.observe(q, function(device) {
+          assert.equal(device.type, 'test');
+          done();
+        });
+
+        runtime.emit('deviceready', d);
+      });
+
       it('will call the observe callback when the query is fullfilled.', function(done) {
         var q = runtime.where({type: 'test'});
         var d = { type: 'test' };
