@@ -1,12 +1,12 @@
 var levelup = require('levelup');
 var path = require('path');
+var memdown = require('memdown');
 var Runtime = require('../zetta_runtime');
 var Scientist = require('../lib/scientist');
 var assert = require('assert');
 var util = require('util');
 var Device = Runtime.Device;
 var Registry = require('../lib/registry');
-var leveldown = require('leveldown');
 var Query = require('../lib/query');
 
 function TestDriver() {
@@ -33,11 +33,9 @@ describe('Registry', function() {
   var machine = null;
 
   beforeEach(function(done) {
-    leveldown.destroy(dbPath, function() {
-      db = levelup(dbPath);
-      machine = Scientist.configure(TestDriver);
-      done();
-    });
+    db = levelup(dbPath, { db: memdown });
+    machine = Scientist.configure(TestDriver);
+    done();
   });
 
   it('should call the callback on close', function(done) {
