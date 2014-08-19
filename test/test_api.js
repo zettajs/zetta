@@ -463,7 +463,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          hasLinkRel(body.links, 'up');
+          hasLinkRel(body.links, 'up', 'local');
         }))
         .end(done);
     });
