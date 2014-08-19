@@ -3,9 +3,9 @@ var Logger = require('../lib/logger');
 var Runtime = require('../zetta_runtime');
 var Scientist = require('../lib/scientist');
 var assert = require('assert');
+var SensorDriver = require('./fixture/sensor_driver');
 var TestDriver = require('./fixture/example_driver');
 var MemRegistry = require('./fixture/mem_registry');
-
 
 describe('Driver', function() {
   var machine = null;
@@ -155,6 +155,15 @@ describe('Driver', function() {
       assert.ok(machine.streams.bar);
       wireUpPubSub('bar', done);
       machine.incrementStreamValue();
+    });
+
+    it('should create a state stream when transitions are present', function() {
+      assert.ok(machine.streams.state);
+    });
+
+    it('should not create a state stream when no transitions are present', function() {
+      var machine = Scientist.init(Scientist.create(SensorDriver));
+      assert(!machine.streams.state);
     });
   });
 
