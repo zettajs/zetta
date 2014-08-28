@@ -199,10 +199,12 @@ Zetta.prototype._initPeers = function(callback) {
     allPeers = allPeers.concat(self._peers.filter(function(peer) {
       return existingUrls.indexOf(peer) === -1;
     }));
-    
+
     allPeers.forEach(function(obj) {
+//      console.log('Peer:', obj)
       var existing = (typeof obj === 'object');
       if (existing) {
+        console.log('Existing:');
         self.peerRegistry.save(obj, function() {
           runPeer(obj);
         });
@@ -211,7 +213,9 @@ Zetta.prototype._initPeers = function(callback) {
           url: obj,
           direction: 'initiator'
         }; 
+        console.log(peerData)
         self.peerRegistry.add(peerData, function(err, newPeer) {
+          console.log(err, newPeer)
           runPeer(newPeer);
         });
       }
