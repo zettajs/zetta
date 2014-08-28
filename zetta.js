@@ -201,10 +201,8 @@ Zetta.prototype._initPeers = function(callback) {
     }));
 
     allPeers.forEach(function(obj) {
-//      console.log('Peer:', obj)
       var existing = (typeof obj === 'object');
       if (existing) {
-        console.log('Existing:');
         self.peerRegistry.save(obj, function() {
           runPeer(obj);
         });
@@ -213,7 +211,6 @@ Zetta.prototype._initPeers = function(callback) {
           url: obj,
           direction: 'initiator'
         }; 
-        console.log(peerData)
         self.peerRegistry.add(peerData, function(err, newPeer) {
           console.log(err, newPeer)
           runPeer(newPeer);
