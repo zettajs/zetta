@@ -212,7 +212,6 @@ Zetta.prototype._initPeers = function(callback) {
           direction: 'initiator'
         }; 
         self.peerRegistry.add(peerData, function(err, newPeer) {
-          console.log(err, newPeer)
           runPeer(newPeer);
         });
       }
