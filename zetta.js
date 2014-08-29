@@ -141,6 +141,9 @@ Zetta.prototype._run = function(callback) {
       self._initHttpServer(next);
     },
     function(next) {
+      self._cleanupPeers(next);
+    },
+    function(next) {
       self._initPeers(next);
     }
 
@@ -178,6 +181,18 @@ Zetta.prototype._initHttpServer = function(callback) {
   callback();
 
   return this;
+};
+
+
+// set all peers to disconnected
+Zetta.prototype._cleanupPeers = function(callback) {
+  var self = this;
+  this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+    async.forEach(results, function(peer, next) {
+      peer.status = 'disconnected';
+      self.peerRegistry.save(peer, next);
+    }, callback);
+  });
 };
 
 Zetta.prototype._initPeers = function(callback) {
@@ -218,6 +233,14 @@ Zetta.prototype._initPeers = function(callback) {
       
       function runPeer(peer) {
         var peerClient = new PeerClient(peer.url, self);
+        
+        // when websocket is established
+        peerClient.on('connecting', function() {
+          peer.status = 'connecting';
+          self.peerRegistry.save(peer);
+        });
+        
+        // when peer handshake is made
         peerClient.on('connected', function() {
           peer.status = 'connected';
           self.peerRegistry.save(peer);
@@ -235,7 +258,7 @@ Zetta.prototype._initPeers = function(callback) {
         peerClient.on('closed', function(reconnect) {
           self.peerRegistry.get(peer.id, function(err, result) {
             result = JSON.parse(result);
-            result.status = 'connecting';
+            result.status = 'disconnected';
             self.peerRegistry.save(result, function() {
               peerClient.start();
             });
