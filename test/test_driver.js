@@ -141,6 +141,8 @@ describe('Driver', function() {
 
     it('should be able to read monitors properties', function() {
       assert.equal(machine.foo, 0);
+      machine.foo = 1;
+      assert.equal(machine.foo, 1);
     });
   });
 
