@@ -133,6 +133,17 @@ describe('Driver', function() {
 
   });
 
+  describe('Monitors', function(){
+    
+    it('should be able to read state property', function() {
+      assert.equal(machine.state, 'ready');
+    });
+
+    it('should be able to read monitors properties', function() {
+      assert.equal(machine.foo, 0);
+    });
+  });
+
   describe('Streams', function(){
 
     function wireUpPubSub(stream, done){
