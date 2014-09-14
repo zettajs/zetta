@@ -42,20 +42,6 @@ var Zetta = module.exports = function(opts) {
   this.httpScout = httpScout;
   this._scouts.push(httpScout);
 
-  this._wireUpDatabaseCleanup();
-};
-
-Zetta.prototype._wireUpDatabaseCleanup = function() {
-  var self = this;
-  ['SIGINT', 'SIGTERM'].forEach(function(signal) {
-    process.on(signal, function() {
-      self.runtime.registry.close(function() {
-        self.peerRegistry.close(function() {
-          process.exit();
-        });
-      });
-    });
-  });
 };
 
 Zetta.prototype.name = function(name) {
