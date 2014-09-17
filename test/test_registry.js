@@ -146,5 +146,28 @@ describe('Registry', function() {
           }
         });
     });
+
+    it('should return results with a parameterized Query object', function(done) {
+        var reg = new Registry(db);
+        reg.save(machine, function(err) {
+          if(!err) {
+            var query = Query.of('devices')
+              .ql('where type=@type')
+              .params({ type: 'test' });
+
+            reg.find(query, function(err, results) {
+              assert.ok(!err);
+              assert.ok(results);
+              assert.equal(results.length, 1);
+              var firstResult = results[0];
+              assert.equal(firstResult.type, 'test');
+              assert.equal(firstResult.name, 'Test');
+              assert.equal(firstResult.id, '123456789');
+              reg.close();
+              done();
+            });
+          }
+        });
+    });
   });
 });
