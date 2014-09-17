@@ -20,7 +20,8 @@
     "titan": "~0.1.1",
     "ws": "^0.4.31",
     "api-media-type": "^0.1.0",
-    "medeadown": "^1.0.15"
+    "medeadown": "^1.0.15",
+    "level-caql": "0.0.4"
   },
   "devDependencies": {
     "memdown": "^0.10.2",
