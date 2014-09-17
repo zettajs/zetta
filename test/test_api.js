@@ -2,12 +2,12 @@ var assert = require('assert');
 var os = require('os');
 var request = require('supertest');
 var zetta = require('../zetta');
-
-var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
-var Registry = require('./fixture/scout_test_mocks').MockRegistry;
+var Query = require('calypso').Query;
 var rels = require('../lib/api_rels');
 var Scout = require('./fixture/example_scout');
 var Driver = require('./fixture/example_driver');
+var Registry = require('./fixture/mem_registry');
+var PeerRegistry = require('./fixture/mem_peer_registry');
 
 function getHttpServer(app) {
   return app.httpServer.server;
@@ -157,12 +157,17 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .post(url + '/devices')
         .send('type=testdriver')
-        .expect(getBody(function(res, body) {
-          assert.equal(res.statusCode, 201);
-          assert.equal(reg.machines.length, 2);
-          assert.equal(reg.machines[1].type, 'testdriver');
-        }))
-        .end(done);
+        .end(function(err, res) {
+          getBody(function(res, body) {
+            assert.equal(res.statusCode, 201);
+            var query = Query.of('devices');
+            reg.find(query, function(err, machines) {
+              assert.equal(machines.length, 2);
+              assert.equal(machines[1].type, 'testdriver');
+              done();
+            });
+          })(res);
+        });
     });
 
     it('should not accept a remote device of type foo', function(done) {
@@ -179,14 +184,19 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .post(url + '/devices')
         .send('type=testdriver&id=12345&name=test')
-        .expect(getBody(function(res, body) {
-          assert.equal(res.statusCode, 201);
-          assert.equal(reg.machines.length, 2);
-          assert.equal(reg.machines[1].type, 'testdriver');
-          assert.equal(reg.machines[1].id, '12345');
-          assert.equal(app.runtime._jsDevices['12345'].name, 'test');
-        }))
-        .end(done);
+        .end(function(err, res) {
+          getBody(function(res, body) {
+            assert.equal(res.statusCode, 201);
+            var query = Query.of('devices').where('id', { eq: '12345'});
+            reg.find(query, function(err, machines) {
+              assert.equal(machines.length, 1);
+              assert.equal(machines[0].type, 'testdriver');
+              assert.equal(machines[0].id, '12345');            
+              assert.equal(app.runtime._jsDevices['12345'].name, 'test');
+              done();
+            });
+          })(res);
+        });
     });
   });
 
