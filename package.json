@@ -21,8 +21,8 @@
     "ws": "^0.4.31",
     "api-media-type": "^0.1.0",
     "medeadown": "^1.0.15",
-    "calypso-level": "^0.2.0",
-    "calypso": "^0.1.0"
+    "calypso-level": "^0.3.0",
+    "calypso": "^0.2.0"
   },
   "devDependencies": {
     "memdown": "^0.10.2",

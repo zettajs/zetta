@@ -62,7 +62,7 @@ describe('Registry', function() {
         reg.get('123456789', function(err, value) {
           assert.ok(!err);
           assert.ok(value);
-          var data = JSON.parse(value);
+          var data = value;
           assert.equal(data.name, 'Test');
           assert.equal(data.type, 'test');
           assert.equal(data.id, '123456789');
@@ -75,10 +75,9 @@ describe('Registry', function() {
 
   it('should have a callback return results in the callback of find.', function(done) {
     var reg = new Registry(db);
-    var q = new Query({type: 'test'});
     reg.save(machine, function(err) {
       if(!err) {
-        reg.find(q, function(err, results) {
+        reg.find({ type: 'test' }, function(err, results) {
           assert.ok(!err);
           assert.ok(results);
           assert.equal(results.length, 1);
@@ -95,10 +94,9 @@ describe('Registry', function() {
 
   it('should return no results in the callback of find with a query that does not match.', function(done) {
     var reg = new Registry(db);
-    var q = new Query({type: 'foobar'});
     reg.save(machine, function(err) {
       if(!err) {
-        reg.find(q, function(err, results) {
+        reg.find({ type: 'foobar' }, function(err, results) {
           assert.ok(!err);
           assert.ok(results);
           assert.equal(results.length, 0);
