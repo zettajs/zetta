@@ -7,7 +7,7 @@ var assert = require('assert');
 var util = require('util');
 var Device = Runtime.Device;
 var Registry = require('../lib/registry');
-var Query = require('../lib/query');
+var Query = require('calypso').Query;
 
 function TestDriver() {
   Device.call(this);
@@ -23,8 +23,6 @@ TestDriver.prototype.init = function(config) {
     .type('test')
     .state('ready');
 };
-
-
 
 var dbPath = path.join(__dirname, './.registry');
 
@@ -55,55 +53,98 @@ describe('Registry', function() {
     });
   });
 
-  it('should find a device by it\'s id.', function(done) {
-    var reg = new Registry(db);
-    reg.save(machine, function(err) {
-      if(!err) {
-        reg.get('123456789', function(err, value) {
-          assert.ok(!err);
-          assert.ok(value);
-          var data = value;
-          assert.equal(data.name, 'Test');
-          assert.equal(data.type, 'test');
-          assert.equal(data.id, '123456789');
-          reg.close();
-          done();
-        });
-      }
+  describe('#find', function() {
+    it('should find a device by it\'s id.', function(done) {
+      var reg = new Registry(db);
+      reg.save(machine, function(err) {
+        if(!err) {
+          reg.get('123456789', function(err, value) {
+            assert.ok(!err);
+            assert.ok(value);
+            var data = value;
+            assert.equal(data.name, 'Test');
+            assert.equal(data.type, 'test');
+            assert.equal(data.id, '123456789');
+            reg.close();
+            done();
+          });
+        }
+      });
     });
-  });
 
-  it('should have a callback return results in the callback of find.', function(done) {
-    var reg = new Registry(db);
-    reg.save(machine, function(err) {
-      if(!err) {
-        reg.find({ type: 'test' }, function(err, results) {
-          assert.ok(!err);
-          assert.ok(results);
-          assert.equal(results.length, 1);
-          var firstResult = results[0];
-          assert.equal(firstResult.type, 'test');
-          assert.equal(firstResult.name, 'Test');
-          assert.equal(firstResult.id, '123456789');
-          reg.close();
-          done();
-        });
-      }
+    it('should have a callback return results in the callback of find.', function(done) {
+      var reg = new Registry(db);
+      reg.save(machine, function(err) {
+        if(!err) {
+          reg.find({ type: 'test' }, function(err, results) {
+            assert.ok(!err);
+            assert.ok(results);
+            assert.equal(results.length, 1);
+            var firstResult = results[0];
+            assert.equal(firstResult.type, 'test');
+            assert.equal(firstResult.name, 'Test');
+            assert.equal(firstResult.id, '123456789');
+            reg.close();
+            done();
+          });
+        }
+      });
     });
-  });
 
-  it('should return no results in the callback of find with a query that does not match.', function(done) {
-    var reg = new Registry(db);
-    reg.save(machine, function(err) {
-      if(!err) {
-        reg.find({ type: 'foobar' }, function(err, results) {
-          assert.ok(!err);
-          assert.ok(results);
-          assert.equal(results.length, 0);
-          reg.close();
-          done();
+    it('should return no results in the callback of find with a query that does not match.', function(done) {
+      var reg = new Registry(db);
+      reg.save(machine, function(err) {
+        if(!err) {
+          reg.find({ type: 'foobar' }, function(err, results) {
+            assert.ok(!err);
+            assert.ok(results);
+            assert.equal(results.length, 0);
+            reg.close();
+            done();
+          });
+        }
+      });
+    });
+
+    it('should return results with a query language query', function(done) {
+        var reg = new Registry(db);
+        reg.save(machine, function(err) {
+          if(!err) {
+            reg.find('where type="test"', function(err, results) {
+              assert.ok(!err);
+              assert.ok(results);
+              assert.equal(results.length, 1);
+              var firstResult = results[0];
+              assert.equal(firstResult.type, 'test');
+              assert.equal(firstResult.name, 'Test');
+              assert.equal(firstResult.id, '123456789');
+              reg.close();
+              done();
+            });
+          }
         });
-      }
+    });
+
+    it('should return results with a Query object', function(done) {
+        var reg = new Registry(db);
+        reg.save(machine, function(err) {
+          if(!err) {
+            var query = Query.of('devices')
+              .where('type', { eq: 'test' });
+
+            reg.find(query, function(err, results) {
+              assert.ok(!err);
+              assert.ok(results);
+              assert.equal(results.length, 1);
+              var firstResult = results[0];
+              assert.equal(firstResult.type, 'test');
+              assert.equal(firstResult.name, 'Test');
+              assert.equal(firstResult.id, '123456789');
+              reg.close();
+              done();
+            });
+          }
+        });
     });
   });
 });
