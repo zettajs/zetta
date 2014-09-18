@@ -4,7 +4,7 @@ var zetta = require('../zetta_runtime');
 var Runtime = require('../lib/runtime');
 var GoodScout = mocks.GoodScout;
 var GoodDevice = mocks.GoodDevice;
-var MockRegistry = mocks.MockRegistry;
+var MockRegistry = require('./fixture/mem_registry');
 
 
 describe('Scout', function() {
@@ -61,7 +61,6 @@ describe('Scout', function() {
       scout.server = runtime;
 
       runtime.on('deviceready', function(machine){
-        var machine = scout.server.registry.machines[0];
         assert.ok(machine);
         assert.equal(machine.type, 'test');
         assert.equal(machine.vendorId, '1234567');
@@ -77,7 +76,7 @@ describe('Scout', function() {
 
     var runtime = null;
 
-    beforeEach(function(){
+    beforeEach(function(done){
 
       GoodScout.prototype.init = function(cb){
         var query = this.server.where({type:'test', vendorId:'1234567'});
@@ -93,13 +92,19 @@ describe('Scout', function() {
             console.log('error:');
             console.log(err);
           }
-
         });
       };
 
       var registry = new MockRegistry();
-      registry.machines.push({id:'BC2832FD-9437-4473-A4A8-AC1D56B12C6F',type:'test', vendorId:'1234567', foo:'foo', bar:'bar', name:'Test Device'});
-      runtime = new Runtime({registry: registry});
+      
+      registry.db.put('BC2832FD-9437-4473-A4A8-AC1D56B12C6F', {id:'BC2832FD-9437-4473-A4A8-AC1D56B12C6F',type:'test', vendorId:'1234567', foo:'foo', bar:'bar', name:'Test Device'}, {valueEncoding: 'json'}, function(err) {
+        if (err) {
+          done(err);
+          return;
+        }
+        runtime = new Runtime({registry: registry});
+        done();
+      });
     });
 
 

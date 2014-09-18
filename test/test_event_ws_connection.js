@@ -6,9 +6,9 @@ var util = require('util');
 var Scout = require('../zetta_runtime').Scout;
 var zetta = require('../zetta');
 var mocks = require('./fixture/scout_test_mocks');
-var MockRegistry = mocks.MockRegistry;
+var MockRegistry = require('./fixture/mem_registry');
+var PeerRegistry = require('./fixture/mem_peer_registry');
 var GoodDevice = require('./fixture/example_driver');
-var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 
 var GoodScout = module.exports = function() {
   this.count = 0;
@@ -42,13 +42,18 @@ describe('Event Websocket', function() {
   beforeEach(function(done) {
     peerRegistry = new PeerRegistry();
     registry = new MockRegistry();
-    registry.machines.push({id:'BC2832FD-9437-4473-A4A8-AC1D56B12C6F',type:'test', vendorId:'1234567', foo:'foo', bar:'bar', name:'Test Device'});
-    app = zetta({registry: registry, peerRegistry: peerRegistry});
-    app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
-    app.use(GoodScout)
-    app.listen(TEST_PORT, function(err){
-      device = app.runtime._jsDevices['BC2832FD-9437-4473-A4A8-AC1D56B12C6F'];
-      done(err);
+    registry.db.put('BC2832FD-9437-4473-A4A8-AC1D56B12C6F', {id:'BC2832FD-9437-4473-A4A8-AC1D56B12C6F',type:'test', vendorId:'1234567', foo:'foo', bar:'bar', name:'Test Device'}, {valueEncoding: 'json'}, function(err) {
+      if (err) {
+        done(err);
+        return;
+      }
+      app = zetta({registry: registry, peerRegistry: peerRegistry});
+      app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
+      app.use(GoodScout)
+      app.listen(TEST_PORT, function(err){
+        device = app.runtime._jsDevices['BC2832FD-9437-4473-A4A8-AC1D56B12C6F'];
+        done(err);
+      });
     });
   });
   

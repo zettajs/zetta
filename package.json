@@ -20,7 +20,10 @@
     "titan": "~0.1.1",
     "ws": "^0.4.31",
     "api-media-type": "^0.1.0",
-    "medeadown": "^1.0.15"
+    "medeadown": "^1.0.15",
+    "calypso-level": "^0.4.0",
+    "calypso": "^0.3.0",
+    "caql-js-compiler": "^0.1.0"
   },
   "devDependencies": {
     "memdown": "^0.10.2",

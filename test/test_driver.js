@@ -197,7 +197,6 @@ describe('Driver', function() {
           assert(!err);
           
           reg.get(machine.id, function(err, result) {
-            result = JSON.parse(result);
             assert.equal(err, null);
             assert.equal(result.id, machine.id);
             assert.equal(result.someval, 123);

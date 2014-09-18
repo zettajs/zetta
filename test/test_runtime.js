@@ -1,7 +1,6 @@
 var Runtime = require('../lib/runtime');
 var assert = require('assert');
-var Mocks = require('./fixture/scout_test_mocks');
-var Registry = Mocks.MockRegistry;
+var Registry = require('./fixture/mem_registry');
 var EventEmitter = require('events').EventEmitter;
 
 describe('Runtime', function(){
