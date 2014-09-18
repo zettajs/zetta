@@ -22,7 +22,7 @@
     "api-media-type": "^0.1.0",
     "medeadown": "^1.0.15",
     "calypso-level": "^0.4.0",
-    "calypso": "^0.2.0",
+    "calypso": "^0.3.0",
     "caql-js-compiler": "^0.1.0"
   },
   "devDependencies": {
