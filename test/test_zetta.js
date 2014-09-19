@@ -1,8 +1,12 @@
 var assert = require('assert');
+var util = require('util');
 
 var zetta = require('../zetta');
 var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
+var Device = require('../lib/device');
+var HttpDevice = require('../lib/http_device');
+var Scout = require('../lib/scout');
 
 var TEST_PORT = process.env.TEST_PORT || Math.floor(1000 + Math.random() * 1000);
 
@@ -44,11 +48,49 @@ describe('Zetta', function() {
       });
   });
 
+  it('will load an app with the use() function', function() {
+    zetta({ registry: reg, peerRegistry: peerRegistry })
+      .use(function(server) {
+        assert.ok(server);
+        done();
+      });
+  });
+
+  it('will load a driver with the use() function', function() {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    function TestDriver() {
+      Device.call(this);
+    }
+    util.inherits(TestDriver, Device);
+
+    TestDriver.prototype.init = function() {};
+
+    z.use(TestDriver);
+    var s = z._scouts[0];
+    assert.equal(s.server, z.runtime);
+  });
+
+  it('will load an HTTP driver with the use() function', function() {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    function TestDriver() {
+      HttpDevice.call(this);
+    }
+    util.inherits(TestDriver, HttpDevice);
+
+    TestDriver.prototype.init = function() {};
+
+    z.use(TestDriver);
+    var s = z._scouts[0];
+    assert.equal(s.server, z.runtime);
+  });
+
   it('will load a scout with the use() function', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry });
-    function TestScout(){}
+    function TestScout() {
+      Scout.call(this);
+    }
+    util.inherits(TestScout, Scout);
     z.use(TestScout);
-    //This test didn't account for the hardcoded http_scout that is newly added.
     assert.equal(z._scouts.length, 2);
     var s = z._scouts[0];
     assert.equal(s.server, z.runtime);
