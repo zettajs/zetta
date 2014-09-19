@@ -6,6 +6,7 @@ var exp = function(options) {
 }
 
 exp.Device = require('./lib/device');
+exp.HttpDevice = require('./lib/http_device');
 exp.Scout = require('./lib/scout');
 
 module.exports = exp;

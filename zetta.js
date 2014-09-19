@@ -1,14 +1,18 @@
 var os = require('os');
 var uuid = require('node-uuid');
+var AutoScout = require('zetta-auto-scout');
 var async = require('async');
-var scientist = require('./lib/scientist');
-var Runtime = require('./lib/runtime');
+var Device = require('./lib/device');
+var HttpDevice = require('./lib/http_device');
+var HttpScout = require('./lib/http_scout');
 var HttpServer = require('./lib/http_server');
+var Logger = require('./lib/logger');
 var PeerClient = require('./lib/peer_client');
 var PeerRegistry = require('./lib/peer_registry');
 var PubSub = require('./lib/pubsub_service');
-var Logger = require('./lib/logger');
-var HttpScout = require('./lib/http_scout');
+var Runtime = require('./lib/runtime');
+var Scout = require('./lib/scout');
+var scientist = require('./lib/scientist');
 
 var Zetta = module.exports = function(opts) {
   if (!(this instanceof Zetta)) {
@@ -50,17 +54,42 @@ Zetta.prototype.name = function(name) {
 };
 
 Zetta.prototype.use = function() {
-  var opts = arguments[arguments.length - 1];
-  if(opts && opts.http_device && opts.http_device === true) {
-    var driver = arguments[0];
-    var instance = new driver();
-    instance = scientist.init(instance);
-    this.httpScout.driverFunctions[instance.type] = driver;
-  } else {
-    var scout = scientist.create.apply(null, arguments);
-    scout.server = this.runtime;
-    this._scouts.push(scout);
+  var args = Array.prototype.slice.call(arguments);
+  var constructor = args[0];
+
+  var self = this;
+  function addScout(scout) {
+    scout.server = self.runtime;
+    self._scouts.push(scout);
   }
+
+  function init(constructor) {
+    var instance = Object.create(constructor.prototype);
+    constructor.call(instance);
+
+    return scientist.init(instance);
+  }
+
+  function walk(proto) {
+    if (!proto || !proto.__proto__) {
+      self.load(constructor);
+    } else if (proto.__proto__ === HttpDevice.prototype) {
+      var instance = init(constructor);
+      self.httpScout.driverFunctions[instance.type] = constructor;
+    } else if (proto.__proto__ === Device.prototype) {
+      var instance = init(constructor);
+      var scout = new AutoScout(instance.type, constructor);
+      addScout(scout);
+    } else if (proto.__proto__ === Scout.prototype) {
+      var scout = scientist.create.apply(null, args);
+      addScout(scout);
+    } else {
+      walk(proto.__proto__);
+    }
+  }
+
+  walk(constructor.prototype);
+
   return this;
 };
 

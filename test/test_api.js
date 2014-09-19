@@ -6,6 +6,7 @@ var Query = require('calypso').Query;
 var rels = require('../lib/api_rels');
 var Scout = require('./fixture/example_scout');
 var Driver = require('./fixture/example_driver');
+var HttpDriver = require('./fixture/example_http_driver');
 var Registry = require('./fixture/mem_registry');
 var PeerRegistry = require('./fixture/mem_peer_registry');
 
@@ -82,7 +83,7 @@ describe('Zetta Api', function() {
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .use(Scout)
-        .use(Driver, { http_device: true })
+        .use(HttpDriver)
         .name('local')
         .expose('*')
         ._run(done);
