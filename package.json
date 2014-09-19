@@ -8,7 +8,6 @@
     "argo-formatter-siren": "0.0.0",
     "argo-multiparty": "~0.0.3",
     "async": "^0.9.0",
-    "bunyan": "~0.22.3",
     "colors": "~0.6.2",
     "levelup": "^0.18.5",
     "mocha": "^1.20.1",
