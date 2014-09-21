@@ -27,7 +27,7 @@
     "zetta-scientist": "^0.3.0",
     "zetta-device": "^0.2.0",
     "zetta-http-device": "^0.1.0",
-    "zetta-scout": "^0.1.0",
+    "zetta-scout": "^0.2.0",
     "zetta-streams": "^0.1.0"
   },
   "devDependencies": {
