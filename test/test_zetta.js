@@ -4,9 +4,9 @@ var util = require('util');
 var zetta = require('../zetta');
 var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
-var Device = require('../lib/device');
-var HttpDevice = require('../lib/http_device');
-var Scout = require('../lib/scout');
+var Device = require('zetta-device');
+var HttpDevice = require('zetta-http-device');
+var Scout = require('zetta-scout');
 
 var TEST_PORT = process.env.TEST_PORT || Math.floor(1000 + Math.random() * 1000);
 

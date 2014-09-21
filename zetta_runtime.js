@@ -5,8 +5,8 @@ var exp = function(options) {
   return zetta;
 }
 
-exp.Device = require('./lib/device');
-exp.HttpDevice = require('./lib/http_device');
-exp.Scout = require('./lib/scout');
+exp.Device = require('zetta-device');
+exp.HttpDevice = require('zetta-http-device');
+exp.Scout = require('zetta-scout');
 
 module.exports = exp;

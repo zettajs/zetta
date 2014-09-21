@@ -2,7 +2,7 @@ var levelup = require('levelup');
 var path = require('path');
 var memdown = require('memdown');
 var Runtime = require('../zetta_runtime');
-var Scientist = require('../lib/scientist');
+var Scientist = require('zetta-scientist');
 var assert = require('assert');
 var util = require('util');
 var Device = Runtime.Device;
@@ -32,7 +32,8 @@ describe('Registry', function() {
 
   beforeEach(function(done) {
     db = levelup(dbPath, { db: memdown });
-    machine = Scientist.configure(TestDriver);
+    machine = Scientist.create(TestDriver);
+    Scientist.init(machine);
     done();
   });
 

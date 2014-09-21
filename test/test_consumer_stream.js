@@ -1,6 +1,6 @@
 var assert = require('assert');
 var PubSub = require('../lib/pubsub_service');
-var ConsumerStream = require('../lib/consumer_stream');
+var ConsumerStream = require('zetta-streams').ConsumerStream;
 
 describe('ConsumerStream', function() {
   var stream = null;
