@@ -2,8 +2,8 @@ var os = require('os');
 var uuid = require('node-uuid');
 var AutoScout = require('zetta-auto-scout');
 var async = require('async');
-var Device = require('./lib/device');
-var HttpDevice = require('./lib/http_device');
+var Device = require('zetta-device');
+var HttpDevice = require('zetta-http-device');
 var HttpScout = require('./lib/http_scout');
 var HttpServer = require('./lib/http_server');
 var Logger = require('./lib/logger');
@@ -11,8 +11,8 @@ var PeerClient = require('./lib/peer_client');
 var PeerRegistry = require('./lib/peer_registry');
 var PubSub = require('./lib/pubsub_service');
 var Runtime = require('./lib/runtime');
-var Scout = require('./lib/scout');
-var scientist = require('./lib/scientist');
+var Scout = require('zetta-scout');
+var scientist = require('zetta-scientist');
 
 var Zetta = module.exports = function(opts) {
   if (!(this instanceof Zetta)) {
@@ -63,22 +63,23 @@ Zetta.prototype.use = function() {
     self._scouts.push(scout);
   }
 
-  function init(constructor) {
+  function init() {
     var instance = Object.create(constructor.prototype);
-    constructor.call(instance);
-
-    return scientist.init(instance);
+    constructor.call(instance, args.slice(1));
+    return scientist.config(instance);
   }
 
   function walk(proto) {
     if (!proto || !proto.__proto__) {
       self.load(constructor);
     } else if (proto.__proto__ === HttpDevice.prototype) {
-      var instance = init(constructor);
-      self.httpScout.driverFunctions[instance.type] = constructor;
+      var instance = init();
+      self.httpScout.driverFunctions[instance._type] = constructor;
     } else if (proto.__proto__ === Device.prototype) {
-      var instance = init(constructor);
-      var scout = new AutoScout(instance.type, constructor);
+      var instance = init();
+      args.unshift(instance._type);
+      var scout = Object.create(AutoScout.prototype);
+      AutoScout.apply(scout, args);
       addScout(scout);
     } else if (proto.__proto__ === Scout.prototype) {
       var scout = scientist.create.apply(null, args);
