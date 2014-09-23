@@ -72,16 +72,16 @@ Zetta.prototype.use = function() {
   function walk(proto) {
     if (!proto || !proto.__proto__) {
       self.load(constructor);
-    } else if (proto.__proto__ === HttpDevice.prototype) {
+    } else if (proto.__proto__.constructor.name === 'HttpDevice') {
       var instance = init();
       self.httpScout.driverFunctions[instance._type] = constructor;
-    } else if (proto.__proto__ === Device.prototype) {
+    } else if (proto.__proto__.constructor.name === 'Device') {
       var instance = init();
       args.unshift(instance._type);
       var scout = Object.create(AutoScout.prototype);
       AutoScout.apply(scout, args);
       addScout(scout);
-    } else if (proto.__proto__ === Scout.prototype) {
+    } else if (proto.__proto__.constructor.name === 'Scout') {
       var scout = scientist.create.apply(null, args);
       addScout(scout);
     } else {
