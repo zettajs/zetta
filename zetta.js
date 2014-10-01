@@ -65,7 +65,7 @@ Zetta.prototype.use = function() {
 
   function init() {
     var instance = Object.create(constructor.prototype);
-    constructor.call(instance, args.slice(1));
+    constructor.apply(instance, args.slice(1));
     return scientist.config(instance);
   }
 
