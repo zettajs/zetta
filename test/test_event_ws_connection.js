@@ -200,8 +200,6 @@ describe('Event Websocket', function() {
       }, 20);    
     });
 
-
-
     it('websocket should connect and recv device log events', function(done) {
       var url = 'ws://' + deviceUrl + '/logs';
       var error = 0;
@@ -250,16 +248,7 @@ describe('Event Websocket', function() {
         }, 100);
       }, 20);    
     });
-
-
-
-
   });
-
-
-
-
-
 
   describe('Receive binary messages', function() {
 
