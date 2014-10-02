@@ -200,9 +200,6 @@ describe('Event Websocket', function() {
       }, 20);    
     });
 
-
-
-
   });
 
 
