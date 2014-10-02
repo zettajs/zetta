@@ -95,6 +95,60 @@ describe('Event Websocket', function() {
       }, 20);    
     });
 
+
+
+    it('websocket should connect and recv device log events', function(done) {
+      var url = 'ws://' + deviceUrl + '/logs';
+      var error = 0;
+      var open = false;
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        open = true;
+      });
+      socket.on('close', function(err) {
+        open = false;
+      });
+      socket.on('error', function(err) {
+        error++;
+      });
+
+      setTimeout(function() {
+        assert.equal(error, 0);
+        assert.equal(open, true, 'ws should be opened');
+
+        var recv = 0;
+        var timer = null;
+        socket.on('message', function(buf, flags) {
+          var msg = JSON.parse(buf);
+          recv++;
+          assert(msg.timestamp);
+          assert(msg.topic);
+          assert(msg.actions.filter(function(action) {
+            return action.name === 'prepare';
+          }).length > 0);
+
+          assert.equal(msg.actions[0].href.replace('http://',''), deviceUrlHttp)
+
+          if (recv === 1) {
+            clearTimeout(timer);
+            socket.close();
+            done();
+          }
+        });
+        
+        device.call('change');
+        
+        timer = setTimeout(function() {
+          assert.equal(recv, 1, 'should have received 1 message');
+          socket.close();
+          done();
+        }, 100);
+      }, 20);    
+    });
+
+
+
+
   });
 
 
