@@ -145,7 +145,7 @@ describe('Driver', function() {
       });
     });
 
-    it.only('transitionsAvailable should return proper transitions', function() {
+    it('transitionsAvailable should return proper transitions', function() {
       //.when('ready', { allow: ['change', 'test'] })
       //.when('changed', { allow: ['prepare', 'test'] })
       
