@@ -95,7 +95,7 @@ describe('Virtual Device', function() {
         setTimeout(function() {
           assert.equal(vdevice.state, 'changed');
           done();
-        }, 20);
+        }, 100);
       });
     });
 
@@ -106,7 +106,7 @@ describe('Virtual Device', function() {
         setTimeout(function() {
           assert.equal(vdevice.state, 'changed');
           done();
-        }, 20);
+        }, 100);
       });
     });
 
@@ -124,7 +124,7 @@ describe('Virtual Device', function() {
       setTimeout(function() {
         assert.equal(vdevice.bar, 1);
         done();
-      }, 20);
+      }, 100);
     });
 
   });
