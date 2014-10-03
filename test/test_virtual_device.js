@@ -112,5 +112,23 @@ describe('Virtual Device', function() {
 
   });
 
+
+
+  describe('Device monitor streams on properties', function() {
+
+    it('should update virtual device when value increments locally', function(done) {    
+      assert.equal(vdevice.bar, 0);
+      assert.equal(device.bar, 0);
+      device.incrementStreamValue();
+      assert.equal(device.bar, 1);
+      setTimeout(function() {
+        assert.equal(vdevice.bar, 1);
+        done();
+      }, 20);
+    });
+
+  });
+
+
 });
 
