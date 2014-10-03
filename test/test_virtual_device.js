@@ -74,7 +74,7 @@ describe('Virtual Device', function() {
 
     it('call should work with arguments', function(done) {
       var vdevice = new VirtualDevice(deviceJson, socket);
-      vdevice.call('test', 123, function(err) {
+      vdevice.call('test', 'hello', function(err) {
         assert.equal(err, null);
       });
       var timer = setTimeout(function() {
@@ -84,7 +84,7 @@ describe('Virtual Device', function() {
 
       device.on('test', function() {
         clearTimeout(timer);
-        assert.equal(device.value, 123);
+        assert.equal(device.value, 'hello');
         done();
       });
     });
