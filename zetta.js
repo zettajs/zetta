@@ -260,6 +260,9 @@ Zetta.prototype._initPeers = function(callback) {
         peerClient.on('connected', function() {
           peer.status = 'connected';
           self.peerRegistry.save(peer);
+
+          // peer-event
+          self.pubsub.publish('_peer/connect', { peer: peerClient, id: peer.id });
         });
 
         peerClient.on('error', function(error) {
@@ -268,6 +271,9 @@ Zetta.prototype._initPeers = function(callback) {
             result.status = 'failed';
             result.error = error;
             self.peerRegistry.save(result);
+            
+            // peer-event
+            self.pubsub.publish('_peer/disconnect', { peer: peerClient, id: peer.id });
           });
         });
 
@@ -275,7 +281,12 @@ Zetta.prototype._initPeers = function(callback) {
           self.peerRegistry.get(peer.id, function(err, result) {
             result = JSON.parse(result);
             result.status = 'disconnected';
+
+            // peer-event
+            self.pubsub.publish('_peer/disconnect', { peer: peerClient, id: peer.id });
+
             self.peerRegistry.save(result, function() {
+              // re-connect
               peerClient.start();
             });
           });
