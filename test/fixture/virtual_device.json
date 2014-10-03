@@ -1,0 +1,25 @@
+{
+  "class": [ "device" ],
+  "properties": {
+    "bulbId": "2",
+    "bulbName": "Zetta Demo",
+    "id": "53ff47ba-0364-4b11-abc0-58bec65f1cf3",
+    "type": "huebulb",
+    "name": "Hue Bulb Zetta Demo",
+    "state": "colorloop"
+  },
+  "actions": [
+    {
+      "name": "turn-on",
+      "method": "POST",
+      "href": "http://zetta-cloud-2.herokuapp.com/servers/660a5acf-21af-42c7-882b-ba9d995f43a7/devices/53ff47ba-0364-4b11-abc0-58bec65f1cf3",
+      "fields": [
+        {
+          "name": "action",
+          "type": "hidden",
+          "value": "turn-on"
+        }
+      ]
+    }
+  ]
+}
