@@ -10,6 +10,7 @@ describe('Virtual Device', function() {
   var device = null;
   var socket = null;
   var deviceJson = null;
+  var vdevice = null;
 
   beforeEach(function(done) {
     cluster = zettatest()
@@ -38,7 +39,10 @@ describe('Virtual Device', function() {
           res.on('end', function() {
             var buf = Buffer.concat(buffer, len);
             deviceJson = JSON.parse(buf.toString());
-            done();
+            vdevice = new VirtualDevice(deviceJson, socket);
+            vdevice.on('ready', function() {
+              done();
+            });
           });
           res.on('error', function(err) {
             done(err);
@@ -47,16 +51,9 @@ describe('Virtual Device', function() {
       });
   });
   
-  it('constructor should work', function(done) {
-    var vdevice = new VirtualDevice(deviceJson, socket);
-    done();
-  });
-
-
-  describe('Virtual Device .call', function() {
+  describe('.call method', function() {
 
     it('call should work without arguments', function(done) {
-      var vdevice = new VirtualDevice(deviceJson, socket);
       vdevice.call('change', function(err) {
         assert.equal(err, null);
       });
@@ -71,9 +68,7 @@ describe('Virtual Device', function() {
       });
     });
 
-
     it('call should work with arguments', function(done) {
-      var vdevice = new VirtualDevice(deviceJson, socket);
       vdevice.call('test', 'hello', function(err) {
         assert.equal(err, null);
       });
@@ -88,6 +83,33 @@ describe('Virtual Device', function() {
         done();
       });
     });
+
+  });
+
+  describe('Device log monitor stream', function() {
+
+    it('should update virtual devices state when detroit device updates', function(done) {    
+      assert.equal(vdevice.state, 'ready');
+      device.call('change', function() {
+        assert.equal(device.state, 'changed');
+        setTimeout(function() {
+          assert.equal(vdevice.state, 'changed');
+          done();
+        }, 20);
+      });
+    });
+
+    it('should update virtual devices state when virtual device calls transition', function(done) {    
+      assert.equal(vdevice.state, 'ready');
+      vdevice.call('change', function() {
+        assert.equal(device.state, 'changed');
+        setTimeout(function() {
+          assert.equal(vdevice.state, 'changed');
+          done();
+        }, 20);
+      });
+    });
+
   });
 
 });
