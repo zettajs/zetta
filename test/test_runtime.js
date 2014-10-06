@@ -95,6 +95,24 @@ describe('Runtime', function(){
     });
 
     describe('Runtime#observe', function() {
+      it('returns a Subscription when a subscribe function is provided', function() {
+        var q = runtime.where({ type: 'test' });
+
+        var sub = runtime.observe(q, function(device) {
+          // do nothing
+        });
+
+        assert(typeof(sub.dispose) === 'function');
+      });
+
+      it('returns an Observable when a subscribe function is not provided', function() {
+        var q = runtime.where({ type: 'test' });
+
+        var obs = runtime.observe(q);
+
+        assert(typeof(obs.subscribe) === 'function');
+      });
+
       it('will take a single query as the first argument', function(done) {
         var q = runtime.where({ type: 'test' });
         var d = { type: 'test' };
