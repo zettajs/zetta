@@ -1,18 +1,18 @@
 {
-  "class": [ "device" ],
+  "class": [
+    "device"
+  ],
   "properties": {
-    "bulbId": "2",
-    "bulbName": "Zetta Demo",
-    "id": "53ff47ba-0364-4b11-abc0-58bec65f1cf3",
-    "type": "huebulb",
-    "name": "Hue Bulb Zetta Demo",
-    "state": "colorloop"
+    "id": "0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2",
+    "type": "led",
+    "name": "led!",
+    "state": "off"
   },
   "actions": [
     {
       "name": "turn-on",
       "method": "POST",
-      "href": "http://zetta-cloud-2.herokuapp.com/servers/660a5acf-21af-42c7-882b-ba9d995f43a7/devices/53ff47ba-0364-4b11-abc0-58bec65f1cf3",
+      "href": "http://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/devices/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2",
       "fields": [
         {
           "name": "action",
@@ -20,6 +20,38 @@
           "value": "turn-on"
         }
       ]
+    }
+  ],
+  "links": [
+    {
+      "rel": [
+        "self"
+      ],
+      "href": "http://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/devices/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2"
+    },
+    {
+      "title": "localhost",
+      "rel": [
+        "up",
+        "http://rels.zettajs.io/server"
+      ],
+      "href": "http://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e"
+    },
+    {
+      "title": "state",
+      "rel": [
+        "monitor",
+        "http://rels.zettajs.io/object-stream"
+      ],
+      "href": "ws://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/events?topic=led%2F0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2%2Fstate"
+    },
+    {
+      "title": "logs",
+      "rel": [
+        "monitor",
+        "http://rels.zettajs.io/object-stream"
+      ],
+      "href": "ws://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/events?topic=led%2F0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2%2Flogs"
     }
   ]
 }
