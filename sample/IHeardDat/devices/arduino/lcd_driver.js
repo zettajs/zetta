@@ -18,6 +18,5 @@ LCD.prototype.init = function(config) {
 }
 
 LCD.prototype.change = function(message, cb) {
-  this.message = message;
-  cb();
+  cb(new Error('some error message'));
 };

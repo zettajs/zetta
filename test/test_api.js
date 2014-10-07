@@ -523,6 +523,18 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('should return 500 when a error is passed in a callback of device driver', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .send({ action: 'error', value: 'some error' })
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 500);
+        }))
+        .end(done);
+    });
+
+
  });
 
 
