@@ -85,6 +85,13 @@ describe('Driver', function() {
       });
     });
 
+    it('should return error in callback.', function(done) {
+      machine.call('error', 'some error', function(err) {
+        assert(err instanceof Error);
+        done();
+      });
+    });
+
     it('should have transitions emitted like events.', function(done) {
       machine.on('change', function() {
         done();
