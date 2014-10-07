@@ -16,11 +16,12 @@ TestDriver.prototype.init = function(config) {
     .state('ready')
     .type('testdriver')
     .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change', 'test'] })
-    .when('changed', { allow: ['prepare', 'test'] })
+    .when('ready', { allow: ['change', 'test', 'error'] })
+    .when('changed', { allow: ['prepare', 'test', 'error'] })
     .map('change', this.change)
     .map('prepare', this.prepare)
     .map('test', this.test, [{ name: 'value', type: 'number'}])
+    .map('error', this.returnError, [{ name: 'error', type: 'string'}])
     .monitor('foo')
     .stream('bar', this.streamBar)
     .stream('foobar', this.streamFooBar, {binary: true});
@@ -39,6 +40,10 @@ TestDriver.prototype.change = function(cb) {
 TestDriver.prototype.prepare = function(cb) {
   this.state = 'ready';
   cb();
+};
+
+TestDriver.prototype.returnError = function(error, cb) {
+  cb(new Error(error));
 };
 
 TestDriver.prototype.incrementStreamValue = function() {
