@@ -120,19 +120,65 @@ Zetta.prototype.link = function(peers) {
 };
 
 
-Zetta.prototype.listen = function(port, callback) {
+Zetta.prototype.listen = function() {
   var self = this;
 
-  if(!callback) {
-    callback = function() {};
+  var args = Array.prototype.slice.call(arguments);
+
+  var last = args[args.length - 1];
+
+  var callback;
+  if (typeof last === 'function') {
+    callback = last;
   }
 
   this._run(function(err){
     if(err) {
-      return callback(err);
+      if (callback) {
+        return callback(err);
+      } else {
+        throw err;
+      }
     }
 
-    self.httpServer.listen(port, callback);
+    var cb = function(err) {
+      if (err) {
+        if (callback) {
+          callback(err);
+        } else {
+          throw err;
+        }
+      }
+
+      var host;
+      if (typeof args[0] === 'string') {
+        host = args[0]; // UNIX socket
+      } else if (typeof args[0] === 'number') {
+        if (args.length > 1 && typeof args[1] === 'string') {
+          host = args[1] + ':' + args[0]; // host + port
+        } else {
+          host = '0.0.0.0:' + args[0]; // just port
+        }
+      } else if (typeof args[0] === 'object' && args[0].fd) {
+        host = 'fd: ' + args[0].fd; // handle
+      } else {
+        host = '<unknown>';
+      }
+
+      self.log.emit('log', 'server', 'Server (' + self._name + ') ' + self.id + ' listening on ' + host);
+
+      if (callback) {
+        callback(err);
+      }
+    };
+
+    if (!callback) {
+      args.push(cb);
+    } else {
+      args[args.length - 1] = cb;
+    }
+
+    self.httpServer.listen.apply(self.httpServer, args);
   });
 
   return this;
