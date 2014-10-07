@@ -2,12 +2,11 @@ var zetta = require('../../zetta.js');
 var Arduino = require('./devices/arduino');
 var IHeardThat = require('./apps');
 
-var app = zetta();
-app.id = 'd7fe2c66-db23-4513-a5f5-a2a890d1af36';
-app
+zetta()
   .name('local')
   .expose('*')
   .use(Arduino)
+  .load(IHeardThat)
   .listen(3000, function(err) {
     if(err) {
       console.log(err);
