@@ -490,6 +490,27 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('device action should return a 400 status code on a missing request body', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .send()
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 400);
+        }))
+        .end(done);
+    });
+
+    it('device action should return a 400 status code on an invalid request body', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .send('{ "what": "invalid" }')
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 400);
+        }))
+        .end(done);
+    });
+
     it('device action should work', function(done) {
       request(getHttpServer(app))
         .post(url)
