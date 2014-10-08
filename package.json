@@ -1,6 +1,6 @@
 {
   "name": "zetta",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "The runtime components for Zetta.",
   "main": "zetta_runtime.js",
   "dependencies": {
@@ -23,7 +23,7 @@
     "caql-js-compiler": "^0.1.0",
     "zetta-auto-scout": "^0.5.0",
     "zetta-scientist": "^0.3.0",
-    "zetta-device": "^0.4.0",
+    "zetta-device": "^0.6.0",
     "zetta-http-device": "^0.2.0",
     "zetta-scout": "^0.3.0",
     "zetta-streams": "^0.1.0"
