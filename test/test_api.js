@@ -490,6 +490,19 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('device should have monitor link for bar', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          var fooBar = body.links.filter(function(link) {
+            return link.title === 'foobar';
+          });
+
+          hasLinkRel(fooBar, rels.binaryStream);
+        }))
+        .end(done);
+    });
+
     it('device action should return a 400 status code on a missing request body', function(done) {
       request(getHttpServer(app))
         .post(url)
