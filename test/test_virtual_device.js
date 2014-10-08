@@ -145,6 +145,41 @@ describe('Virtual Device', function() {
 
   });
 
+  describe('Device binary streams', function() {
+
+    it('should only subscribe to a binary stream if used', function(done) {    
+      var topic = device.type + '/' + device.id + '/foobar';
+      assert.equal(cluster.servers['detroit1'].pubsub._listeners[topic], undefined);
+      vdevice.streams.foobar.on('data', function() {});
+      setTimeout(function() {
+        assert.notEqual(cluster.servers['detroit1'].pubsub._listeners[topic], undefined);
+        done();
+      }, 100);
+    });
+
+    it('should pass binary data from local device to virtual', function(done) {    
+      var recv = 0;
+      vdevice.streams.foobar.on('data', function(data) {
+        recv++;
+        assert.deepEqual(data, new Buffer([recv]));
+      });
+
+      setTimeout(function() {
+        device.incrementFooBar();
+        device.incrementFooBar();
+        device.incrementFooBar();
+
+        setTimeout(function() {          
+          assert.equal(recv, 3);
+          done();
+        }, 100);
+      }, 100);
+    });
+
+  });
+
+
+
   describe('basic unit tests', function() {
 
     var device = null;
