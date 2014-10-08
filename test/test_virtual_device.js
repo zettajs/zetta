@@ -61,6 +61,11 @@ describe('Virtual Device', function() {
         });
       });
   });
+
+  afterEach(function(done) {
+    cluster.stop();
+    setTimeout(done, 10); // fix issues with server not being closed before a new one starts
+  });
   
   describe('.call method', function() {
 

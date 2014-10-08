@@ -23,20 +23,8 @@ describe('Zetta', function() {
     assert.equal(typeof zetta, 'function');
   });
 
-
-  it('basic zetta server functionality should not break', function(done) {
-    zetta({ registry: reg, peerRegistry: peerRegistry })
-      .name('local')
-      .expose('*')
-      .load(function(server) {})
-      .listen(TEST_PORT, function(err){
-        done();
-      });
-  });
-
   it('has the name set using the name() function.', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local');
-
     assert.equal(z._name, 'local');
   });
 
