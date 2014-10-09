@@ -29,9 +29,14 @@ describe('Virtual Device', function() {
       .server('detroit1', [Scout], ['cloud'])
       .run(function(err){
         if (err) {
-          return cb(err);
+          return done(err);
         }
-        socket = cluster.servers['cloud'].httpServer.peers[0];
+
+        socket = cluster.servers['cloud'].httpServer.peers['detroit1'];        
+        if (!socket) {
+          done(new Error('socket not found'));
+        }
+
         var did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit1'].runtime._jsDevices[did];
         var id = cluster.servers['detroit1'].id;

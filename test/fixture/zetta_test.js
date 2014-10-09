@@ -81,8 +81,6 @@ ZettaTest.prototype.run = function(callback) {
         return err;
       }
 
-
-
       function check(done) {
         var allQuery = {
           match: function() { return true; }
@@ -94,8 +92,11 @@ ZettaTest.prototype.run = function(callback) {
               ret = false;
               return;
             }
+
             var pServer = self._serversUrl[peer.url];
-            return pServer.httpServer.peers[name];
+            if (!pServer.httpServer.peers[name]) {
+              ret = false;
+            }
           });
           done(ret);
         });
@@ -116,7 +117,6 @@ ZettaTest.prototype.run = function(callback) {
           next();
         }
       );
-
     });
   }, callback);
 
