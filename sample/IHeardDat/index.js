@@ -7,6 +7,7 @@ zetta()
   .expose('*')
   .use(Arduino)
   .load(IHeardThat)
+  .link('http://localhost:3002')
   .listen(3000, function(err) {
     if(err) {
       console.log(err);
