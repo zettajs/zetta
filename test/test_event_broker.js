@@ -24,9 +24,10 @@ describe('EventBroker', function() {
   var query = null;
   var app = null;
   var broker = null;
+  var peerRegistry = null;
   beforeEach(function() {
     var reg = new Registry();
-    var peerRegistry = new PeerRegistry();
+    peerRegistry = new PeerRegistry();
     app = zetta({ registry: reg, peerRegistry: peerRegistry });
     query = { topic: 'some-topic', serverId: app.id };
     broker = new EventBroker(app);
@@ -34,7 +35,7 @@ describe('EventBroker', function() {
 
   it('it should add peer by server name', function() {
     var ws = new Ws();
-    var peer = new PeerSocket(ws, 'some-peer');
+    var peer = new PeerSocket(ws, 'some-peer', peerRegistry);
     peer.serverId = 'some-peer2';
     broker.peer(peer);
     assert.equal(peer, broker.peers['some-peer2']);
