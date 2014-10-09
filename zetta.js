@@ -21,8 +21,8 @@ var Zetta = module.exports = function(opts) {
 
   opts = opts || {};
 
-  this.id = uuid.v4(); // unique id of server
   this._name = os.hostname(); // optional name, defaults to OS hostname
+  this.id = this._name;
 
   this._exposeQuery = '';
   this._scouts = [];
@@ -50,6 +50,7 @@ var Zetta = module.exports = function(opts) {
 
 Zetta.prototype.name = function(name) {
   this._name = name;
+  this.id = this._name;
   return this;
 };
 
