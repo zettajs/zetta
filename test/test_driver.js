@@ -55,6 +55,13 @@ describe('Driver', function() {
     });
   });
 
+  describe('Logging', function() {
+    it('should expose a .log method', function() {
+      assert.equal(typeof machine.log, 'function');
+    });
+  });
+
+
   describe('Transitions', function() {
 
     it('should change the state from ready to changed when calling change.', function(done) {
