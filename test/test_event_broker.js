@@ -12,6 +12,7 @@ var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 var Ws = function() {
   EventEmitter.call(this)
   this._socket = new net.Socket();
+  this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
 };
 util.inherits(Ws, EventEmitter);
 Ws.prototype.send = function(data, options, cb) {
