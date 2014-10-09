@@ -18,6 +18,7 @@ LCD.prototype.init = function(config) {
 }
 
 LCD.prototype.change = function(message, cb) {
+  this.log('custom log message ' + message);
   this.message = message;
   cb();
 };
