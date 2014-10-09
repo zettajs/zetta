@@ -83,7 +83,7 @@ describe('Peer Registry', function() {
   describe('#add', function() {
     it('should save new peers', function(done) {
       var reg = new PeerRegistry(db);
-      var peer = {};
+      var peer = {id: 'someid'};
       
       reg.add(peer, function(err, result) {
         assert.ok(result);
@@ -93,7 +93,7 @@ describe('Peer Registry', function() {
 
     it('should generate an ID for new peers', function(done) {
       var reg = new PeerRegistry(db);
-      var peer = {};
+      var peer = {id: 'someid'};
       
       reg.add(peer, function(err, result) {
         assert.ok(result.id);
@@ -115,7 +115,7 @@ describe('Peer Registry', function() {
 
     it('propagates errors from #find', function(done) {
       var reg = new PeerRegistry(db);
-      var peer = {};
+      var peer = {id: 'someid'};
       
       reg.find = function(key, cb) {
         cb(new Error());
@@ -144,8 +144,8 @@ describe('Peer Registry', function() {
 
     it('it should not match entries when both .url are undefined or null', function(done) {
       var reg = new PeerRegistry(db);
-      var peer1 = { name: 'some-peer-1'};
-      var peer2 = { name: 'some-peer-2'};
+      var peer1 = { id: 'some-peer-1'};
+      var peer2 = { id: 'some-peer-2'};
       
       reg.add(peer1, function(err, result1) {
         assert.ok(result1.id);
