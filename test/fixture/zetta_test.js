@@ -40,13 +40,7 @@ ZettaTest.prototype.server = function(name, scouts, peers) {
   }
 
   server.locatePeer = function(id) {
-    for (var k in server.httpServer.router) {
-      if (server.httpServer.router[k] === id) {
-        return k;
-      }
-    }
-
-    return null;
+    return id;
   };
  
   server._testPeers = peers || [];
@@ -101,15 +95,7 @@ ZettaTest.prototype.run = function(callback) {
               return;
             }
             var pServer = self._serversUrl[peer.url];
-            var router = pServer.httpServer.router;
-            var foundInRouter = false;
-            for (var k in router){
-              if (router[k] === self.servers[name].id) {
-                foundInRouter = true;
-                break;
-              }
-            }
-            ret = foundInRouter;
+            return pServer.httpServer.peers[name];
           });
           done(ret);
         });

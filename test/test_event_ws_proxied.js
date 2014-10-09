@@ -37,7 +37,6 @@ describe('Event Websocket Proxied Through Peer', function() {
 
     it('websocket should connect', function(done) {
       var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
-      console.log(url)
       var error = 0;
       var open = false;
       var socket = new WebSocket(url);
