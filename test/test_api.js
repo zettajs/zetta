@@ -151,7 +151,7 @@ describe('Zetta Api', function() {
         .get(url)
         .expect(getBody(function(res, body) {
           assert(body.actions);
-          assert.equal(body.actions.length, 2);
+          assert.equal(body.actions.length,2);
         }))
         .end(done);
     });
