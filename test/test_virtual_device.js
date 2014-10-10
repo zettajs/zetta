@@ -105,6 +105,43 @@ describe('Virtual Device', function() {
       });
     });
 
+    it.only('call should work with arguments, after peer reconnects', function(done) {
+      vdevice.call('test', 'hello', function(err) {
+        assert.equal(err, null);
+      });
+      var timer = setTimeout(function() {
+        done(new Error('Faied to recv transition call on detroit device'));
+      }, 100);
+
+      var recv = 0;
+      device.on('test', function() {
+        recv++;
+        
+        if (recv === 1) {
+          clearTimeout(timer);
+          assert.equal(device.value, 'hello');
+
+          var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
+          socket.close();
+
+          setTimeout(function() {
+            vdevice.call('test', 'hello1', function(err) {
+              assert.equal(err, null);
+            });
+            var timer = setTimeout(function() {
+              done(new Error('Faied to recv transition call on detroit device'));
+            }, 100);
+
+            device.on('test', function() {
+              clearTimeout(timer);
+              assert.equal(device.value, 'hello1');
+              done();
+            });
+          }, 100);
+        }
+      });
+    });
+
   });
 
   describe('Device log monitor stream', function() {
