@@ -105,7 +105,7 @@ describe('Virtual Device', function() {
       });
     });
 
-    it.only('call should work with arguments, after peer reconnects', function(done) {
+    it('call should work with arguments, after peer reconnects', function(done) {
       vdevice.call('test', 'hello', function(err) {
         assert.equal(err, null);
       });
