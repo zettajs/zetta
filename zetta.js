@@ -34,12 +34,15 @@ var Zetta = module.exports = function(opts) {
   this.pubsub = opts.pubsub || new PubSub();
   this.log = opts.log || new Logger({ pubsub: this.pubsub });
 
-  var runtimeOpts = { pubsub: this.pubsub, log: this.log };
+  this.httpServer = new HttpServer(this);
+
+  var runtimeOpts = { pubsub: this.pubsub, log: this.log, peers: this.httpServer.peers };
+
   if (opts && opts.registry) {
     runtimeOpts.registry = opts.registry;
   }
+
   this.runtime = new Runtime(runtimeOpts);
-  this.httpServer = new HttpServer(this);
 
   var httpScout = scientist.create.apply(null, [HttpScout]);
   httpScout.server = this.runtime;
