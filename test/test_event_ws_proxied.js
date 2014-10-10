@@ -10,13 +10,13 @@ describe('Event Websocket Proxied Through Peer', function() {
   var device = null;
   beforeEach(function(done) {
     cluster = zettatest()
-      .server('cloud')
-      .server('detroit1', [Scout], ['cloud'])
+      .server('cloud deploy')
+      .server('detroit 1', [Scout], ['cloud deploy'])
       .run(function(err){
-        var id = cluster.servers['detroit1'].id;
-        base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer(id);
-        var did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
-        device = cluster.servers['detroit1'].runtime._jsDevices[did];
+        var id = cluster.servers['detroit 1'].id;
+        base = 'localhost:' + cluster.servers['cloud deploy']._testPort + '/servers/' + cluster.servers['cloud deploy'].locatePeer(id);
+        var did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
+        device = cluster.servers['detroit 1'].runtime._jsDevices[did];
         done(err);
       })
   });
