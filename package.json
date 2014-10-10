@@ -26,7 +26,8 @@
     "zetta-device": "^0.7.0",
     "zetta-http-device": "^0.2.0",
     "zetta-scout": "^0.3.0",
-    "zetta-streams": "^0.1.0"
+    "zetta-streams": "^0.1.0",
+    "zetta-rels": "^0.1.0"
   },
   "devDependencies": {
     "memdown": "^0.10.2",
