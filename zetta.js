@@ -21,8 +21,8 @@ var Zetta = module.exports = function(opts) {
 
   opts = opts || {};
 
-  this.id = uuid.v4(); // unique id of server
   this._name = os.hostname(); // optional name, defaults to OS hostname
+  this.id = this._name;
 
   this._exposeQuery = '';
   this._scouts = [];
@@ -50,6 +50,7 @@ var Zetta = module.exports = function(opts) {
 
 Zetta.prototype.name = function(name) {
   this._name = name;
+  this.id = this._name;
   return this;
 };
 
@@ -308,7 +309,7 @@ Zetta.prototype._initPeers = function(callback) {
           self.peerRegistry.save(peer);
 
           // peer-event
-          self.pubsub.publish('_peer/connect', { peer: peerClient, id: peer.id });
+          self.pubsub.publish('_peer/connect', { peer: peerClient});
         });
 
         peerClient.on('error', function(error) {
@@ -319,7 +320,7 @@ Zetta.prototype._initPeers = function(callback) {
             self.peerRegistry.save(result);
             
             // peer-event
-            self.pubsub.publish('_peer/disconnect', { peer: peerClient, id: peer.id });
+            self.pubsub.publish('_peer/disconnect', { peer: peerClient });
           });
         });
 
@@ -329,7 +330,7 @@ Zetta.prototype._initPeers = function(callback) {
             result.status = 'disconnected';
 
             // peer-event
-            self.pubsub.publish('_peer/disconnect', { peer: peerClient, id: peer.id });
+            self.pubsub.publish('_peer/disconnect', { peer: peerClient });
 
             self.peerRegistry.save(result, function() {
               // re-connect

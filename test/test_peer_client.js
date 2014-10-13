@@ -2,7 +2,7 @@ var PeerClient = require('../lib/peer_client');
 var assert = require('assert');
 
 
-var MockServer = {id: '1234', httpServer: { spdyServer: {}}};
+var MockServer = { _name: '1234', httpServer: { spdyServer: {}}, log: {}};
 var urlEndingWithSlash = 'http://cloud.zettajs.io/';
 var urlEndingWithNoSlash = 'http://cloud.zettajs.io';
 

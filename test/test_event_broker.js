@@ -12,6 +12,7 @@ var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 var Ws = function() {
   EventEmitter.call(this)
   this._socket = new net.Socket();
+  this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
 };
 util.inherits(Ws, EventEmitter);
 Ws.prototype.send = function(data, options, cb) {
@@ -23,18 +24,19 @@ describe('EventBroker', function() {
   var query = null;
   var app = null;
   var broker = null;
+  var peerRegistry = null;
   beforeEach(function() {
     var reg = new Registry();
-    var peerRegistry = new PeerRegistry();
+    peerRegistry = new PeerRegistry();
     app = zetta({ registry: reg, peerRegistry: peerRegistry });
-    query = { topic: 'some-topic', serverId: app.id };
+    query = { topic: 'some-topic', name: app.id };
     broker = new EventBroker(app);
   });
 
   it('it should add peer by server name', function() {
     var ws = new Ws();
-    var peer = new PeerSocket(ws, 'some-peer');
-    peer.serverId = 'some-peer2';
+    var peer = new PeerSocket(ws, 'some-peer', peerRegistry);
+    peer.name = 'some-peer2';
     broker.peer(peer);
     assert.equal(peer, broker.peers['some-peer2']);
   });
