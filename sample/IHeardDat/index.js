@@ -3,11 +3,9 @@ var Arduino = require('./devices/arduino');
 var IHeardThat = require('./apps');
 
 zetta()
-  .name('local2')
-  .expose('*')
+  .name('local')
   .use(Arduino)
-  .load(IHeardThat)
-  .link('http://localhost:3002')
+  .link('http://localhost:1337')
   .listen(3000, function(err) {
     if(err) {
       console.log(err);
