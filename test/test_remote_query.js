@@ -81,9 +81,38 @@ describe('Remote queries', function() {
       };
 
       cloud.pubsub.publish('_peer/connect', { peer: sock });
+    });
+  });
+
+  describe('Peer Reconnects', function() {
+    it('runtime should only pass the device once to app', function(done) {
+      var query = cloud.runtime.from('detroit1').where({type: 'testdriver'});
+      var ql = decompiler(query);
+      var remove = 'select * ';
+      if(ql.slice(0, remove.length) === remove) {
+        ql = ql.slice(remove.length);
+      }
+
+      var recv = 0;
+      cloud.runtime.observe([query], function(testdriver){
+        recv++;
+      });
+      
+
+      
+      var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
+      setTimeout(function(){
+        socket.close();
+      }, 100);
+
+      cloud.pubsub.subscribe('_peer/connect', function(ev, data) {
+        if (data.peer.name === 'detroit1') {
+          assert.equal(recv, 1);
+          done();
+        }
+      });
 
     });
-
   });
 });
 
