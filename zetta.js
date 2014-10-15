@@ -39,7 +39,7 @@ var Zetta = module.exports = function(opts) {
   var runtimeOptions = {
     pubsub: this.pubsub,
     log: this.log,
-    peers: this.httpServer.peers
+    httpServer: this.httpServer
   };
 
   if (opts && opts.registry) {
