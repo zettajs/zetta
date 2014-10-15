@@ -3,7 +3,7 @@ var Arduino = require('./devices/arduino');
 var IHeardThat = require('./apps');
 
 zetta()
-  .name('local')
+  .name('local2')
   .expose('*')
   .use(Arduino)
   .load(IHeardThat)

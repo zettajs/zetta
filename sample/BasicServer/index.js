@@ -9,10 +9,9 @@ zetta()
   .expose('*')
   .use(Arduino)
   .use(Spark)
-  .link('http://zetta-cloud-2.herokuapp.com/')
   .use(iPhone, {http_device: true})
   .load(app)
-  .listen(3000, function(err) {
+  .listen(3002, function(err) {
     if(err) {
       console.log(err);
     }
