@@ -21,7 +21,7 @@ ArduinoScout.prototype.initDevice = function(type, Class) {
     } else {
       console.log('no device found for ' + type)
       self.discover(Class);
-    }
+   }
   });
 };
 
