@@ -8,8 +8,6 @@ describe('Event Websocket Proxied Through Peer', function() {
   var base = null;
   var cluster = null;
   var device = null;
-  var deviceUrl = null;
-  var deviceUrlHttp = null
 
   beforeEach(function(done) {
     cluster = zettatest()
@@ -115,7 +113,8 @@ describe('Event Websocket Proxied Through Peer', function() {
     });
 
     it('websocket should connect and recv device log events', function(done) {
-      var url = 'ws://' + deviceUrl + '/logs';
+      var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/logs';
+
       var error = 0;
       var open = false;
       var socket = new WebSocket(url);
@@ -132,7 +131,7 @@ describe('Event Websocket Proxied Through Peer', function() {
       setTimeout(function() {
         assert.equal(error, 0);
         assert.equal(open, true, 'ws should be opened');
-
+        
         var recv = 0;
         var timer = null;
         socket.on('message', function(buf, flags) {
@@ -143,9 +142,9 @@ describe('Event Websocket Proxied Through Peer', function() {
           assert(msg.actions.filter(function(action) {
             return action.name === 'prepare';
           }).length > 0);
-
-          assert.equal(msg.actions[0].href.replace('http://',''), deviceUrlHttp)
-
+          
+          assert.equal(msg.actions[0].href.replace('http://',''), base + '/devices/' + device.id)
+          
           if (recv === 1) {
             clearTimeout(timer);
             socket.close();
