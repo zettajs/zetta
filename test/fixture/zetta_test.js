@@ -40,7 +40,7 @@ ZettaTest.prototype.server = function(name, scouts, peers) {
   }
 
   server.locatePeer = function(id) {
-    return id;
+    return encodeURI(id);
   };
  
   server._testPeers = peers || [];
