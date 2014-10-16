@@ -5,7 +5,7 @@ var iPhone = require('./devices/iphone');
 var app = require('./apps');
 
 zetta()
-  .name('local')
+  .name('BasicServer')
   .expose('*')
   .use(Arduino)
   .use(Spark)
