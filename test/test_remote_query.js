@@ -137,6 +137,37 @@ describe('Remote queries', function() {
       });
     });
 
+
+
+    it('should send back 1 result for peer after a reconnet', function(done) {
+      var socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      var recv = 0;
+
+      var socketP = cluster.servers['cloud'].httpServer.peers['detroit1'];
+      setTimeout(function(){
+        socketP.close();
+        cloud.pubsub.subscribe('_peer/connect', function(ev, data) {
+          if (data.peer.name === 'detroit1') {
+            setTimeout(function() {
+              assert.equal(recv, 1);
+              done();
+            }, 100);
+          }
+        });
+      }, 100);
+
+      socket.on('message', function(data) {
+        var json = JSON.parse(data);
+        // test links are properly set
+        json.links.forEach(function(link) {
+          assert(link.href.indexOf(urlProxied) > -1)
+        });
+        assert.equal(json.properties.type, 'testdriver');  
+        recv++;
+      });
+
+      
+    });
   });
 
 
