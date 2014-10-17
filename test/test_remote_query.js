@@ -2,9 +2,20 @@ var assert = require('assert');
 var http = require('http');
 var zettatest = require('./fixture/zetta_test');
 var Scout = require('./fixture/example_scout');
+var ExampleDevice = require('./fixture/example_driver');
 var VirtualDevice = require('../lib/virtual_device');
 var LedJSON = require('./fixture/virtual_device.json');
 var decompiler = require('calypso-query-decompiler');
+var ZScout = require('zetta-scout');
+var util = require('util');
+
+function FakeScout() {
+  ZScout.call(this);
+};
+util.inherits(FakeScout, ZScout);
+
+FakeScout.prototype.init = function(cb) {cb();};
+
 
 var mockSocket = {
   on: function(){},
@@ -82,23 +93,38 @@ describe('Remote queries', function() {
 
       cloud.pubsub.publish('_peer/connect', { peer: sock });
     });
-  });
 
-  describe('Peer Reconnects', function() {
-    it('runtime should only pass the device once to app', function(done) {
+
+
+
+    it('adding a device on the remote server should add a device to app', function(done) {
       var query = cloud.runtime.from('detroit1').where({type: 'testdriver'});
-      var ql = decompiler(query);
-      var remove = 'select * ';
-      if(ql.slice(0, remove.length) === remove) {
-        ql = ql.slice(remove.length);
-      }
-
       var recv = 0;
       cloud.runtime.observe([query], function(testdriver){
         recv++;
       });
-      
 
+      var detroit = cluster.servers['detroit1'];
+      var scout = new FakeScout();
+      scout.server = detroit.runtime;
+      scout.discover(ExampleDevice);
+
+      setTimeout(function() {
+        assert.equal(recv, 2);
+        done();
+      }, 100);
+    });
+
+  });
+
+  describe('Peer Reconnects', function() {
+
+    it('runtime should only pass the device once to app', function(done) {
+      var query = cloud.runtime.from('detroit1').where({type: 'testdriver'});
+      var recv = 0;
+      cloud.runtime.observe([query], function(testdriver){
+        recv++;
+      });
       
       var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
       setTimeout(function(){
@@ -111,8 +137,10 @@ describe('Remote queries', function() {
           done();
         }
       });
-
     });
+
   });
+
+
 });
 
