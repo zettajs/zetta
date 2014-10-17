@@ -51,10 +51,10 @@ describe('Remote queries', function() {
       if(ql.slice(0, remove.length) === remove) {
         ql = ql.slice(remove.length);
       }
-
       cloud.runtime.observe([query], function(testdriver){
       });
-      detroit1.pubsub.subscribe('query/' + ql, function() {
+      var key = Object.keys(cloud.runtime._remoteSubscriptions['detroit1'])[0];
+      detroit1.pubsub.subscribe(key, function() {
         done();
       });
     });
@@ -69,11 +69,11 @@ describe('Remote queries', function() {
 
       cloud.runtime.observe([query], function(testdriver){
       });
-      
+
       var sock = {
         subscribe: function(){},
         on: function(ev, data){
-          if(ev === 'query/'+ql) {
+          if(ev.indexOf('query:') === 0) {
             done();
           }
         },
