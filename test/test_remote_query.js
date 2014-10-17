@@ -8,6 +8,8 @@ var LedJSON = require('./fixture/virtual_device.json');
 var decompiler = require('calypso-query-decompiler');
 var ZScout = require('zetta-scout');
 var util = require('util');
+var WebSocket = require('ws');
+
 
 function FakeScout() {
   ZScout.call(this);
@@ -29,9 +31,11 @@ var mockSocket = {
 
 describe('Remote queries', function() {
   var cluster = null;
-
   var detroit1 = null;
   var cloud = null;
+  var urlLocal = null;
+  var urlProxied = null
+
   beforeEach(function(done) {
     cluster = zettatest()
       .server('cloud')
@@ -41,10 +45,12 @@ describe('Remote queries', function() {
           return done(err);
         }
 
+        urlProxied = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1';
+        urlLocal = 'localhost:' + cluster.servers['detroit1']._testPort + '/servers/detroit1';
+
         detroit1 = cluster.servers['detroit1'];
         cloud = cluster.servers['cloud'];
         done();
-
       });
   });
 
@@ -57,11 +63,6 @@ describe('Remote queries', function() {
 
     it('should fire a remote query event on detroit1 after peers connect', function(done) {
       var query = cloud.runtime.from('detroit1').where({type: 'testdriver'});
-      var ql = decompiler(query);
-      var remove = 'select * ';
-      if(ql.slice(0, remove.length) === remove) {
-        ql = ql.slice(remove.length);
-      }
       cloud.runtime.observe([query], function(testdriver){
       });
       var key = Object.keys(cloud.runtime._remoteSubscriptions['detroit1'])[0];
@@ -93,9 +94,6 @@ describe('Remote queries', function() {
 
       cloud.pubsub.publish('_peer/connect', { peer: sock });
     });
-
-
-
 
     it('adding a device on the remote server should add a device to app', function(done) {
       var query = cloud.runtime.from('detroit1').where({type: 'testdriver'});
@@ -136,6 +134,145 @@ describe('Remote queries', function() {
           assert.equal(recv, 1);
           done();
         }
+      });
+    });
+
+  });
+
+
+  describe('Websocket Local Queries', function() {
+
+    it('should send back 1 result for local device', function(done) {
+      var socket = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+
+          // test links are properly set
+          json.links.forEach(function(link) {
+            assert(link.href.indexOf(urlLocal) > -1)
+          });
+
+          assert.equal(json.properties.type, 'testdriver');
+          done();
+        });
+      });
+    });
+
+    it('should send back 2 results for local device after a device is added', function(done) {
+      var socket = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        var recv = 0;
+
+        setTimeout(function(){
+          var detroit = cluster.servers['detroit1'];
+          var scout = new FakeScout();
+          scout.server = detroit.runtime;
+          scout.discover(ExampleDevice);
+        }, 50);
+
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+          assert.equal(json.properties.type, 'testdriver');
+          recv++;
+
+          if (recv === 2) {
+            done();
+          }
+        });
+      });
+
+    });
+
+    it('reconnecting should only have 1 result', function(done) {
+      var socket = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+          assert.equal(json.properties.type, 'testdriver');
+          socket.close();
+
+          var socket2 = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+          socket2.on('open', function(err) {
+            socket2.on('message', function(data) {
+              var json = JSON.parse(data);
+              assert.equal(json.properties.type, 'testdriver');
+              done();
+            });
+          });
+          
+        });
+      });
+    });
+
+  });
+
+
+
+
+
+  describe('Websocket Proxied Queries', function() {
+
+    it('should send back 1 result for local device', function(done) {
+      var socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+
+          // test links are properly set
+          json.links.forEach(function(link) {
+            assert(link.href.indexOf(urlProxied) > -1)
+          });
+          
+          assert.equal(json.properties.type, 'testdriver');
+          done();
+        });
+      });
+    });
+
+    it('should send back 2 results for local device after a device is added', function(done) {
+      var socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        var recv = 0;
+
+        setTimeout(function(){
+          var detroit = cluster.servers['detroit1'];
+          var scout = new FakeScout();
+          scout.server = detroit.runtime;
+          scout.discover(ExampleDevice);
+        }, 50);
+
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+          assert.equal(json.properties.type, 'testdriver');
+          recv++;
+
+          if (recv === 2) {
+            done();
+          }
+        });
+      });
+
+    });
+
+    it('reconnecting should only have 1 result', function(done) {
+      var socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+          assert.equal(json.properties.type, 'testdriver');
+          socket.close();
+
+          var socket2 = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+          socket2.on('open', function(err) {
+            socket2.on('message', function(data) {
+              var json = JSON.parse(data);
+              assert.equal(json.properties.type, 'testdriver');
+              done();
+            });
+          });
+          
+        });
       });
     });
 
