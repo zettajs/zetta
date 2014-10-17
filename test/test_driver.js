@@ -145,6 +145,21 @@ describe('Driver', function() {
       });
     });
 
+    it('transitionsAvailable should return proper transitions', function() {
+      //.when('ready', { allow: ['change', 'test'] })
+      //.when('changed', { allow: ['prepare', 'test'] })
+      
+      machine.state = 'ready';
+      var transitions = machine.transitionsAvailable();
+      assert(Object.keys(transitions).indexOf('change') > -1);
+      assert(Object.keys(transitions).indexOf('test') > -1);
+
+      machine.state = 'changed';
+      var transitions = machine.transitionsAvailable();
+      assert(Object.keys(transitions).indexOf('prepare') > -1);
+      assert(Object.keys(transitions).indexOf('test') > -1);
+
+    });
   });
 
   describe('Monitors', function(){

@@ -4,9 +4,7 @@ var IHeardThat = require('./apps');
 
 zetta()
   .name('local')
-  .expose('*')
   .use(Arduino)
-  .load(IHeardThat)
   .link('http://localhost:3002')
   .listen(3000, function(err) {
     if(err) {
