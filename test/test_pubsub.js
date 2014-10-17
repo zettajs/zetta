@@ -33,7 +33,7 @@ describe('Pubsub Service', function() {
   it('subscribe takes a spdy response object', function() {
     var ps = new PubSub();
     var r = new Response(function() {});
-    ps.subscribe('some-topic', r);
+    ps.subscribe('some-topic', {response: r});
   });
 
   it('publish does not fail when there are no listeners', function() {
@@ -62,7 +62,7 @@ describe('Pubsub Service', function() {
       received++;
     });
 
-    ps.subscribe('some-topic', r);
+    ps.subscribe('some-topic', {response: r});
     ps.publish('some-topic', 123);
     
     setTimeout(function(){
@@ -80,7 +80,7 @@ describe('Pubsub Service', function() {
       receivedA++;
     });
 
-    ps.subscribe('some-topic', r);
+    ps.subscribe('some-topic', {response: r});
     ps.subscribe('some-topic', function() {receivedB++;});
     ps.publish('some-topic', 123);
     
