@@ -2,12 +2,14 @@ var Runtime = require('../../zetta_runtime');
 var Device = Runtime.Device;
 var util = require('util');
 
-var TestDriver = module.exports = function(){
+var TestDriver = module.exports = function(x, y){
   Device.call(this);
   this.foo = 0;
   this.bar = 0;
   this.value = 0;
   this._fooBar = 0;
+  this._x = x;
+  this._y = y;
 };
 util.inherits(TestDriver, Device);
 
