@@ -206,8 +206,9 @@ describe('Zetta', function() {
             };
   
             assert(find2(find(1, 'a'), 1, 'a'));
-            assert(find2(find(1, 'a'), 2, 'b'));
-            assert(find2(find(1, 'a'), 3, 'c'));
+            assert(find2(find(2, 'b'), 2, 'b'));
+            assert(find2(find(3, 'c'), 3, 'c'));
+            done();
           });
       });
   });
