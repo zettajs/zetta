@@ -21,7 +21,7 @@
     "calypso-level": "^0.5.0",
     "calypso": "^0.3.0",
     "caql-js-compiler": "^0.1.0",
-    "zetta-auto-scout": "^0.5.0",
+    "zetta-auto-scout": "^0.6.0",
     "zetta-scientist": "^0.3.0",
     "zetta-device": "^0.7.0",
     "zetta-http-device": "^0.3.0",
