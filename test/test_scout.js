@@ -128,7 +128,7 @@ describe('Scout', function() {
       scout.server = runtime;
 
       runtime.on('deviceready', function(machine){
-        assert.equal(machine.name, 'Test Device');
+        assert.equal(machine.name, 'Good Device:foo1');
         assert.equal(machine.type, 'test');
         done();
       });
