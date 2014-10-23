@@ -16,7 +16,7 @@ util.inherits(GoodDevice, zetta.Device);
 
 GoodDevice.prototype.init = function(config){
   config
-    .name('Good Device')
+    .name('Good Device:' + this.foo)
     .type('test')
     .state('ready')
     .when('ready', {allow: ['transition']})
