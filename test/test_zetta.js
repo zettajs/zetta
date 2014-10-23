@@ -212,6 +212,46 @@ describe('Zetta', function() {
           });
       });
   });
+  
+  describe('peering', function() {
+    it('.link should add to peers', function(done){
+      var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+      app.link('http://example.com/');
+      app._initPeers(function(err) {
+        setTimeout(function() {
+          assert.equal(app._peerClients.length, 1);
+          done();
+        }, 100);
+      });
+    });
+    
+    it('.link should not add to peers', function(done){
+      
+      peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err){
+        var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        app._initPeers(function(err) {
+          setTimeout(function() {
+            assert.equal(app._peerClients.length, 0);
+            done();
+          }, 100);
+        });
+      });
+    });
+
+  it('will init API peers.', function(done){
+      
+      peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/'}), function(err){
+        var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        app._initPeers(function(err) {
+          setTimeout(function() {
+            assert.equal(app._peerClients.length, 1);
+            done();
+          }, 100);
+        });
+      });
+    });
+
+  });
 
 
 });

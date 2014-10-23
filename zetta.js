@@ -28,6 +28,7 @@ var Zetta = module.exports = function(opts) {
   this._scouts = [];
   this._apps = [];
   this._peers = [];
+  this._peerClients = [];
   
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
@@ -269,7 +270,7 @@ Zetta.prototype._initPeers = function(callback) {
   var existingUrls = [];
   var allPeers = [];
 
-  this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+  this.peerRegistry.find({ match: function(peer) { return true; } }, function(err, results) {
     results.forEach(function(peer) {
       peer.status = 'disconnected';
       if (peer.direction === 'initiator' && peer.url) {
@@ -287,13 +288,23 @@ Zetta.prototype._initPeers = function(callback) {
     allPeers.forEach(function(obj) {
       var existing = (typeof obj === 'object');
       if (existing) {
-        self.peerRegistry.save(obj, function() {
-          runPeer(obj);
-        });
+        if(!obj.fromLink || self._peers.indexOf(obj.url) > -1) {
+          self.peerRegistry.save(obj, function() {
+            runPeer(obj);
+          });
+        } else {
+          //Delete
+          /*self.peerRegistry.remove(obj, function(err){
+            if(err) {
+              console.error(err);
+            }
+          });*/
+        }
       } else {
         var peerData = {
           url: obj,
-          direction: 'initiator'
+          direction: 'initiator',
+          fromLink:true
         }; 
         self.peerRegistry.add(peerData, function(err, newPeer) {
           runPeer(newPeer);
@@ -302,6 +313,7 @@ Zetta.prototype._initPeers = function(callback) {
       
       function runPeer(peer) {
         var peerClient = new PeerClient(peer.url, self);
+        self._peerClients.push(peerClient);
         
         // when websocket is established
         peerClient.on('connecting', function() {
