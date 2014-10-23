@@ -28,6 +28,7 @@ var Zetta = module.exports = function(opts) {
   this._scouts = [];
   this._apps = [];
   this._peers = [];
+  this._peerClients = [];
   
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
@@ -256,9 +257,7 @@ Zetta.prototype._initHttpServer = function(callback) {
 // set all peers to disconnected
 Zetta.prototype._cleanupPeers = function(callback) {
   var self = this;
-  console.log('CLEANUP TEST');
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
-    console.log('RESULTS', results);
     async.forEach(results, function(peer, next) {
       peer.status = 'disconnected';
       self.peerRegistry.save(peer, next);
@@ -271,7 +270,6 @@ Zetta.prototype._initPeers = function(callback) {
   var existingUrls = [];
   var allPeers = [];
 
-  console.log('TEST');
   this.peerRegistry.find({ match: function(peer) { return true; } }, function(err, results) {
     results.forEach(function(peer) {
       peer.status = 'disconnected';
@@ -290,17 +288,17 @@ Zetta.prototype._initPeers = function(callback) {
     allPeers.forEach(function(obj) {
       var existing = (typeof obj === 'object');
       if (existing) {
-        if(self._peers.indexOf(obj.url) > -1) {
+        if(!obj.fromLink || self._peers.indexOf(obj.url) > -1) {
           self.peerRegistry.save(obj, function() {
             runPeer(obj);
           });
         } else {
-          console.log('ELSE STATEMENT LINE 295:', obj);
-          self.peerRegistry.remove(obj, function(err){
+          //Delete
+          /*self.peerRegistry.remove(obj, function(err){
             if(err) {
               console.error(err);
             }
-          });
+          });*/
         }
       } else {
         var peerData = {
@@ -315,6 +313,7 @@ Zetta.prototype._initPeers = function(callback) {
       
       function runPeer(peer) {
         var peerClient = new PeerClient(peer.url, self);
+        self._peerClients.push(peerClient);
         
         // when websocket is established
         peerClient.on('connecting', function() {
