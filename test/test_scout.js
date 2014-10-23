@@ -128,7 +128,7 @@ describe('Scout', function() {
       scout.server = runtime;
 
       runtime.on('deviceready', function(machine){
-        assert.equal(machine.name, 'Test Device');
+        assert.equal(machine.name, 'Good Device:foo1');
         assert.equal(machine.type, 'test');
         done();
       });
@@ -160,8 +160,25 @@ describe('Scout', function() {
       scout.server = runtime;
       scout.init(function(){
       });
-
     });
+
+
+    it('device init.name() should take presedence over registry value', function(done) {
+      GoodScout.prototype.init = function(cb){
+        var query = this.server.where({type:'test', vendorId:'1234567'});
+        var self = this;
+        this.server.find(query, function(err, results){
+          var device = self.provision(results[0], GoodDevice, 'foo1', 'foo2');
+          assert.equal(device.name, 'Good Device:foo1');
+          done();
+        });
+      };
+
+      var scout = new GoodScout();
+      scout.server = runtime;
+      scout.init(function(){});
+    });
+
   });
 
 

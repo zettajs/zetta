@@ -181,7 +181,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should accept remote devices of type testdriver, and allow them to set their own name and id properties', function(done) {
+    it('should accept remote devices of type testdriver, and allow them to set their own id properties', function(done) {
       request(getHttpServer(app))
         .post(url + '/devices')
         .send('type=testdriver&id=12345&name=test')
@@ -193,7 +193,6 @@ describe('Zetta Api', function() {
               assert.equal(machines.length, 1);
               assert.equal(machines[0].type, 'testdriver');
               assert.equal(machines[0].id, '12345');            
-              assert.equal(app.runtime._jsDevices['12345'].name, 'test');
               done();
             });
           })(res);
