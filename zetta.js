@@ -256,7 +256,9 @@ Zetta.prototype._initHttpServer = function(callback) {
 // set all peers to disconnected
 Zetta.prototype._cleanupPeers = function(callback) {
   var self = this;
+  console.log('CLEANUP TEST');
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+    console.log('RESULTS', results);
     async.forEach(results, function(peer, next) {
       peer.status = 'disconnected';
       self.peerRegistry.save(peer, next);
@@ -269,7 +271,8 @@ Zetta.prototype._initPeers = function(callback) {
   var existingUrls = [];
   var allPeers = [];
 
-  this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+  console.log('TEST');
+  this.peerRegistry.find({ match: function(peer) { return true; } }, function(err, results) {
     results.forEach(function(peer) {
       peer.status = 'disconnected';
       if (peer.direction === 'initiator' && peer.url) {
@@ -287,13 +290,23 @@ Zetta.prototype._initPeers = function(callback) {
     allPeers.forEach(function(obj) {
       var existing = (typeof obj === 'object');
       if (existing) {
-        self.peerRegistry.save(obj, function() {
-          runPeer(obj);
-        });
+        if(self._peers.indexOf(obj.url) > -1) {
+          self.peerRegistry.save(obj, function() {
+            runPeer(obj);
+          });
+        } else {
+          console.log('ELSE STATEMENT LINE 295:', obj);
+          self.peerRegistry.remove(obj, function(err){
+            if(err) {
+              console.error(err);
+            }
+          });
+        }
       } else {
         var peerData = {
           url: obj,
-          direction: 'initiator'
+          direction: 'initiator',
+          fromLink:true
         }; 
         self.peerRegistry.add(peerData, function(err, newPeer) {
           runPeer(newPeer);
