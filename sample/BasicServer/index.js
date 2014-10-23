@@ -10,7 +10,7 @@ zetta()
   .use(Arduino)
   .use(Spark)
   .use(iPhone, {http_device: true})
-  .load(app)
+  .use(app)
   .listen(3002, function(err) {
     if(err) {
       console.log(err);
