@@ -81,14 +81,12 @@ describe('Driver', function() {
       });
     });
 
-    it('should throw an error when a disallowed transition tries to happen.', function(done) {
-      machine.call('change', function() {
-        try {
+    it('should not throw an error when a disallowed transition tries to happen.', function(done) {
+      assert.doesNotThrow(function(){
+        machine.call('change', function() {
           machine.call('change');
-        } catch (e) {
-          assert.ok(e);
           done();
-        }
+        });
       });
     });
 
@@ -192,6 +190,34 @@ describe('Driver', function() {
       machine.foo++;
     });
 
+    it('should have createReadSteam on device', function(){
+      assert.ok(machine.createReadStream);
+      assert.ok(machine.createReadStream('foo'));
+    });
+
+    it('createReadStream should return values from stream', function(done){
+      var s = machine.createReadStream('foo');
+      s.on('data', function() {
+        done();
+      });
+      machine.foo++;
+    });
+
+    it('createReadStream stream when paused shoud not recieve any updates', function(done){
+      var s = machine.createReadStream('foo');
+      var recv = 0;
+      s.on('data', function() {
+        recv++;
+        if (recv === 1) {
+          s.pause();
+          machine.foo++;
+          setTimeout(done, 10);
+        } else {
+          throw new Error('Should not recieve more than one data event');
+        }
+      });
+      machine.foo++;
+    });
 
     it('should stream values of bar once configured', function(done){
       assert.ok(machine.streams.bar);
@@ -209,7 +235,7 @@ describe('Driver', function() {
     });
   });
 
-  describe('Streams', function() {
+  describe('Device.save', function() {
     
     it('save should be implemented on device', function() {
       assert.equal(typeof machine.save, 'function');
