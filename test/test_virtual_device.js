@@ -23,8 +23,10 @@ describe('Virtual Device', function() {
   var deviceJson = null;
   var vdevice = null;
 
+  var startPort = 2600;
+
   beforeEach(function(done) {
-    cluster = zettatest()
+    cluster = zettatest({ startPort: startPort++ })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud'])
       .run(function(err){
