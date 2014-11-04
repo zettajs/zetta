@@ -294,11 +294,11 @@ Zetta.prototype._initPeers = function(callback) {
           });
         } else {
           //Delete
-          /*self.peerRegistry.remove(obj, function(err){
+          self.peerRegistry.remove(obj, function(err){
             if(err) {
               console.error(err);
             }
-          });*/
+          });
         }
       } else {
         var peerData = {
