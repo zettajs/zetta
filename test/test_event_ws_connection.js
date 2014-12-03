@@ -101,6 +101,44 @@ describe('Event Websocket', function() {
 
   describe('Receive json messages', function() {
 
+    it('websocket should recv only one set of messages when reconnecting', function(done) {
+      var url = 'ws://' + deviceUrl + '/bar';
+
+      function openAndClose(cb) {
+        var s1 = new WebSocket(url);
+        s1.on('open', function(err) {
+          s1.close();
+          s1.on('close', function(){
+            cb();
+          });
+        });
+      }
+      openAndClose(function(){
+        var s2 = new WebSocket(url);
+        s2.on('open', function(err) {
+          var count = 0;
+          s2.on('message', function(buf, flags) {
+            count++;
+          });
+
+          setTimeout(function(){
+            device.incrementStreamValue();
+          }, 20)
+          
+          setTimeout(function() {
+            if (count === 1) {
+              done();
+            } else {
+              throw new Error('Should have only recieved one message. ' + count);
+            }
+          }, 100);
+        });
+      });
+
+      return;
+    });
+
+
     it('websocket should connect and recv data in json form', function(done) {
       var url = 'ws://' + deviceUrl + '/bar';
       var error = 0;
