@@ -133,7 +133,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it.only('should have monitor log link formatted correctly', function(done) {
+    it('should have monitor log link formatted correctly', function(done) {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {          
