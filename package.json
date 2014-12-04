@@ -24,7 +24,7 @@
     "zetta-scientist": "^0.3.0",
     "zetta-device": "^0.9.0",
     "zetta-http-device": "^0.3.0",
-    "zetta-scout": "^0.4.0",
+    "zetta-scout": "^0.5.0",
     "zetta-streams": "^0.1.0",
     "zetta-rels": "^0.2.0",
     "calypso-query-decompiler": "^0.2.0"
