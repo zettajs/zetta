@@ -64,6 +64,27 @@ describe('Driver', function() {
 
   describe('Transitions', function() {
 
+    it('shuld not throw when calling an invalid transition name.', function(done) {
+      machine.call('not-a-transition', function(err) {
+        assert(err);
+        done();
+      });
+    });
+
+    it('should not throw when calling a transition not allowed in invalid state.', function(done) {
+      machine.state = 'not-a-state';
+      machine.call('prepare', function(err) {
+        assert(err);
+        done();
+      });
+    });
+
+    it('avialable transitions should not throw when in invalid state.', function(done) {
+      machine.state = 'not-a-state';
+      machine.transitionsAvailable();
+      done();
+    });
+
     it('should change the state from ready to changed when calling change.', function(done) {
       machine.call('change', function() {
         assert.equal(machine.state, 'changed');
