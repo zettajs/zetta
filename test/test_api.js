@@ -133,6 +133,19 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('should have monitor log link formatted correctly', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {          
+          var link = body.links.filter(function(l) {
+            return l.rel.indexOf('monitor') > -1;
+          })[0];
+          var obj = require('url').parse(link.href, true);
+          assert(obj.query.topic);
+        }))
+        .end(done);
+    });
+
     it('should have valid entities', function(done) {
       request(getHttpServer(app))
         .get(url)
