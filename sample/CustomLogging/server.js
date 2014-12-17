@@ -5,11 +5,17 @@ var winston = require('winston');
 
 // or
 
-var bunyan = require('bunyan').createLogger({name: 'myapp'});
+var bunyan = require('bunyan').createLogger({ name: 'myapp' });
+
+logger.emit('error', 'http_server', 'some message', { data: 123 });
+
+logger.info('http_server', 'some message', { data: 123 });
+logger.warn('http_server', 'some message', { data: 123 });
+logger.error('http_server', 'some message', { data: 123 });
 
 zetta()
-
-  .logs(function(log) {
+  .silent()
+  .logging(function(log) {
     // logs passes an internal logs object.
     
     log.on('log', function(type, msg, data) {
