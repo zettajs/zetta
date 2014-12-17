@@ -23,22 +23,21 @@ GoodScout.prototype.init = function(cb){
   this.server.find(query, function(err, results){
     if(!err) {
       if(results.length) {
-        self.provision(results[0], GoodDevice);   
+        self.provision(results[0], GoodDevice);
       }
     }
   });
   cb();
 };
 
-var TEST_PORT = process.env.TEST_PORT || Math.floor(4000 + Math.random() * 1000);
-
 describe('Event Websocket', function() {
   var peerRegistry = null;
   var registry = null;
   var app = null;
-  var deviceUrl = 'localhost:' + TEST_PORT + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
-  var deviceUrlHttp = 'localhost:' + TEST_PORT + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/devices/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
+  var deviceUrl = null;
+  var deviceUrlHttp = null;
   var device = null;
+
   beforeEach(function(done) {
     peerRegistry = new PeerRegistry();
     registry = new MockRegistry();
@@ -50,13 +49,16 @@ describe('Event Websocket', function() {
       app = zetta({registry: registry, peerRegistry: peerRegistry});
       app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
       app.use(GoodScout)
-      app.listen(TEST_PORT, function(err){
+      app.listen(0, function(err){
+        var port = app.httpServer.server.address().port;
+        deviceUrl = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
+        deviceUrlHttp = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/devices/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
         device = app.runtime._jsDevices['BC2832FD-9437-4473-A4A8-AC1D56B12C6F'];
         done(err);
       });
     });
   });
-  
+
   afterEach(function(done) {
     app.httpServer.server.close();
     done();
@@ -92,7 +94,7 @@ describe('Event Websocket', function() {
         assert.equal(error, 0);
         assert.equal(open, true, 'ws should be opened');
         done();
-      }, 20);    
+      }, 20);
     });
 
   });
@@ -124,7 +126,7 @@ describe('Event Websocket', function() {
           setTimeout(function(){
             device.incrementStreamValue();
           }, 20)
-          
+
           setTimeout(function() {
             if (count === 1) {
               done();
@@ -173,18 +175,18 @@ describe('Event Websocket', function() {
             done();
           }
         });
-        
+
         device.incrementStreamValue();
         device.incrementStreamValue();
         device.incrementStreamValue();
-        
+
         timer = setTimeout(function() {
           assert.equal(recv, 3, 'should have received 3 messages');
           socket.close();
           done();
         }, 100);
-        
-      }, 20);    
+
+      }, 20);
     });
 
 
@@ -227,15 +229,15 @@ describe('Event Websocket', function() {
             done();
           }
         });
-        
+
         device.call('change');
-        
+
         timer = setTimeout(function() {
           assert.equal(recv, 1, 'should have received 1 message');
           socket.close();
           done();
         }, 100);
-      }, 20);    
+      }, 20);
     });
 
   });
@@ -280,18 +282,18 @@ describe('Event Websocket', function() {
             done();
           }
         });
-        
+
         device.incrementFooBar();
         device.incrementFooBar();
         device.incrementFooBar();
-        
+
         timer = setTimeout(function() {
           assert.equal(recv, 3, 'should have received 3 messages');
           socket.close();
           done();
         }, 100);
-        
-      }, 20);    
+
+      }, 20);
     });
 
   });
@@ -299,5 +301,3 @@ describe('Event Websocket', function() {
 
 
 });
-
-
