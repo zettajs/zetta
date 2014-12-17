@@ -2,6 +2,7 @@ var async = require('async');
 var zetta = require('../../zetta');
 var MemRegistry = require('./mem_registry');
 var MemPeerRegistry = require('./mem_peer_registry');
+var portscanner = require('./portscanner');
 
 module.exports = function(opts) {
   return new ZettaTest(opts);
@@ -9,7 +10,7 @@ module.exports = function(opts) {
 
 var ZettaTest = function(opts) {
   opts = opts || {};
-  this.startPort = opts.startPort || Math.floor(2000 + Math.random() * 1000);
+  this.startPort = opts.startPort || Math.floor(2000 + Math.random() * 60000);
   this._nextPort = this.startPort;
   this.servers = {};
   this.RegType = opts.Registry || MemRegistry;
@@ -44,7 +45,7 @@ ZettaTest.prototype.server = function(name, scouts, peers) {
   };
  
   server._testPeers = peers || [];
-  server._testPort = this._nextPort++;
+//  server._testPort = this._nextPort++;
   this.servers[name] = server;
   return this;
 };
@@ -59,68 +60,98 @@ ZettaTest.prototype.stop = function(callback) {
 
 ZettaTest.prototype.run = function(callback) {
   var self = this;
-  Object.keys(this.servers).forEach(function(key) {
-    var server = self.servers[key];
-    server._testPeers.forEach(function(peerName) {
-      if (!self.servers[peerName]) {
-        return;
-      }
 
-      var url = 'http://localhost:' + self.servers[peerName]._testPort;
-      console.log('Server [' + key + '] Linking to ' + url);
-      self._serversUrl[url] = self.servers[peerName];
-      server.link(url);
-    });
-  });
-  
-  async.each( Object.keys(this.servers), function(name, next) {
-    var server = self.servers[name];
-    console.log('Server [' + name + '] Started on port ' + server._testPort);
-    server.listen(server._testPort, function(err) {
-      if (err) {
-        return err;
-      }
+  this.assignPorts(function(err) {
+    if (err) {
+      return callback(err);
+    }
 
-      function check(done) {
-        var allQuery = {
-          match: function() { return true; }
-        };
-        var ret = true;
-        server.peerRegistry.find(allQuery, function(err, results) {
-          results.forEach(function(peer) {
-            if (!peer.status || peer.status !== 'connected') {
-              ret = false;
-              return;
-            }
-
-            var pServer = self._serversUrl[peer.url];
-            if (!pServer.httpServer.peers[name]) {
-              ret = false;
-            }
-          });
-          done(ret);
-        });
-      }
-
-
-      async.forever(
-        function(next) {
-          check(function(ready){
-            if (ready) {
-              return next(new Error(''));
-            } else {
-              return next();
-            }
-          });
-        },
-        function(err) {
-          next();
+    Object.keys(self.servers).forEach(function(key) {
+      var server = self.servers[key];
+      server._testPeers.forEach(function(peerName) {
+        if (!self.servers[peerName]) {
+          return;
         }
-      );
+
+        var url = 'http://localhost:' + self.servers[peerName]._testPort;
+        self._serversUrl[url] = self.servers[peerName];
+        server.link(url);
+      });
     });
-  }, callback);
+    
+    async.each( Object.keys(self.servers), function(name, next) {
+      var server = self.servers[name];
+      server.listen(server._testPort, function(err) {
+        if (err) {
+          return next(err);
+        }
+
+        function check(done) {
+          var allQuery = {
+            match: function() { return true; }
+          };
+          var ret = true;
+          server.peerRegistry.find(allQuery, function(err, results) {
+            results.forEach(function(peer) {
+              if (!peer.status || peer.status !== 'connected') {
+                ret = false;
+                return;
+              }
+
+              var pServer = self._serversUrl[peer.url];
+              if (!pServer.httpServer.peers[name]) {
+                ret = false;
+              }
+            });
+            done(ret);
+          });
+        }
+
+
+        async.forever(
+          function(next) {
+            check(function(ready){
+              if (ready) {
+                return next(new Error(''));
+              } else {
+                return next();
+              }
+            });
+          },
+          function(err) {
+            next();
+          }
+        );
+      });
+    }, callback);
+
+  });
 
   return this;
+};
+
+ZettaTest.prototype.assignPorts = function(cb) {
+  var self = this;
+  var obj = { count: Object.keys(this.servers).length };
+  if (this.startPort) {
+    obj.startingPort = this.startPort;
+  }
+  
+  portscanner(obj, function(err, ports) {
+    if (err) {
+      return cb(err);
+    }
+    
+    if (typeof ports === 'number') {
+      ports = [ports];
+    }
+
+    Object.keys(self.servers).forEach(function(key, i) {
+      self.servers[key]._testPort = ports[i];
+    });
+    
+    cb();
+  });
 };
 
 
