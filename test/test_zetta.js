@@ -236,6 +236,22 @@ describe('Zetta', function() {
       });
     });
 
+    it('will delete fromLink peers in the registry', function(done) {
+      peerRegistry.db.put('1234567', JSON.stringify({ id:'1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err) {
+        var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        app._initPeers(function(err) {
+          setTimeout(function(){
+           assert.equal(app._peerClients.length, 0);
+           peerRegistry.find({ match: function(peer) { return true; }}, function(err, results) {
+             assert.equal(results.length, 0);
+             done();
+           }); 
+          }, 100);  
+        });
+      });
+
+    });
+
   it('will init API peers.', function(done){
 
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/'}), function(err){
