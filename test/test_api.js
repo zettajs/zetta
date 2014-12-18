@@ -83,6 +83,7 @@ describe('Zetta Api', function() {
 
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .use(HttpDriver)
         .name('local')
@@ -218,6 +219,7 @@ describe('Zetta Api', function() {
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')
@@ -266,7 +268,7 @@ describe('Zetta Api', function() {
     });
 
     it('should use a default server name if none has been provided', function(done) {
-      var app = zetta({ registry: reg, peerRegistry: peerRegistry })._run();
+      var app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent()._run();
 
       request(getHttpServer(app))
         .get('/')
@@ -293,6 +295,7 @@ describe('Zetta Api', function() {
 
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')
@@ -365,6 +368,7 @@ describe('Zetta Api', function() {
 
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')
@@ -415,6 +419,7 @@ describe('Zetta Api', function() {
 
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')

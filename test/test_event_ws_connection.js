@@ -47,6 +47,7 @@ describe('Event Websocket', function() {
         return;
       }
       app = zetta({registry: registry, peerRegistry: peerRegistry});
+      app.silent();
       app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
       app.use(GoodScout)
       app.listen(0, function(err){

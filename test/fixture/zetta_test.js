@@ -32,6 +32,7 @@ ZettaTest.prototype.server = function(name, scouts, peers) {
   var reg = new this.RegType();
   var peerRegistry = new this.PeerRegType();
   var server = zetta({ registry: reg, peerRegistry: peerRegistry });
+  server.silent();
   server.name(name);
   server.expose('*');
   if (scouts) {

@@ -28,7 +28,7 @@ describe('EventBroker', function() {
   beforeEach(function() {
     var reg = new Registry();
     peerRegistry = new PeerRegistry();
-    app = zetta({ registry: reg, peerRegistry: peerRegistry });
+    app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     query = { topic: 'some-topic', name: app.id };
     broker = new EventBroker(app);
   });
