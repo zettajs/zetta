@@ -34,6 +34,8 @@ var Zetta = module.exports = function(opts) {
 
   this.pubsub = opts.pubsub || new PubSub();
   this.log = opts.log || new Logger({ pubsub: this.pubsub });
+  this.log.init();
+  this._silent = false;
 
   this.httpServer = new HttpServer(this);
 
@@ -52,7 +54,18 @@ var Zetta = module.exports = function(opts) {
   httpScout.server = this.runtime;
   this.httpScout = httpScout;
   this._scouts.push(httpScout);
+};
 
+Zetta.prototype.silent = function() {
+  this._silent = true;
+  return this;
+};
+
+// pass in a custom logging
+Zetta.prototype.logger = function(func) {
+  this._silent = true;
+  func(this.log);
+  return this;
 };
 
 Zetta.prototype.name = function(name) {
@@ -198,6 +211,10 @@ Zetta.prototype._run = function(callback) {
 
   if(!callback) {
     callback = function(){};
+  }
+
+  if (!this._silent) {
+    Logger.ConsoleOutput(this.log);
   }
 
   async.series([
