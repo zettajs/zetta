@@ -27,6 +27,26 @@ describe('Zetta', function() {
     assert.equal(z._name, 'local');
   });
 
+  it('has the silent() function to suppress logging.', function() {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
+  });
+
+  it('has the logger() function to pass in custom logging.', function(done) {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    z.logger(function(log) {
+      log.on('message', function(level, event, msg, data) {
+        assert.equal(level, 'info');
+        assert.equal(event, 'custom');
+        assert.equal(msg, 'some message');
+        assert.equal(data.data, 1);
+        done();
+      });
+      
+      z.log.info('custom', 'some message', {data: 1});
+    });
+  });
+
+
   it('will load an app with the load() function', function() {
     zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
