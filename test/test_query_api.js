@@ -82,6 +82,7 @@ describe('Zetta Query Api', function() {
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')
@@ -135,6 +136,7 @@ describe('Zetta Query Api', function() {
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')
@@ -250,6 +252,7 @@ describe('Zetta Query Api', function() {
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
         .use(Scout)
         .name('local')
         .expose('*')
