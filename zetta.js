@@ -277,6 +277,7 @@ Zetta.prototype._cleanupPeers = function(callback) {
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
     if(err) {
       callback(err);  
+      return;
     }
 
     async.forEach(results, function(peer, next) {
@@ -294,6 +295,7 @@ Zetta.prototype._initPeers = function(callback) {
   this.peerRegistry.find({ match: function(peer) { return true; } }, function(err, results) {
     if(err) {
       callback(err);  
+      return;
     }
 
     results.forEach(function(peer) {
