@@ -275,6 +275,11 @@ Zetta.prototype._initHttpServer = function(callback) {
 Zetta.prototype._cleanupPeers = function(callback) {
   var self = this;
   this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+    if(err) {
+      callback(err);  
+      return;
+    }
+
     async.forEach(results, function(peer, next) {
       peer.status = 'disconnected';
       self.peerRegistry.save(peer, next);
@@ -288,6 +293,11 @@ Zetta.prototype._initPeers = function(callback) {
   var allPeers = [];
 
   this.peerRegistry.find({ match: function(peer) { return true; } }, function(err, results) {
+    if(err) {
+      callback(err);  
+      return;
+    }
+
     results.forEach(function(peer) {
       peer.status = 'disconnected';
       if (peer.direction === 'initiator' && peer.url) {
@@ -311,11 +321,11 @@ Zetta.prototype._initPeers = function(callback) {
           });
         } else {
           //Delete
-          /*self.peerRegistry.remove(obj, function(err){
+          self.peerRegistry.remove(obj, function(err){
             if(err) {
               console.error(err);
             }
-          });*/
+          });
         }
       } else {
         var peerData = {
