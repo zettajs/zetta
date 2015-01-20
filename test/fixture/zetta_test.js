@@ -3,6 +3,7 @@ var zetta = require('../../zetta');
 var MemRegistry = require('./mem_registry');
 var MemPeerRegistry = require('./mem_peer_registry');
 var portscanner = require('./portscanner');
+var Query = require('calypso').Query;
 
 module.exports = function(opts) {
   return new ZettaTest(opts);
@@ -61,7 +62,6 @@ ZettaTest.prototype.stop = function(callback) {
 
 ZettaTest.prototype.run = function(callback) {
   var self = this;
-
   this.assignPorts(function(err) {
     if (err) {
       return callback(err);
@@ -82,15 +82,14 @@ ZettaTest.prototype.run = function(callback) {
     
     async.each( Object.keys(self.servers), function(name, next) {
       var server = self.servers[name];
+      console.log(server);
       server.listen(server._testPort, function(err) {
         if (err) {
           return next(err);
         }
 
         function check(done) {
-          var allQuery = {
-            match: function() { return true; }
-          };
+          var allQuery = Query.of('peers');
           var ret = true;
           server.peerRegistry.find(allQuery, function(err, results) {
             results.forEach(function(peer) {

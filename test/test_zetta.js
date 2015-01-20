@@ -8,6 +8,7 @@ var Device = require('zetta-device');
 var HttpDevice = require('zetta-http-device');
 var Scout = require('zetta-scout');
 var ExampleDevice = require('./fixture/example_driver');
+var Query = require('calypso').Query;
 
 describe('Zetta', function() {
   var reg = null;
@@ -269,7 +270,7 @@ describe('Zetta', function() {
         app._initPeers(function(err) {
           setTimeout(function(){
            assert.equal(app._peerClients.length, 0);
-           peerRegistry.find({ match: function(peer) { return true; }}, function(err, results) {
+           peerRegistry.find(Query.of('peers'), function(err, results) {
              assert.equal(results.length, 0);
              done();
            }); 
