@@ -348,7 +348,7 @@ Zetta.prototype._initPeers = function(callback) {
       function runPeer(peer) {
         var peerClient = new PeerClient(peer.url, self);
         self._peerClients.push(peerClient);
-        
+
         // when websocket is established
         peerClient.on('connecting', function() {
           peer.status = 'connecting';
@@ -381,11 +381,7 @@ Zetta.prototype._initPeers = function(callback) {
 
             // peer-event
             self.pubsub.publish('_peer/disconnect', { peer: peerClient });
-
-            self.peerRegistry.save(result, function() {
-              // re-connect
-              peerClient.start();
-            });
+            self.peerRegistry.save(result, function() { });
           });
         });
 

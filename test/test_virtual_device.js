@@ -113,7 +113,7 @@ describe('Virtual Device', function() {
       });
       var timer = setTimeout(function() {
         done(new Error('Faied to recv transition call on detroit device'));
-      }, 100);
+      }, 1500);
 
       var recv = 0;
       device.on('test', function() {
@@ -132,14 +132,14 @@ describe('Virtual Device', function() {
             });
             var timer = setTimeout(function() {
               done(new Error('Faied to recv transition call on detroit device'));
-            }, 100);
+            }, 1500);
 
             device.on('test', function() {
               clearTimeout(timer);
               assert.equal(device.value, 'hello1');
               done();
             });
-          }, 100);
+          }, 1500);
         }
       });
     });
