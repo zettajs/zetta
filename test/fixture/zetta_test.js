@@ -33,7 +33,7 @@ ZettaTest.prototype.server = function(name, scouts, peers) {
   var reg = new this.RegType();
   var peerRegistry = new this.PeerRegType();
   var server = zetta({ registry: reg, peerRegistry: peerRegistry });
-  server.silent();
+  //server.silent();
   server.name(name);
   server.expose('*');
   if (scouts) {
@@ -62,6 +62,11 @@ ZettaTest.prototype.stop = function(callback) {
 
 ZettaTest.prototype.run = function(callback) {
   var self = this;
+  var cb = function() {
+    console.log(arguments);
+    console.log('Got to the callback');
+    callback();  
+  };
   this.assignPorts(function(err) {
     if (err) {
       return callback(err);
@@ -82,12 +87,10 @@ ZettaTest.prototype.run = function(callback) {
     
     async.each( Object.keys(self.servers), function(name, next) {
       var server = self.servers[name];
-      console.log(server);
       server.listen(server._testPort, function(err) {
         if (err) {
           return next(err);
         }
-
         function check(done) {
           var allQuery = Query.of('peers');
           var ret = true;
@@ -123,7 +126,7 @@ ZettaTest.prototype.run = function(callback) {
           }
         );
       });
-    }, callback);
+    }, cb);
 
   });
 

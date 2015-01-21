@@ -345,6 +345,7 @@ Zetta.prototype._initPeers = function(callback) {
         
         // when websocket is established
         peerClient.on('connecting', function() {
+          console.log('connecting on runPeer:', self.id);
           peer.status = 'connecting';
           self.peerRegistry.save(peer);
         });
