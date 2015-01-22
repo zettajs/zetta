@@ -13,6 +13,7 @@ var PubSub = require('./lib/pubsub_service');
 var Runtime = require('./lib/runtime');
 var Scout = require('zetta-scout');
 var scientist = require('zetta-scientist');
+var Query = require('calypso').Query;
 
 var Zetta = module.exports = function(opts) {
   if (!(this instanceof Zetta)) {
@@ -274,7 +275,7 @@ Zetta.prototype._initHttpServer = function(callback) {
 // set all peers to disconnected
 Zetta.prototype._cleanupPeers = function(callback) {
   var self = this;
-  this.peerRegistry.find({ match: function() { return true; } }, function(err, results) {
+  this.peerRegistry.find(Query.of('peers'), function(err, results) {
     if(err) {
       callback(err);  
       return;
@@ -292,7 +293,7 @@ Zetta.prototype._initPeers = function(callback) {
   var existingUrls = [];
   var allPeers = [];
 
-  this.peerRegistry.find({ match: function(peer) { return true; } }, function(err, results) {
+  this.peerRegistry.find(Query.of('peers'), function(err, results) {
     if(err) {
       callback(err);  
       return;
@@ -371,7 +372,6 @@ Zetta.prototype._initPeers = function(callback) {
 
         peerClient.on('closed', function(reconnect) {
           self.peerRegistry.get(peer.id, function(err, result) {
-            result = JSON.parse(result);
             result.status = 'disconnected';
 
             // peer-event

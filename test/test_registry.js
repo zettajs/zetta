@@ -6,7 +6,7 @@ var Scientist = require('zetta-scientist');
 var assert = require('assert');
 var util = require('util');
 var Device = Runtime.Device;
-var Registry = require('../lib/registry');
+var DeviceRegistry = require('../lib/device_registry');
 var Query = require('calypso').Query;
 
 function TestDriver() {
@@ -26,19 +26,21 @@ TestDriver.prototype.init = function(config) {
 
 var dbPath = path.join(__dirname, './.registry');
 
-describe('Registry', function() {
+describe('DeviceRegistry', function() {
   var db = null;
   var machine = null;
+  var opts = null;
 
   beforeEach(function(done) {
     db = levelup(dbPath, { db: memdown });
     machine = Scientist.create(TestDriver);
     Scientist.init(machine);
+    opts = { db: db, collection: 'devices' };
     done();
   });
 
   it('should call the callback on close', function(done) {
-    var reg = new Registry(db);
+    var reg = new DeviceRegistry(opts);
     reg.close(function() {
       assert.equal(arguments.length, 0);
       done();
@@ -46,7 +48,7 @@ describe('Registry', function() {
   });
 
   it('should save a configured device to the database.', function(done) {
-    var reg = new Registry(db);
+    var reg = new DeviceRegistry(opts);
     reg.save(machine, function(err) {
       assert.ok(!err);
       reg.close();
@@ -56,7 +58,7 @@ describe('Registry', function() {
 
   describe('#find', function() {
     it('should find a device by it\'s id.', function(done) {
-      var reg = new Registry(db);
+      var reg = new DeviceRegistry(opts);
       reg.save(machine, function(err) {
         if(!err) {
           reg.get('123456789', function(err, value) {
@@ -74,7 +76,7 @@ describe('Registry', function() {
     });
 
     it('should have a callback return results in the callback of find.', function(done) {
-      var reg = new Registry(db);
+      var reg = new DeviceRegistry(opts);
       reg.save(machine, function(err) {
         if(!err) {
           reg.find({ type: 'test' }, function(err, results) {
@@ -93,7 +95,7 @@ describe('Registry', function() {
     });
 
     it('should return no results in the callback of find with a query that does not match.', function(done) {
-      var reg = new Registry(db);
+      var reg = new DeviceRegistry(opts);
       reg.save(machine, function(err) {
         if(!err) {
           reg.find({ type: 'foobar' }, function(err, results) {
@@ -108,7 +110,7 @@ describe('Registry', function() {
     });
 
     it('should return results with a query language query', function(done) {
-        var reg = new Registry(db);
+        var reg = new DeviceRegistry(opts);
         reg.save(machine, function(err) {
           if(!err) {
             reg.find('where type="test"', function(err, results) {
@@ -127,7 +129,7 @@ describe('Registry', function() {
     });
 
     it('should return results with a Query object', function(done) {
-        var reg = new Registry(db);
+        var reg = new DeviceRegistry(opts);
         reg.save(machine, function(err) {
           if(!err) {
             var query = Query.of('devices')
@@ -149,7 +151,7 @@ describe('Registry', function() {
     });
 
     it('should return results with a parameterized Query object', function(done) {
-        var reg = new Registry(db);
+        var reg = new DeviceRegistry(opts);
         reg.save(machine, function(err) {
           if(!err) {
             var query = Query.of('devices')

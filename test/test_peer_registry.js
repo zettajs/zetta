@@ -3,14 +3,16 @@ var path = require('path');
 var levelup = require('levelup');
 var memdown = require('memdown');
 var PeerRegistry = require('../lib/peer_registry');
+var Query = require('calypso').Query;
 
 var dbPath = path.join(__dirname, './.peers');
 
 describe('Peer Registry', function() {
-  var db;
+  var db, opts;
 
   beforeEach(function(done) {
     db = levelup(dbPath, { db: memdown });
+    opts = { db: db, collection: 'peers' };
     done();
   });
 
@@ -21,7 +23,7 @@ describe('Peer Registry', function() {
   });
 
   it('should save a peer', function(done) {
-    var reg = new PeerRegistry(db);
+    var reg = new PeerRegistry(opts);
     reg.save({ id: 0 }, function(err) {
       assert.ifError(err);
       done();
@@ -29,7 +31,7 @@ describe('Peer Registry', function() {
   });
 
   it('should remove error property on peer save when status is not failed', function(done) {
-    var reg = new PeerRegistry(db);
+    var reg = new PeerRegistry(opts);
     reg.save({ id: 0, error: new Error() }, function() {
       reg.get(0, function(err, result) {
         assert.equal(result.error, undefined);
@@ -39,10 +41,10 @@ describe('Peer Registry', function() {
   })
 
   it('should find multiple peers', function(done) {
-    var reg = new PeerRegistry(db);
+    var reg = new PeerRegistry(opts);
     reg.save({ id: 0 }, function() {
       reg.save({ id: 1 }, function() {
-        var query = { match: function() { return true; } };
+        var query = Query.of('peers');
         reg.find(query, function(err, results) {
           assert.equal(results.length, 2);
           done();
@@ -52,7 +54,7 @@ describe('Peer Registry', function() {
   });
 
   it('should get peers by id', function(done) {
-    var reg = new PeerRegistry(db);
+    var reg = new PeerRegistry(opts);
     reg.save({ id: 012345 }, function() {
       reg.get(012345, function(err, peer) {
         assert(peer);
@@ -62,7 +64,7 @@ describe('Peer Registry', function() {
   });
 
   it('should delete peers', function(done) {
-    var reg = new PeerRegistry(db);
+    var reg = new PeerRegistry(opts);
     var peer = { id: 0123456 };
     reg.save(peer, function() {
       reg.remove(peer, function(err, peer) {
@@ -73,7 +75,7 @@ describe('Peer Registry', function() {
   });
 
   it('should close', function(done) {
-    var reg = new PeerRegistry(db);
+    var reg = new PeerRegistry(opts);
     reg.close(function(err) {
       assert.ifError(err);
       done();
@@ -82,7 +84,7 @@ describe('Peer Registry', function() {
 
   describe('#add', function() {
     it('should save new peers', function(done) {
-      var reg = new PeerRegistry(db);
+      var reg = new PeerRegistry(opts);
       var peer = {id: 'someid'};
       
       reg.add(peer, function(err, result) {
@@ -92,7 +94,7 @@ describe('Peer Registry', function() {
     });
 
     it('should generate an ID for new peers', function(done) {
-      var reg = new PeerRegistry(db);
+      var reg = new PeerRegistry(opts);
       var peer = {id: 'someid'};
       
       reg.add(peer, function(err, result) {
@@ -102,7 +104,7 @@ describe('Peer Registry', function() {
     });
 
     it('should update existing peers', function(done) {
-      var reg = new PeerRegistry(db);
+      var reg = new PeerRegistry(opts);
       var peer = { id: 012345 };
       
       reg.save(peer, function() {
@@ -114,7 +116,7 @@ describe('Peer Registry', function() {
     });
 
     it('propagates errors from #find', function(done) {
-      var reg = new PeerRegistry(db);
+      var reg = new PeerRegistry(opts);
       var peer = {id: 'someid'};
       
       reg.find = function(key, cb) {
@@ -128,7 +130,7 @@ describe('Peer Registry', function() {
     });
 
     it('propagates errors from #save', function(done) {
-      var reg = new PeerRegistry(db);
+      var reg = new PeerRegistry(opts);
       var peer = {};
       
       reg.save = function(key, cb) {
@@ -143,7 +145,7 @@ describe('Peer Registry', function() {
 
 
     it('it should not match entries when both .url are undefined or null', function(done) {
-      var reg = new PeerRegistry(db);
+      var reg = new PeerRegistry(opts);
       var peer1 = { id: 'some-peer-1'};
       var peer2 = { id: 'some-peer-2'};
       
