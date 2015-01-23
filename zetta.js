@@ -380,7 +380,9 @@ Zetta.prototype._initPeers = function(callback) {
 
             self.peerRegistry.save(result, function() {
               // re-connect
-              peerClient.start();
+              if(reconnect) {
+                peerClient.start();
+              }
             });
           });
         });
