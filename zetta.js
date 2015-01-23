@@ -332,8 +332,10 @@ Zetta.prototype._initPeers = function(callback) {
         var peerData = {
           url: obj,
           direction: 'initiator',
-          fromLink:true
+          fromLink:true,
+          id: self.id
         }; 
+        console.log(peerData);
         self.peerRegistry.add(peerData, function(err, newPeer) {
           runPeer(newPeer);
         });
@@ -360,7 +362,6 @@ Zetta.prototype._initPeers = function(callback) {
 
         peerClient.on('error', function(error) {
           self.peerRegistry.get(peer.id, function(err, result) {
-            result = JSON.parse(result);
             result.status = 'failed';
             result.error = error;
             self.peerRegistry.save(result);
