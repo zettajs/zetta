@@ -338,8 +338,10 @@ Zetta.prototype._initPeers = function(callback) {
         var peerData = {
           url: obj,
           direction: 'initiator',
-          fromLink:true
+          fromLink:true,
+          id: self.id
         }; 
+        console.log(peerData);
         self.peerRegistry.add(peerData, function(err, newPeer) {
           runPeer(newPeer);
         });
@@ -352,6 +354,7 @@ Zetta.prototype._initPeers = function(callback) {
         // when websocket is established
         peerClient.on('connecting', function() {
           peer.status = 'connecting';
+          peer.connectionId = peerClient.connectionId;
           self.peerRegistry.save(peer);
         });
         
