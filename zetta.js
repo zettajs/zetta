@@ -332,10 +332,8 @@ Zetta.prototype._initPeers = function(callback) {
         var peerData = {
           url: obj,
           direction: 'initiator',
-          fromLink:true,
-          id: self.id
+          fromLink:true
         }; 
-        console.log(peerData);
         self.peerRegistry.add(peerData, function(err, newPeer) {
           runPeer(newPeer);
         });
