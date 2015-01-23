@@ -385,7 +385,7 @@ Zetta.prototype._initPeers = function(callback) {
             // peer-event
             self.pubsub.publish('_peer/disconnect', { peer: peerClient });
             self.peerRegistry.save(result, function() { });
-          });
+         });
         });
 
         peerClient.start();
