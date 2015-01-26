@@ -352,6 +352,7 @@ Zetta.prototype._initPeers = function(callback) {
         // when peer handshake is made
         peerClient.on('connected', function() {
           peer.status = 'connected';
+          peer.connectionId = peerClient.connectionId;
           self.peerRegistry.save(peer);
 
           // peer-event
