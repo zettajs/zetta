@@ -366,7 +366,6 @@ Zetta.prototype._initPeers = function(callback) {
 
         peerClient.on('error', function(error) {
           self.peerRegistry.get(peer.id, function(err, result) {
-            result = JSON.parse(result);
             result.status = 'failed';
             result.error = error;
             self.peerRegistry.save(result);
