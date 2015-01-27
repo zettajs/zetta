@@ -334,6 +334,19 @@ describe('Zetta Api', function() {
       });
     });
 
+    it('should allow the querying of peers with the ql parameter', function(done) {
+      peerRegistry.save({ id: '1', type: 'initiator'}, function() {
+        request(getHttpServer(app))
+          .get('/peer-management?ql=where%20type%3D%22initiator%22')
+          .expect(getBody(function(err, body) {
+            assert.equal(body.entities.length, 1);
+            var entity = body.entities[0];
+            assert.equal(entity.properties.id, '1');  
+          }))
+          .end(done);  
+      });  
+    });
+
     describe('#link', function() {
       it('should return status code 202', function(done) {
         request(getHttpServer(app))
