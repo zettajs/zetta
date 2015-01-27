@@ -14,7 +14,6 @@ describe('Event Websocket Proxied Through Peer', function() {
       .server('cloud deploy')
       .server('detroit 1', [Scout], ['cloud deploy'])
       .run(function(err){
-        console.log('run callback');
         var id = cluster.servers['detroit 1'].id;
         base = 'localhost:' + cluster.servers['cloud deploy']._testPort + '/servers/' + cluster.servers['cloud deploy'].locatePeer(id);
         var did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
