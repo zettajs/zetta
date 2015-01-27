@@ -238,9 +238,11 @@ Zetta.prototype._run = function(callback) {
       self._cleanupPeers(next);
     },
     function(next) {
-      self._initPeers(next);
+      self._initPeers(self._peers, next);
+      self.link = function(peers, cb) {
+        self._initPeers(peers, (cb || function() {}) );
+      };
     }
-
   ], function(err){
     setImmediate(function() {
       callback(err);
@@ -294,10 +296,14 @@ Zetta.prototype._cleanupPeers = function(callback) {
   });
 };
 
-Zetta.prototype._initPeers = function(callback) {
+Zetta.prototype._initPeers = function(peers, callback) {
   var self = this;
   var existingUrls = [];
   var allPeers = [];
+
+  if (!Array.isArray(peers)) {
+    peers = [peers];
+  }
 
   this.peerRegistry.find(Query.of('peers'), function(err, results) {
     if(err) {
@@ -315,14 +321,14 @@ Zetta.prototype._initPeers = function(callback) {
     });
 
     // peers added through js api to registry peers if they don't already exist
-    allPeers = allPeers.concat(self._peers.filter(function(peer) {
+    allPeers = allPeers.concat(peers.filter(function(peer) {
       return existingUrls.indexOf(peer) === -1;
     }));
 
     allPeers.forEach(function(obj) {
       var existing = (typeof obj === 'object');
       if (existing) {
-        if(!obj.fromLink || self._peers.indexOf(obj.url) > -1) {
+        if(!obj.fromLink || peers.indexOf(obj.url) > -1) {
           self.peerRegistry.save(obj, function() {
             runPeer(obj);
           });
