@@ -13,3 +13,4 @@ zetta-runtime-HEAD
 zetta-runtime-jscoverage
 .registry
 .peers
+.devices
