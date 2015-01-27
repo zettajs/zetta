@@ -242,7 +242,7 @@ describe('Zetta', function() {
       var app = zetta({ peerRegistry: peerRegistry, registry: reg });
       app.silent();
       app.link('http://example.com/');
-      app._initPeers(function(err) {
+      app._initPeers(app._peers, function(err) {
         setTimeout(function() {
           assert.equal(app._peerClients.length, 1);
           done();
@@ -255,7 +255,7 @@ describe('Zetta', function() {
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err){
         var app = zetta({ peerRegistry: peerRegistry, registry: reg });
         app.silent();
-        app._initPeers(function(err) {
+        app._initPeers(app._peers, function(err) {
           setTimeout(function() {
             assert.equal(app._peerClients.length, 0);
             done();
@@ -267,7 +267,7 @@ describe('Zetta', function() {
     it('will delete fromLink peers in the registry', function(done) {
       peerRegistry.db.put('1234567', JSON.stringify({ id:'1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err) {
         var app = zetta({ peerRegistry: peerRegistry, registry: reg });
-        app._initPeers(function(err) {
+        app._initPeers(app._peers, function(err) {
           setTimeout(function(){
            assert.equal(app._peerClients.length, 0);
            peerRegistry.find(Query.of('peers'), function(err, results) {
@@ -285,7 +285,7 @@ describe('Zetta', function() {
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/'}), function(err){
         var app = zetta({ peerRegistry: peerRegistry, registry: reg });
         app.silent();
-        app._initPeers(function(err) {
+        app._initPeers(app._peers, function(err) {
           setTimeout(function() {
             assert.equal(app._peerClients.length, 1);
             done();
