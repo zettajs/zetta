@@ -220,6 +220,12 @@ Zetta.prototype._run = function(callback) {
 
   async.series([
     function(next) {
+      self.runtime.registry._init(next);
+    },
+    function(next) {
+      self.peerRegistry._init(next);
+    },
+    function(next) {
       self._initScouts(next);
     },
     function(next) {
