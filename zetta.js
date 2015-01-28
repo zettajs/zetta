@@ -382,7 +382,7 @@ Zetta.prototype._initPeers = function(peers, callback) {
           });
         });
 
-        peerClient.on('closed', function(reconnect) {
+        peerClient.on('closed', function() {
           self.peerRegistry.get(peer.id, function(err, result) {
             result.status = 'disconnected';
 
