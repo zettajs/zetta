@@ -290,7 +290,7 @@ describe('Peer Connection API', function() {
     it('will update a connection between two peers', function(done) {
       this.timeout(10000);
       var localTwoPort = null;
-      var localTwo = zetta({ registry: new MemRegistry(), peerRegsitry: new MemPeerRegistry() });
+      var localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       localTwo.name('localTwo');
       localTwo.silent();
 
