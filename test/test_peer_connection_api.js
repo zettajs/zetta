@@ -260,6 +260,8 @@ describe('Peer Connection API', function() {
       var url = '/peer-management/1234';
       request(getHttpServer(cloud))
         .put(url)
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .send({ url: 'http://0.0.0.0:1234' })
         .expect(404, done);
     });
 
