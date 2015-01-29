@@ -9,12 +9,11 @@ var Query = require('calypso').Query;
 var querystring = require('querystring');
 
 function deleteRequest(port, connectionId) {
-  var string = '?connectionId='+connectionId;
   var opts = {
     host: '0.0.0.0',
     port: port,
     method: 'DELETE',
-    path: '/peer-management' + string
+    path: '/peer-management/' + connectionId
   }
   
   var req = http.request(opts);
@@ -23,7 +22,6 @@ function deleteRequest(port, connectionId) {
 
 function putRequest(port, connectionId, url) {
   var qs = {
-    connectionId: connectionId,
     url: url  
   };
   var string = querystring.stringify(qs);
@@ -31,7 +29,7 @@ function putRequest(port, connectionId, url) {
     host: '0.0.0.0',
     port: port,
     method: 'PUT',
-    path: '/peer-management',
+    path: '/peer-management/' + connectionId,
     headers: {
       'Content-Length': string.length  
     }
@@ -85,11 +83,7 @@ describe('Peer Connection API', function() {
             assert.equal(body.entities.length, 1);
             assert.equal(body.entities[0].actions.length, 2);
             body.entities[0].actions.forEach(function(action) {
-              action.fields.forEach(function(field) {
-                if(field.name === 'connectionId') {
-                  assert.equal(field.value, '12345');  
-                }  
-              });  
+              assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
             })
            }))
            .end(done);
@@ -104,12 +98,8 @@ describe('Peer Connection API', function() {
           .expect(getBody(function(res, body) {
             assert.equal(body.actions.length, 2);
             body.actions.forEach(function(action) {
-              action.fields.forEach(function(field) {
-                if(field.name === 'connectionId') {
-                  assert.equal(field.value, '12345');  
-                }  
-              });  
-            })
+              assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
+            });
            }))
            .end(done);
        });
