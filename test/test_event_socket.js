@@ -34,7 +34,7 @@ describe('EventSocket', function() {
     });
 
     var callback = function() {};
-    client.send('somedata', {opt: 1}, callback);
+    client.send('sometopic', 'somedata', {opt: 1}, callback);
   });
 
   it('websocket error event should trigger close on EventSocket', function(done) {
