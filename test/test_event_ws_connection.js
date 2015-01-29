@@ -37,6 +37,7 @@ describe('Event Websocket', function() {
   var deviceUrl = null;
   var deviceUrlHttp = null;
   var device = null;
+  var port = null;
 
   beforeEach(function(done) {
     peerRegistry = new PeerRegistry();
@@ -51,7 +52,7 @@ describe('Event Websocket', function() {
       app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
       app.use(GoodScout)
       app.listen(0, function(err){
-        var port = app.httpServer.server.address().port;
+        port = app.httpServer.server.address().port;
         deviceUrl = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
         deviceUrlHttp = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/devices/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
         device = app.runtime._jsDevices['BC2832FD-9437-4473-A4A8-AC1D56B12C6F'];
@@ -239,6 +240,26 @@ describe('Event Websocket', function() {
           done();
         }, 100);
       }, 20);
+    });
+
+    it('websocket should recv connect and disconnect message for /peer-management', function(done) {
+      var url = 'ws://0.0.0.0:' + port + '/peer-management';
+      var socket = new WebSocket(url);
+      
+      socket.on('open', function(err) {
+        socket.once('message', function(buf, flags) {
+          var msg = JSON.parse(buf);          
+          assert.equal(msg.topic, 'connect');
+          socket.once('message', function(buf, flags) {
+            var msg = JSON.parse(buf);
+            assert.equal(msg.topic, 'disconnect');
+            done();
+          });
+          app.pubsub.publish('_peer/disconnect', { topic: 'disconnect'});
+        });
+        app.pubsub.publish('_peer/connect', { topic: 'connect'});
+      });
+      socket.on('error', done);
     });
 
   });
