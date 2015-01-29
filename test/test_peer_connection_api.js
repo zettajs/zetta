@@ -135,6 +135,13 @@ describe('Peer Connection API', function() {
       done();
     });
 
+    it('will return 404 if connection does not exist', function(done) {
+      var url = '/peer-management/1234';
+      request(getHttpServer(cloud))
+        .del(url)
+        .expect(404, done);
+    });
+
     it('will proxy a disconnection between two peers', function(done) {
       //Had to increase the timeout. The standard two seconds may not be long enough for a connection to be established.
       this.timeout(10000);
@@ -249,6 +256,13 @@ describe('Peer Connection API', function() {
       done();  
     });
     
+    it('will return 404 if connection does not exist', function(done) {
+      var url = '/peer-management/1234';
+      request(getHttpServer(cloud))
+        .put(url)
+        .expect(404, done);
+    });
+
     it('will proxy a connection update between two peers', function(done) {
       this.timeout(10000);
       var localTwoPort = null;
