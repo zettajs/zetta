@@ -330,7 +330,7 @@ Zetta.prototype._initPeers = function(peers, callback) {
       if (existing) {
         if(!obj.fromLink || peers.indexOf(obj.url) > -1) {
           self.peerRegistry.save(obj, function() {
-            runPeer(obj);
+            self._runPeer(obj);
           });
         } else {
           //Delete
@@ -347,57 +347,62 @@ Zetta.prototype._initPeers = function(peers, callback) {
           fromLink:true
         }; 
         self.peerRegistry.add(peerData, function(err, newPeer) {
-          runPeer(newPeer);
+          self._runPeer(newPeer);
         });
       }
       
-      function runPeer(peer) {
-        var peerClient = new PeerClient(peer.url, self);
-        self._peerClients.push(peerClient);
-
-        // when websocket is established
-        peerClient.on('connecting', function() {
-          peer.status = 'connecting';
-          self.peerRegistry.save(peer);
-        });
-        
-        // when peer handshake is made
-        peerClient.on('connected', function() {
-          peer.status = 'connected';
-          self.peerRegistry.save(peer);
-
-          // peer-event
-          self.pubsub.publish('_peer/connect', { peer: peerClient});
-        });
-
-        peerClient.on('error', function(error) {
-          self.peerRegistry.get(peer.id, function(err, result) {
-            result.status = 'failed';
-            result.error = error;
-            self.peerRegistry.save(result);
-            
-            // peer-event
-            self.pubsub.publish('_peer/disconnect', { peer: peerClient });
-          });
-        });
-
-        peerClient.on('closed', function(reconnect) {
-          self.peerRegistry.get(peer.id, function(err, result) {
-            result.status = 'disconnected';
-
-            // peer-event
-            self.pubsub.publish('_peer/disconnect', { peer: peerClient });
-            self.peerRegistry.save(result, function() { });
-          });
-        });
-
-        peerClient.start();
-      }
+          
     });
-    
+
     // end after db read
     callback();
   });
 
   return this;
 };
+
+Zetta.prototype._runPeer = function(peer) {
+  var self = this;
+  var peerClient = new PeerClient(peer.url, self);
+  self._peerClients.push(peerClient);
+
+  // when websocket is established
+  peerClient.on('connecting', function() {
+    peer.status = 'connecting';
+    self.peerRegistry.save(peer);
+  });
+  
+  // when peer handshake is made
+  peerClient.on('connected', function() {
+    peer.status = 'connected';
+    peer.connectionId = peerClient.connectionId;
+    self.peerRegistry.save(peer);
+
+    // peer-event
+    self.pubsub.publish('_peer/connect', { peer: peerClient});
+  });
+
+  peerClient.on('error', function(error) {
+    self.peerRegistry.get(peer.id, function(err, result) {
+      result.status = 'failed';
+      result.error = error;
+      self.peerRegistry.save(result);
+      
+      // peer-event
+      self.pubsub.publish('_peer/disconnect', { peer: peerClient });
+    });
+  });
+
+  peerClient.on('closed', function() {
+    self.peerRegistry.get(peer.id, function(err, result) {
+      result.status = 'disconnected';
+
+      // peer-event
+      self.pubsub.publish('_peer/disconnect', { peer: peerClient });
+      self.peerRegistry.save(result, function() { });
+   });
+  });
+
+  peerClient.start();
+}
+
