@@ -19,7 +19,7 @@ describe('EventSocket', function() {
   it('it should initialization with topic set', function() {
     var ws = new Ws();
     var client = new EventSocket(ws, { topic: 'some-topic' });
-    assert.equal(client.query.topic, 'some-topic');
+    assert.equal(client.query[0].topic, 'some-topic');
   });
 
   it('EventSocket.send should pass data/options/callback to ws send', function(done) {
@@ -34,7 +34,7 @@ describe('EventSocket', function() {
     });
 
     var callback = function() {};
-    client.send('somedata', {opt: 1}, callback);
+    client.send('sometopic', 'somedata', {opt: 1}, callback);
   });
 
   it('websocket error event should trigger close on EventSocket', function(done) {
