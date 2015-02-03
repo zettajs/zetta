@@ -243,7 +243,7 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should recv connect and disconnect message for /peer-management', function(done) {
-      var url = 'ws://0.0.0.0:' + port + '/peer-management';
+      var url = 'ws://localhost:' + port + '/peer-management';
       var socket = new WebSocket(url);
       
       socket.on('open', function(err) {
