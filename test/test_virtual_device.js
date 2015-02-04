@@ -1,7 +1,8 @@
 var assert = require('assert');
 var http = require('http');
 var WebSocket = require('ws');
-var zettatest = require('./fixture/zetta_test');
+var zetta = require('../');
+var zettacluster = require('zetta-cluster');
 var Scout = require('./fixture/example_scout');
 var VirtualDevice = require('../lib/virtual_device');
 var LedJSON = require('./fixture/virtual_device.json');
@@ -27,14 +28,10 @@ describe('Virtual Device', function() {
   var startPort = 2600;
 
   beforeEach(function(done) {
-    cluster = zettatest()
+    cluster = zettacluster({ zetta: zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud'])
-      .run(function(err){
-        if (err) {
-          return done(err);
-        }
-
+      .on('ready', function() {
         socket = cluster.servers['cloud'].httpServer.peers['detroit1'];        
         if (!socket) {
           done(new Error('socket not found'));
@@ -66,7 +63,12 @@ describe('Virtual Device', function() {
           res.on('error', function(err) {
             done(err);
           });
-        });
+        })
+      })
+      .run(function(err){
+        if (err) {
+          return done(err);
+        }
       });
   });
 

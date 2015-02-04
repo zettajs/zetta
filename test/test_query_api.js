@@ -1,7 +1,7 @@
 var assert = require('assert');
 var os = require('os');
 var request = require('supertest');
-var zetta = require('../zetta');
+var zetta = require('../');
 var Query = require('calypso').Query;
 var rels = require('zetta-rels');
 var Scout = require('./fixture/example_scout');
@@ -9,7 +9,7 @@ var Driver = require('./fixture/example_driver');
 var HttpDriver = require('./fixture/example_http_driver');
 var Registry = require('./fixture/mem_registry');
 var PeerRegistry = require('./fixture/mem_peer_registry');
-var zettatest = require('./fixture/zetta_test');
+var zettacluster = require('zetta-cluster');
 
 function getHttpServer(app) {
   return app.httpServer.server;
@@ -190,19 +190,18 @@ describe('Zetta Query Api', function() {
     var cluster = null;
 
     beforeEach(function(done) {
-      cluster = zettatest()
-      .server('cloud')
-      .server('detroit1', [Scout], ['cloud'])
-      .run(function(err){
-        if (err) {
-          return done(err);
-        }
-
-        app = cluster.servers['cloud'];
-        done();
-
-      });
- 
+      cluster = zettacluster({ zetta: zetta })
+        .server('cloud')
+        .server('detroit1', [Scout], ['cloud'])
+        .on('ready', function() {
+          app = cluster.servers['cloud'];
+          done();
+        })
+        .run(function(err){
+          if (err) {
+            return done(err);
+          }
+        });
     });
 
     it('should have two classes', function(done) {
@@ -306,18 +305,18 @@ describe('Zetta Query Api', function() {
     var cluster = null;
 
     beforeEach(function(done) {
-      cluster = zettatest()
-      .server('cloud')
-      .server('detroit1', [Scout], ['cloud'])
-      .run(function(err){
-        if (err) {
-          return done(err);
-        }
-
-        app = cluster.servers['cloud'];
-        done();
-
-      });
+      cluster = zettacluster({ zetta: zetta })
+        .server('cloud')
+        .server('detroit1', [Scout], ['cloud'])
+        .on('ready', function() {
+          app = cluster.servers['cloud'];
+          done();
+        })
+        .run(function(err){
+          if (err) {
+            return done(err);
+          }
+        });
  
     });    it('should have two classes', function(done) {
       request(getHttpServer(app))

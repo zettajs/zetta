@@ -268,7 +268,7 @@ describe('Peer Connection API', function() {
     it('will proxy a connection update between two peers', function(done) {
       this.timeout(10000);
       var localTwoPort = null;
-      var localTwo = zetta({ registry: new MemRegistry(), peerRegsitry: new MemPeerRegistry() });
+      var localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       localTwo.name('localTwo');
       localTwo.silent();
 
@@ -284,7 +284,7 @@ describe('Peer Connection API', function() {
 
       localTwo.listen(0, function(err) {
         if(err) {
-          done(err);  
+          return done(err);  
         }  
 
         localTwoPort = localTwo.httpServer.server.address().port;

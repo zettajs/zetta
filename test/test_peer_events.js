@@ -1,14 +1,15 @@
 var assert = require('assert');
 var http = require('http');
 var WebSocket = require('ws');
-var zettatest = require('./fixture/zetta_test');
+var zetta = require('../');
+var zettacluster = require('zetta-cluster');
 var Scout = require('./fixture/example_scout');
 
 describe('Peer Connection Events in Pubsub', function() {
   var cluster = null;
   var device = null;
   beforeEach(function(done) {
-    cluster = zettatest()
+    cluster = zettacluster({ zetta: zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud']);
     done();
@@ -27,13 +28,17 @@ describe('Peer Connection Events in Pubsub', function() {
         recv++;
       });
 
+      cluster.on('ready', function(err) {
+        assert.equal(recv, 1);
+        done();
+      });
+
       cluster.run(function(err) {
         if (err) {
           return done(err);
         }
-        assert.equal(recv, 1);
-        done();
       });
+
     });
   });
 
@@ -45,13 +50,17 @@ describe('Peer Connection Events in Pubsub', function() {
         recv++;
       });
 
+      cluster.on('ready', function(err) {
+        assert.equal(recv, 1);
+        done();
+      });
+
       cluster.run(function(err) {
         if (err) {
           return done(err);
         }
-        assert.equal(recv, 1);
-        done();
       });
+
     });    
   });
 });
