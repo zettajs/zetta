@@ -30,7 +30,7 @@ var Zetta = module.exports = function(opts) {
   this._apps = [];
   this._peers = [];
   this._peerClients = [];
-  
+
   this.peerRegistry = opts.peerRegistry || new PeerRegistry();
 
   this.pubsub = opts.pubsub || new PubSub();
@@ -64,7 +64,6 @@ Zetta.prototype.silent = function() {
 
 // pass in a custom logging
 Zetta.prototype.logger = function(func) {
-  this._silent = true;
   func(this.log);
   return this;
 };
@@ -285,7 +284,7 @@ Zetta.prototype._cleanupPeers = function(callback) {
   var self = this;
   this.peerRegistry.find(Query.of('peers'), function(err, results) {
     if(err) {
-      callback(err);  
+      callback(err);
       return;
     }
 
@@ -307,7 +306,7 @@ Zetta.prototype._initPeers = function(peers, callback) {
 
   this.peerRegistry.find(Query.of('peers'), function(err, results) {
     if(err) {
-      callback(err);  
+      callback(err);
       return;
     }
 
@@ -345,13 +344,13 @@ Zetta.prototype._initPeers = function(peers, callback) {
           url: obj,
           direction: 'initiator',
           fromLink:true
-        }; 
+        };
         self.peerRegistry.add(peerData, function(err, newPeer) {
           self._runPeer(newPeer);
         });
       }
-      
-          
+
+
     });
 
     // end after db read
@@ -371,7 +370,7 @@ Zetta.prototype._runPeer = function(peer) {
     peer.status = 'connecting';
     self.peerRegistry.save(peer);
   });
-  
+
   // when peer handshake is made
   peerClient.on('connected', function() {
     peer.status = 'connected';
@@ -387,7 +386,7 @@ Zetta.prototype._runPeer = function(peer) {
       result.status = 'failed';
       result.error = error;
       self.peerRegistry.save(result);
-      
+
       // peer-event
       self.pubsub.publish('_peer/disconnect', { peer: peerClient });
     });
@@ -405,4 +404,3 @@ Zetta.prototype._runPeer = function(peer) {
 
   peerClient.start();
 }
-
