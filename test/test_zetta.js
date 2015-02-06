@@ -237,6 +237,25 @@ describe('Zetta', function() {
       });
   });
 
+  it('should only call .init once on a device driver with .use(Device)', function(done) {
+    var called = 0;
+    var oldInit = ExampleDevice.prototype.init;
+    ExampleDevice.prototype.init = function(config) {
+      called++;
+      return oldInit.call(this, config);
+    };
+
+    var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+    app.silent();
+    app.use(ExampleDevice);
+    app.listen(0);
+    setTimeout(function() {
+      ExampleDevice.prototype.init = oldInit;
+      assert.equal(called, 1);
+      done();
+    }, 10);
+  });
+
   describe('peering', function() {
     it('.link should add to peers', function(done){
       var app = zetta({ peerRegistry: peerRegistry, registry: reg });
