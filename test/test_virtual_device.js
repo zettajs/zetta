@@ -1,5 +1,6 @@
 var assert = require('assert');
 var http = require('http');
+var WebSocket = require('ws');
 var zettatest = require('./fixture/zetta_test');
 var Scout = require('./fixture/example_scout');
 var VirtualDevice = require('../lib/virtual_device');
@@ -184,6 +185,44 @@ describe('Virtual Device', function() {
       setTimeout(function() {
         assert.equal(vdevice.bar, 1);
         done();
+      }, 100);
+    });
+
+    it('should recv data event after a client ws disconnected on the same topic', function(done) {
+      
+      var url = 'ws://localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1/events?topic=testdriver%2F' + device.id + '%2Fbar';
+
+      var recv = 0;
+      var wsRecv = 0;
+      vdevice.streams.bar.on('data', function(data) {
+        recv++;
+      });
+      
+      device.incrementStreamValue();
+
+      setTimeout(function() {
+        assert.equal(recv, 1);
+        var socket = new WebSocket(url);
+        socket.on('message', function() {
+          wsRecv++;
+        });
+        socket.on('open', function() {
+          device.incrementStreamValue();
+          setTimeout(function() {
+            assert.equal(recv, 2);
+            assert.equal(wsRecv, 1);
+
+            socket.close();
+            device.incrementStreamValue();
+            setTimeout(function() {
+              assert.equal(recv, 3);
+              assert.equal(wsRecv, 1);
+              done();
+            }, 100);
+          },100);
+        });
+        socket.on('error', done);
+
       }, 100);
     });
 
