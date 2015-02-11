@@ -188,6 +188,27 @@ describe('Virtual Device', function() {
       }, 100);
     });
 
+    it('should implement .createReadStream() for object stream', function(done) {
+      vdevice.createReadStream('bar').on('data', function(msg) {
+        assert.equal(msg.data, 1);
+        done();
+      });
+
+      setTimeout(function(){
+        device.incrementStreamValue();
+      }, 10);
+    })
+
+    it('should implement .createReadStream() for binary stream', function(done) {
+      vdevice.createReadStream('foobar').on('data', function(buf) {
+        assert.deepEqual(buf, new Buffer([1]));
+        done();
+      });
+      setTimeout(function(){
+        device.incrementFooBar();
+      }, 10);
+    })
+
     it('should recv data event after a client ws disconnected on the same topic', function(done) {
       
       var url = 'ws://localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1/events?topic=testdriver%2F' + device.id + '%2Fbar';
