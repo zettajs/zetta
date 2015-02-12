@@ -18,6 +18,8 @@ util.inherits(Ws, EventEmitter);
 Ws.prototype.send = function(data, options, cb) {
   var r = this.emit('onsend', data, options, cb);
 };
+Ws.prototype.close = function() {};
+
 
 describe('EventBroker', function() {
   var msg = JSON.stringify({topic: 'some-topic', data: {somedata: 1}, timestamp: new Date().getTime()});
@@ -33,6 +35,7 @@ describe('EventBroker', function() {
     broker = new EventBroker(app);
   });
 
+
   it('it should add peer by server name', function() {
     var ws = new Ws();
     var peer = new PeerSocket(ws, 'some-peer', peerRegistry);
@@ -40,6 +43,7 @@ describe('EventBroker', function() {
     broker.peer(peer);
     assert.equal(peer, broker.peers['some-peer2']);
   });
+
 
   it('it should add client and subscribe to topic', function() {
     var ws = new Ws();

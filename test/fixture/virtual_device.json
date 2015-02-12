@@ -12,7 +12,7 @@
     {
       "name": "turn-on",
       "method": "POST",
-      "href": "http://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/devices/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2",
+      "href": "http://localhost:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/devices/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2",
       "fields": [
         {
           "name": "action",
@@ -27,7 +27,7 @@
       "rel": [
         "self"
       ],
-      "href": "http://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/devices/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2"
+      "href": "http://localhost:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/devices/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2"
     },
     {
       "title": "localhost",
@@ -35,7 +35,7 @@
         "up",
         "http://rels.zettajs.io/server"
       ],
-      "href": "http://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e"
+      "href": "http://localhost:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e"
     },
     {
       "title": "state",
@@ -43,7 +43,7 @@
         "monitor",
         "http://rels.zettajs.io/object-stream"
       ],
-      "href": "ws://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/events?topic=led%2F0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2%2Fstate"
+      "href": "ws://localhost:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/events?topic=led%2F0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2%2Fstate"
     },
     {
       "title": "logs",
@@ -51,7 +51,7 @@
         "monitor",
         "http://rels.zettajs.io/object-stream"
       ],
-      "href": "ws://0.0.0.0:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/events?topic=led%2F0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2%2Flogs"
+      "href": "ws://localhost:1337/servers/a99dcb60-00df-4a1b-987d-f848e7635c4e/events?topic=led%2F0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2%2Flogs"
     }
   ]
 }

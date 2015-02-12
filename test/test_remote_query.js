@@ -1,6 +1,7 @@
 var assert = require('assert');
 var http = require('http');
-var zettatest = require('./fixture/zetta_test');
+var zetta = require('../');
+var zettacluster = require('zetta-cluster');
 var Scout = require('./fixture/example_scout');
 var ExampleDevice = require('./fixture/example_driver');
 var VirtualDevice = require('../lib/virtual_device');
@@ -37,20 +38,21 @@ describe('Remote queries', function() {
   var urlProxied = null
 
   beforeEach(function(done) {
-    cluster = zettatest()
+    cluster = zettacluster({ zetta: zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud'])
-      .run(function(err){
-        if (err) {
-          return done(err);
-        }
-
+      .on('ready', function() {
         urlProxied = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1';
         urlLocal = 'localhost:' + cluster.servers['detroit1']._testPort + '/servers/detroit1';
 
         detroit1 = cluster.servers['detroit1'];
         cloud = cluster.servers['cloud'];
         done();
+      })
+      .run(function(err){
+        if (err) {
+          return done(err);
+        }
       });
   });
 

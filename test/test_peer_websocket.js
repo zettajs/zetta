@@ -6,7 +6,7 @@ var WebSocketServer = require('ws').Server;
 var Websocket = require('../lib/web_socket');
 
 describe('Peer Client Websocket', function() {
-  
+
   it('it should connect to ws:// server', function(done) {
     var server = http.createServer();
     var wss = new WebSocketServer({ server: server });
@@ -14,7 +14,7 @@ describe('Peer Client Websocket', function() {
       if (err) {
         return done(err);
       }
-      var address = 'ws://' + server.address().address + ':' + server.address().port;
+      var address = 'ws://localhost:' + server.address().port;
       var ws = new Websocket(address);
       ws.on('error', done);
       ws.on('open', function() {
@@ -36,7 +36,7 @@ describe('Peer Client Websocket', function() {
         return done(err);
       }
 
-      var address = 'wss://' + server.address().address + ':' + server.address().port;
+      var address = 'wss://localhost:' + server.address().port;
       var ws = new Websocket(address, { rejectUnauthorized: false});
       ws.on('error', done);
       ws.on('open', function() {
@@ -44,5 +44,5 @@ describe('Peer Client Websocket', function() {
       });
     });
   });
-   
+
 });

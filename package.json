@@ -33,7 +33,8 @@
     "memdown": "^0.10.2",
     "mocha": "^1.20.1",
     "portscanner": "^1.0.0",
-    "supertest": "^0.13.0"
+    "supertest": "^0.13.0",
+    "zetta-cluster": "^6.3.0"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec",

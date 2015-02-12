@@ -10,7 +10,7 @@ var querystring = require('querystring');
 
 function deleteRequest(port, connectionId) {
   var opts = {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: port,
     method: 'DELETE',
     path: '/peer-management/' + connectionId
@@ -26,7 +26,7 @@ function putRequest(port, connectionId, url) {
   };
   var string = querystring.stringify(qs);
   var opts = {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: port,
     method: 'PUT',
     path: '/peer-management/' + connectionId,
@@ -125,7 +125,7 @@ describe('Peer Connection API', function() {
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        cloudUrl = 'http://0.0.0.0:' + cloudPort;
+        cloudUrl = 'http://localhost:' + cloudPort;
         done();  
       });  
     });
@@ -237,7 +237,7 @@ describe('Peer Connection API', function() {
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        var cloudUrl = 'http://0.0.0.0:' + cloudPort;
+        var cloudUrl = 'http://localhost:' + cloudPort;
 
         localOne.link(cloudUrl);
         localOne.listen(0, function(err) {
@@ -261,18 +261,18 @@ describe('Peer Connection API', function() {
       request(getHttpServer(cloud))
         .put(url)
         .set('Content-Type', 'application/x-www-form-urlencoded')
-        .send({ url: 'http://0.0.0.0:1234' })
+        .send({ url: 'http://localhost:1234' })
         .expect(404, done);
     });
 
     it('will proxy a connection update between two peers', function(done) {
       this.timeout(10000);
       var localTwoPort = null;
-      var localTwo = zetta({ registry: new MemRegistry(), peerRegsitry: new MemPeerRegistry() });
+      var localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       localTwo.name('localTwo');
       localTwo.silent();
 
-      var url = 'http://0.0.0.0:';
+      var url = 'http://localhost:';
 
       cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
         assert.equal(connectionId, data.peer.connectionId); 
@@ -284,7 +284,7 @@ describe('Peer Connection API', function() {
 
       localTwo.listen(0, function(err) {
         if(err) {
-          done(err);  
+          return done(err);  
         }  
 
         localTwoPort = localTwo.httpServer.server.address().port;
@@ -300,7 +300,7 @@ describe('Peer Connection API', function() {
       localTwo.name('localTwo');
       localTwo.silent();
 
-      var url = 'http://0.0.0.0:';
+      var url = 'http://localhost:';
 
       cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
         assert.equal(connectionId, data.peer.connectionId); 

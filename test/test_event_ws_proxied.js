@@ -1,8 +1,9 @@
+var zetta = require('../');
 var assert = require('assert');
 var http = require('http');
 var WebSocket = require('ws');
-var zettatest = require('./fixture/zetta_test');
 var Scout = require('./fixture/example_scout');
+var zettacluster = require('zetta-cluster');
 
 describe('Event Websocket Proxied Through Peer', function() {
   var base = null;
@@ -10,16 +11,21 @@ describe('Event Websocket Proxied Through Peer', function() {
   var device = null;
 
   beforeEach(function(done) {
-    cluster = zettatest()
+    cluster = zettacluster({ zetta: zetta })
       .server('cloud deploy')
       .server('detroit 1', [Scout], ['cloud deploy'])
-      .run(function(err){
+      .on('ready', function(){
         var id = cluster.servers['detroit 1'].id;
         base = 'localhost:' + cluster.servers['cloud deploy']._testPort + '/servers/' + cluster.servers['cloud deploy'].locatePeer(id);
         var did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit 1'].runtime._jsDevices[did];
-        done(err);
+        done();
       })
+      .run(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
   });
 
   afterEach(function(done) {
