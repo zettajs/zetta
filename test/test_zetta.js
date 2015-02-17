@@ -156,6 +156,20 @@ describe('Zetta', function() {
     });
   });
 
+  it('should initialize device with proper properties set.', function(done) {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry })
+      .silent()
+      .use(ExampleDevice, 1, 'a')
+      ._run(function(err) {
+        if (err) {
+          return done(err);
+        }
+        
+        var device = z.runtime._jsDevices[Object.keys(z.runtime._jsDevices)[0]];
+        device.call('change', done);
+      });
+  });
+
   it('should initialize 3 devices with correct params when using multiple use', function(done) {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
