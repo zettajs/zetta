@@ -88,12 +88,11 @@ Zetta.prototype.use = function() {
   function init() {
     var machine = Object.create(constructor.prototype);
     constructor.apply(machine, args.slice(1));
-    var config = scientist.config(machine);
     machine._pubsub = self.pubsub;
     machine._log = self.log;
     machine._registry = self.runtime.registry;
 
-    machine._generate(config);
+    var config = scientist.config(machine);
     return { config: config, instance: machine };
   }
 
@@ -107,8 +106,7 @@ Zetta.prototype.use = function() {
       var build = init();
       args.unshift(build.config._type);
       var scout = Object.create(AutoScout.prototype);
-      
-      scout._deviceInstance = build.instance;
+      scout._deviceInstance = build; // pass both machine and config to autoscout need to _generate device
       AutoScout.apply(scout, args);
       addScout(scout);
     } else if (proto.__proto__.constructor.name === 'Scout') {
