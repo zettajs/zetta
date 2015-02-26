@@ -88,7 +88,6 @@ describe('Event Websocket', function() {
         open = false;
       });
       socket.on('error', function(err) {
-        console.log('ERROR:', err);
         error++;
       });
 
