@@ -20,6 +20,8 @@ describe('Peer Client Websocket', function() {
       ws.on('open', function() {
         done();
       });
+
+      ws.start();
     });
   });
 
@@ -42,6 +44,8 @@ describe('Peer Client Websocket', function() {
       ws.on('open', function() {
         done();
       });
+
+      ws.start();
     });
   });
 
