@@ -73,6 +73,23 @@ describe('Peer Connection Logic', function() {
         }
       })
     })
+
+    /*it('should wire up extensions', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .silent()
+        .use(function(server) {
+          server.onPeerRequest(function(request) {
+            return request
+              .map(function(env) {
+                assert(env.request);
+                assert(env.response);
+                assert(env.upgrade);
+                done();
+              });
+          });
+        })
+        .listen(0);
+    });*/
   })
 
   describe('Handle spdy agent errors', function() {
