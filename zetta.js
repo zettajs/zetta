@@ -363,10 +363,15 @@ Zetta.prototype._initPeers = function(peers, callback) {
   return this;
 };
 
+Zetta.prototype._extendPeerRequest = function(client) {
+  this.runtime.modifyPeerRequest(client.ws);
+};
+
 Zetta.prototype._runPeer = function(peer) {
   var self = this;
   var peerClient = new PeerClient(peer.url, self);
-  // need to build up pipeline of per-connect handlers.  Needs to work for reconnects, too.
+  this._extendPeerRequest(peerClient);
+
   self._peerClients.push(peerClient);
 
   // when websocket is established
