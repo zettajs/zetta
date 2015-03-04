@@ -74,16 +74,20 @@ describe('Peer Connection Logic', function() {
     })
 
     it('should wire up request extensions', function(done) {
+      var called = false;
       var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
         .use(function(server) {
           server.onPeerRequest(function(client) {
-            return client
+            client
               .use(function(handle) {
                 handle('request', function(pipeline) {
                   return pipeline.map(function(env) {
                     assert(env.request);
-                    done();
+                    if (!called) {
+                      called = true;
+                      done();
+                    }
                     return env;
                   });
                 });
