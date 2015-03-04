@@ -367,10 +367,15 @@ Zetta.prototype._extendPeerRequest = function(client) {
   this.runtime.modifyPeerRequest(client.ws);
 };
 
+Zetta.prototype._extendPeerResponse = function(client) {
+  this.runtime.modifyPeerResponse(client.ws);
+};
+
 Zetta.prototype._runPeer = function(peer) {
   var self = this;
   var peerClient = new PeerClient(peer.url, self);
   this._extendPeerRequest(peerClient);
+  this._extendPeerResponse(peerClient);
 
   self._peerClients.push(peerClient);
 

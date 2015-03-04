@@ -73,11 +73,32 @@ describe('Peer Connection Logic', function() {
       })
     })
 
-    it('should wire up extensions', function(done) {
+    it('should wire up request extensions', function(done) {
       var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
         .use(function(server) {
-          server.onPeerRequest(function(request) {
+          server.onPeerRequest(function(client) {
+            return client
+              .use(function(handle) {
+                handle('request', function(pipeline) {
+                  return pipeline.map(function(env) {
+                    assert(env.request);
+                    done();
+                    return env;
+                  });
+                });
+              });
+          });
+        })
+        .link(cloudUrl)
+        .listen(0);
+    });
+
+    it('should wire up response extensions', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .silent()
+        .use(function(server) {
+          server.onPeerResponse(function(request) {
             return request
               .map(function(env) {
                 assert(env.request);
