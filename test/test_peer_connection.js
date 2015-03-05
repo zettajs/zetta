@@ -42,7 +42,6 @@ describe('Peer Connection Logic', function() {
   });
 
   describe('#link', function() {
-
     it('should work before .listen is ran', function(done) {
       var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
@@ -73,6 +72,50 @@ describe('Peer Connection Logic', function() {
         }
       })
     })
+
+    it('should wire up request extensions', function(done) {
+      var called = false;
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .silent()
+        .use(function(server) {
+          server.onPeerRequest(function(client) {
+            client
+              .use(function(handle) {
+                handle('request', function(pipeline) {
+                  return pipeline.map(function(env) {
+                    assert(env.request);
+                    if (!called) {
+                      called = true;
+                      done();
+                    }
+                    return env;
+                  });
+                });
+              });
+          });
+        })
+        .link(cloudUrl)
+        .listen(0);
+    });
+
+    it('should wire up response extensions', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .silent()
+        .use(function(server) {
+          server.onPeerResponse(function(request) {
+            return request
+              .map(function(env) {
+                assert(env.request);
+                assert(env.response);
+                assert(env.upgrade);
+                done();
+                return env;
+              });
+          });
+        })
+        .link(cloudUrl)
+        .listen(0);
+    });
   })
 
   describe('Handle spdy agent errors', function() {

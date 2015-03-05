@@ -84,7 +84,6 @@ describe('Virtual Device', function() {
         assert.equal(err, null);
       });
       var timer = setTimeout(function() {
-        console.log('tiemr called')
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
@@ -99,7 +98,6 @@ describe('Virtual Device', function() {
         assert.equal(err, null);
       });
       var timer = setTimeout(function() {
-        console.log('tiemr called')
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
