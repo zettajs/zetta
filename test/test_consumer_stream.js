@@ -12,7 +12,6 @@ describe('ConsumerStream', function() {
   });
   
   it('it should subscribe to pubsub topic', function() {
-    assert(!pubsub._listeners['some-topic']);
     stream.on('data', function(){});
     assert.equal(pubsub._listeners['some-topic'].length, 1);
   });
