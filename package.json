@@ -5,7 +5,7 @@
   "main": "zetta_runtime.js",
   "dependencies": {
     "api-media-type": "^0.1.0",
-    "argo": "~0.4.9",
+    "argo": "^0.6.0",
     "argo-formatter-siren": "0.0.0",
     "async": "^0.9.0",
     "calypso": "^0.3.0",
