@@ -94,7 +94,7 @@ Zetta.prototype.use = function() {
 
   function walk(proto) {
     if (!proto || !proto.__proto__) {
-      self.load(constructor);
+      self.load.apply(self, args);
     } else if (proto.__proto__.constructor.name === 'HttpDevice') {
       var config = init().config;
       self.httpScout.driverFunctions[config._type] = constructor;
@@ -124,7 +124,13 @@ Zetta.prototype.expose = function(query) {
   return this;
 };
 
-Zetta.prototype.load = function(app) {
+Zetta.prototype.load = function() {
+  var args = Array.prototype.slice.call(arguments);
+  var appArgs = args.slice(1, args.length);
+  var app = {
+    app: args[0],
+    args: appArgs
+  };
   this._apps.push(app);
   return this;
 };
@@ -267,7 +273,9 @@ Zetta.prototype._initScouts = function(callback) {
 Zetta.prototype._initApps = function(callback) {
   var self = this;
   this._apps.forEach(function(app) {
-    app(self.runtime);
+    var args = app.args;
+    args.unshift(self.runtime);
+    app.app.apply(null, args);
   });
   callback();
 

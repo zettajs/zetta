@@ -48,24 +48,59 @@ describe('Zetta', function() {
   });
 
 
-  it('will load an app with the load() function', function() {
+  it('will load an app with the load() function', function(done) {
     zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
       .load(function(server) {
         assert.ok(server);
         done();
-      });
+      })
+      ._initApps(function(){});
   });
 
-  it('will load an app with the use() function', function() {
+  it('will load an app with the use() function', function(done) {
     zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
       .use(function(server) {
         assert.ok(server);
         done();
-      });
+      })
+      ._initApps(function(){});
   });
 
+  it('will load an app with the use() function and additional arguments', function(done) {
+    var app = function(server, opts) {
+      assert.ok(server);
+      assert.ok(opts);
+      assert.equal(opts.foo, 1);
+      done();  
+    }
+    
+    zetta({ registry: reg, peerRegistry: peerRegistry })
+      .silent()
+      .use(app, { foo: 1})
+      ._initApps(function() {
+        
+      });
+
+  });
+
+  it('will load an app with the use() function and additional arguments', function(done) {
+    var app = function(server, foo, bar) {
+      assert.ok(server);
+      assert.equal(foo, 1);
+      assert.equal(bar, 2);
+      done();  
+    }
+    
+    zetta({ registry: reg, peerRegistry: peerRegistry })
+      .silent()
+      .use(app, 1, 2)
+      ._initApps(function() {
+        
+      });
+
+  });
   it('will load a driver with the use() function', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     function TestDriver() {
