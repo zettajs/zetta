@@ -129,4 +129,53 @@ describe('Peer Connection Logic', function() {
     });
   })
 
+  describe('Peer_socket error events', function() {
+
+    it('http-server should handle multiple error events', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .name('test-peer')
+        .silent()
+        .link(cloudUrl)
+        .listen(0);
+
+      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+        assert(cloud.httpServer.peers['test-peer']);
+        var peer = cloud.httpServer.peers['test-peer'];
+
+        cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
+          assert(cloud.httpServer.peers['test-peer'] === undefined);
+          assert(cloud.httpServer._disconnectedPeers['test-peer']);
+        });
+
+        peer.emit('error', new Error('some error'));
+        peer.emit('error', new Error('some error'));
+        done();
+      })
+    });
+
+
+    it('http-server should handle multiple end events', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .name('test-peer')
+        .silent()
+        .link(cloudUrl)
+        .listen(0);
+
+      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+        assert(cloud.httpServer.peers['test-peer']);
+        var peer = cloud.httpServer.peers['test-peer'];
+
+        cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
+          assert(cloud.httpServer.peers['test-peer'] === undefined);
+          assert(cloud.httpServer._disconnectedPeers['test-peer']);
+        });
+
+        peer.emit('end');
+        peer.emit('end');
+        done();
+      })
+    });
+
+  });
+
 })
