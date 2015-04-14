@@ -31,7 +31,7 @@ describe('Peer Connection Logic', function() {
       if (err) {
         return done(err);
       }
-      
+
       cloudUrl = 'ws://localhost:' + cloud.httpServer.server.address().port;
       done();
     })
@@ -48,7 +48,7 @@ describe('Peer Connection Logic', function() {
         .silent()
         .link(cloudUrl)
         .listen(0);
-      
+
       z.pubsub.subscribe('_peer/connect', function(topic, data) {
         if (data.peer.url.indexOf(cloudUrl) === 0) {
           done();
@@ -64,7 +64,7 @@ describe('Peer Connection Logic', function() {
         .listen(0, function() {
           z.link(cloudUrl);
         });
-      
+
       z.pubsub.subscribe('_peer/connect', function(topic, data) {
         if (data.peer.url.indexOf(cloudUrl) === 0) {
           done();
@@ -144,8 +144,7 @@ describe('Peer Connection Logic', function() {
         var peer = cloud.httpServer.peers['test-peer'];
 
         cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
-          assert(cloud.httpServer.peers['test-peer'] === undefined);
-          assert(cloud.httpServer._disconnectedPeers['test-peer']);
+          assert.equal(cloud.httpServer.peers['test-peer'].state, PeerSocket.DISCONNECTED);
         });
 
         peer.emit('error', new Error('some error'));
@@ -167,8 +166,7 @@ describe('Peer Connection Logic', function() {
         var peer = cloud.httpServer.peers['test-peer'];
 
         cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
-          assert(cloud.httpServer.peers['test-peer'] === undefined);
-          assert(cloud.httpServer._disconnectedPeers['test-peer']);
+          assert.equal(cloud.httpServer.peers['test-peer'].state, PeerSocket.DISCONNECTED);
         });
 
         peer.emit('end');
@@ -226,7 +224,7 @@ describe('Peer Connection Logic', function() {
         if (count === 1) {
           lastPeer = data.peer;
           cloud.httpServer.peers['peer-1'].close();
-          
+
           client.once('connecting', function() {
             var origRequest = client.onRequest;
             client.server.removeListener('request', client.onRequest);
