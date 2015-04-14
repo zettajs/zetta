@@ -7,6 +7,7 @@ var zetta = require('../zetta');
 var MemRegistry = require('./fixture/mem_registry');
 var MemPeerRegistry = require('./fixture/mem_peer_registry');
 var PeerSocket = require('../lib/peer_socket');
+var PeerClient = require('../lib/peer_client');
 
 var Ws = function() {
   EventEmitter.call(this)
@@ -175,6 +176,74 @@ describe('Peer Connection Logic', function() {
         done();
       })
     });
+
+  });
+
+  describe('Handle timings with ws connects vs actual peer connects', function() {
+    var z = null;
+    beforeEach(function(done) {
+      z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+        .name('peer-1')
+        .silent()
+        .listen(0, done);
+    })
+
+    it('peer connects should be the same peer object on the cloud', function(done) {
+      var client = new PeerClient(cloudUrl, z);
+
+      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+        assert(data.peer === cloud.httpServer.peers['peer-1']);
+        done();
+      });
+
+      client.start();
+    })
+
+    it('peer connects should be the same peer object on the cloud with reconnect', function(done) {
+      var client = new PeerClient(cloudUrl, z);
+
+      var count = 0;
+      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+        count++;
+        assert(data.peer === cloud.httpServer.peers['peer-1']);
+        if (count === 2) {
+          return done();
+        }
+        cloud.httpServer.peers['peer-1'].close();
+      });
+      client.start();
+    });
+
+    it('peer connects should be the same peer object on the cloud with reconnect with timing issue', function(done) {
+      this.timeout(5000);
+      var client = new PeerClient(cloudUrl, z);
+
+      var lastPeer = null;
+      var count = 0;
+      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+        count++;
+        assert(data.peer === cloud.httpServer.peers['peer-1']);
+        if (count === 1) {
+          lastPeer = data.peer;
+          cloud.httpServer.peers['peer-1'].close();
+          
+          client.once('connecting', function() {
+            var origRequest = client.onRequest;
+            client.server.removeListener('request', client.onRequest);
+            client.onRequest = function(req, res) {
+              client.ws.close();
+            };
+            client.server.once('request', client.onRequest.bind(client));
+          })
+
+        } else if (count === 2) {
+          assert(data.peer === lastPeer, 'a new PeerSocket on the cloud was created instead of a reuse');
+          done();
+        }
+      });
+      client.start();
+    });
+
 
   });
 
