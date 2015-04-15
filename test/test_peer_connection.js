@@ -124,9 +124,11 @@ describe('Peer Connection Logic', function() {
       var ws = new Ws();
       var socket = new PeerSocket(ws, 'some-peer', new MemPeerRegistry);
       socket.on('error', function(err) {
-        done();
+        if (err.message === 'spdy-error') {
+          done();
+        }
       });
-      socket.agent.emit('error', new Error(''));
+      socket.agent.emit('error', new Error('spdy-error'));
     });
   })
 
