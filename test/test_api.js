@@ -564,6 +564,16 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('device action should return 400 when not available.', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .send({ action: 'prepare' })
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 400);
+        }))
+        .end(done);
+    });
     it('should return 500 when a error is passed in a callback of device driver', function(done) {
       request(getHttpServer(app))
         .post(url)
