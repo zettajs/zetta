@@ -245,6 +245,38 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
   });
+
+  describe('queries on / for all peers', function() {
+    var app = null;
+    var cluster = null;
+
+    beforeEach(function(done) {
+      cluster = zettacluster({ zetta: zetta })
+        .server('cloud')
+        .server('detroit1', [Scout], ['cloud'])
+        .server('detroit2', [Scout], ['cloud'])
+        .on('ready', function() {
+          app = cluster.servers['cloud'];
+          done();
+        })
+        .run(function(err){
+          if (err) {
+            return done(err);
+          }
+        });
+    });
+
+    it('should return results from each server', function(done) {
+      request(getHttpServer(app))
+        .get('/?ql=where%20type%20=%20"testdriver"&server=*')
+        .expect(getBody(function(res, body) {
+          assert.equal(body.entities.length, 2);
+          hasLinkRel(body.links, 'http://rels.zettajs.io/query');
+        }))
+        .end(done);
+
+    });
+  });
  
   describe('queries on /servers/<id>', function() {
     var app = null;
