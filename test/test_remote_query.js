@@ -36,12 +36,14 @@ describe('Remote queries', function() {
   var cloud = null;
   var urlLocal = null;
   var urlProxied = null
+  var urlRoot = null;
 
   beforeEach(function(done) {
     cluster = zettacluster({ zetta: zetta })
-      .server('cloud')
+      .server('cloud', [Scout])
       .server('detroit1', [Scout], ['cloud'])
       .on('ready', function() {
+        urlRoot = 'localhost:' + cluster.servers['cloud']._testPort;
         urlProxied = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1';
         urlLocal = 'localhost:' + cluster.servers['detroit1']._testPort + '/servers/detroit1';
 
@@ -311,6 +313,55 @@ describe('Remote queries', function() {
 
   });
 
+  describe('Websocket Cross-Server Queries', function() {
+
+    it('should send back 2 results', function(done) {
+      var socket = new WebSocket("ws://" + urlRoot + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        var count = 0;
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+
+          // test links are properly set
+          json.links.forEach(function(link) {
+            assert(link.href.indexOf(urlRoot) > -1)
+          });
+          
+          assert.equal(json.properties.type, 'testdriver');
+          count++;
+
+          if (count == 2) {
+            done();
+          }
+        });
+      });
+    });
+
+    it('should send back 3 results after a device is added', function(done) {
+      var socket = new WebSocket("ws://" + urlRoot + '/events?topic=query/where type = "testdriver"');
+      socket.on('open', function(err) {
+        var recv = 0;
+
+        setTimeout(function(){
+          var detroit = cluster.servers['detroit1'];
+          var scout = new FakeScout();
+          scout.server = detroit.runtime;
+          scout.discover(ExampleDevice);
+        }, 50);
+
+        socket.on('message', function(data) {
+          var json = JSON.parse(data);
+          assert.equal(json.properties.type, 'testdriver');
+          recv++;
+
+          if (recv === 3) {
+            done();
+          }
+        });
+      });
+
+    });
+  });
 
 });
 
