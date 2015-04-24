@@ -225,10 +225,8 @@ describe('Remote queries', function() {
           assert.equal(json.properties.type, 'testdriver');
           socket.close();
 
-          console.log(urlLocal);
           var socket2 = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
           socket2.on('open', function(err) {
-            console.log('open');
             socket2.on('message', function(data) {
               var json = JSON.parse(data);
               assert.equal(json.properties.type, 'testdriver');
