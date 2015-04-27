@@ -493,6 +493,19 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('device actions should have class "transition"', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(body.actions.length, 3);
+          body.actions.forEach(function(action) {
+            assert(action.class.indexOf('transition') >= 0);
+          })
+        }))
+        .end(done);
+    });
+
+
     it('device should have self link', function(done) {
       request(getHttpServer(app))
         .get(url)
