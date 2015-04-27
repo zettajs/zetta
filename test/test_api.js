@@ -213,6 +213,20 @@ describe('Zetta Api', function() {
           })(res);
         });
     });
+
+    it('query for device should respond with properly formated api response', function(done) {
+      request(getHttpServer(app))
+        .get(url+'?server=local&ql=where%20type="testdriver"')
+        .expect(getBody(function(res, body) {
+          assert(body.entities);
+          assert.equal(body.entities.length, 1);
+          checkDeviceOnRootUri(body.entities[0]);
+        }))
+        .end(done);
+    });
+
+
+
   });
 
   describe('/', function() {
