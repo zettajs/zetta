@@ -6,7 +6,6 @@ var Query = require('calypso').Query;
 var rels = require('zetta-rels');
 var Scout = require('./fixture/example_scout');
 var Driver = require('./fixture/example_driver');
-var HttpDriver = require('./fixture/example_http_driver');
 var Registry = require('./fixture/mem_registry');
 var PeerRegistry = require('./fixture/mem_peer_registry');
 
@@ -86,7 +85,6 @@ describe('Zetta Api', function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .silent()
         .use(Scout)
-        .use(HttpDriver)
         .name('local')
         .expose('*')
         ._run(done);
@@ -159,60 +157,16 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should have two actions', function(done) {
+    it('should have one action', function(done) {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
           assert(body.actions);
-          assert.equal(body.actions.length,2);
+          assert.equal(body.actions.length, 1);
         }))
         .end(done);
     });
 
-    it('should accept remote devices of type testdriver', function(done) {
-      request(getHttpServer(app))
-        .post(url + '/devices')
-        .send('type=testdriver')
-        .end(function(err, res) {
-          getBody(function(res, body) {
-            assert.equal(res.statusCode, 201);
-            var query = Query.of('devices');
-            reg.find(query, function(err, machines) {
-              assert.equal(machines.length, 2);
-              assert.equal(machines[1].type, 'testdriver');
-              done();
-            });
-          })(res);
-        });
-    });
-
-    it('should not accept a remote device of type foo', function(done) {
-      request(getHttpServer(app))
-        .post(url + '/devices')
-        .send('type=foo')
-        .expect(getBody(function(res, body) {
-          assert.equal(res.statusCode, 404);
-        }))
-        .end(done);
-    });
-
-    it('should accept remote devices of type testdriver, and allow them to set their own id properties', function(done) {
-      request(getHttpServer(app))
-        .post(url + '/devices')
-        .send('type=testdriver&id=12345&name=test')
-        .end(function(err, res) {
-          getBody(function(res, body) {
-            assert.equal(res.statusCode, 201);
-            var query = Query.of('devices').where('id', { eq: '12345'});
-            reg.find(query, function(err, machines) {
-              assert.equal(machines.length, 1);
-              assert.equal(machines[0].type, 'testdriver');
-              assert.equal(machines[0].id, '12345');            
-              done();
-            });
-          })(res);
-        });
-    });
   });
 
   describe('/', function() {
