@@ -1,7 +1,6 @@
 var os = require('os');
 var AutoScout = require('zetta-auto-scout');
 var async = require('async');
-var HttpScout = require('./lib/http_scout');
 var HttpServer = require('./lib/http_server');
 var Logger = require('./lib/logger');
 var PeerClient = require('./lib/peer_client');
@@ -46,11 +45,6 @@ var Zetta = module.exports = function(opts) {
     runtimeOptions.registry = opts.registry;
   }
   this.runtime = new Runtime(runtimeOptions);
-
-  var httpScout = scientist.create.apply(null, [HttpScout]);
-  httpScout.server = this.runtime;
-  this.httpScout = httpScout;
-  this._scouts.push(httpScout);
 };
 
 Zetta.prototype.silent = function() {
@@ -95,9 +89,6 @@ Zetta.prototype.use = function() {
   function walk(proto) {
     if (!proto || !proto.__proto__) {
       self.load.apply(self, args);
-    } else if (proto.__proto__.constructor.name === 'HttpDevice') {
-      var config = init().config;
-      self.httpScout.driverFunctions[config._type] = constructor;
     } else if (proto.__proto__.constructor.name === 'Device') {
       var build = init();
       args.unshift(build.config._type);

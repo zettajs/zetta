@@ -6,7 +6,6 @@ var Query = require('calypso').Query;
 var rels = require('zetta-rels');
 var Scout = require('./fixture/example_scout');
 var Driver = require('./fixture/example_driver');
-var HttpDriver = require('./fixture/example_http_driver');
 var Registry = require('./fixture/mem_registry');
 var PeerRegistry = require('./fixture/mem_peer_registry');
 var zettacluster = require('zetta-cluster');
@@ -112,9 +111,8 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -166,9 +164,8 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=local')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -227,9 +224,8 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -309,13 +305,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have actions.', function(done) {
       request(getHttpServer(app))
         .get('/servers/local?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -369,13 +364,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have actions.', function(done) {
       request(getHttpServer(app))
         .get('/servers/detroit1?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });

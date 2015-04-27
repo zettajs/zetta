@@ -136,7 +136,7 @@ describe('Zetta', function() {
     }
     util.inherits(TestScout, Scout);
     z.use(TestScout);
-    assert.equal(z._scouts.length, 2);
+    assert.equal(z._scouts.length, 1);
     var s = z._scouts[0];
     assert.equal(s.server, z.runtime);
   });
