@@ -5,7 +5,6 @@ var MemRegistry = require('./fixture/mem_registry');
 var MemPeerRegistry = require('./fixture/mem_peer_registry');
 
 var Device = require('zetta-device');
-var HttpDevice = require('zetta-http-device');
 var Scout = require('zetta-scout');
 var ExampleDevice = require('./fixture/example_driver');
 var Query = require('calypso').Query;
@@ -107,20 +106,6 @@ describe('Zetta', function() {
       Device.call(this);
     }
     util.inherits(TestDriver, Device);
-
-    TestDriver.prototype.init = function() {};
-
-    z.use(TestDriver);
-    var s = z._scouts[0];
-    assert.equal(s.server, z.runtime);
-  });
-
-  it('will load an HTTP driver with the use() function', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
-    function TestDriver() {
-      HttpDevice.call(this);
-    }
-    util.inherits(TestDriver, HttpDevice);
 
     TestDriver.prototype.init = function() {};
 
