@@ -31,7 +31,8 @@ function getBody(fn) {
 }
 
 function checkDeviceOnRootUri(entity) {
-  assert.deepEqual(entity.class, ['device']);
+  assert(entity.class.indexOf('device') >= 0);
+  assert(entity.class.indexOf(entity.properties.type) >= 0);
   assert.deepEqual(entity.rel, ["http://rels.zettajs.io/device"]);
   
   assert(entity.properties.name);
@@ -449,11 +450,12 @@ describe('Zetta Api', function() {
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
 
-    it('class should be ["device"]', function(done) {
+    it('class should be ["device", ":type"]', function(done) {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.deepEqual(body.class, ['device']);
+          assert(body.class.indexOf('device') >= 0);
+          assert(body.class.indexOf(body.properties.type) >= 0);
         }))
         .end(done);
     });
