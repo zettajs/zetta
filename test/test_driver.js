@@ -53,11 +53,19 @@ describe('Driver', function() {
       var p = machine.properties();
       assert.equal(p._foo, undefined);
     });
+
   });
 
   describe('Logging', function() {
     it('should expose a .log method', function() {
       assert.equal(typeof machine.log, 'function');
+    });
+
+    it('should have log level functions', function() {
+      assert.ok(machine.log);
+      assert.ok(machine.info);
+      assert.ok(machine.warn);
+      assert.ok(machine.error);
     });
   });
 
