@@ -108,13 +108,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have one action.', function(done) {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -162,13 +161,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have one action.', function(done) {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=local')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -223,13 +221,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have one action.', function(done) {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -309,13 +306,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have one action.', function(done) {
       request(getHttpServer(app))
         .get('/servers/local?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -369,13 +365,12 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have two two actions.', function(done) {
+    it('should have one action.', function(done) {
       request(getHttpServer(app))
         .get('/servers/detroit1?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 2);
-          assert.equal(body.actions[0].name, 'register-device');
-          assert.equal(body.actions[1].name, 'query-devices');
+          assert.equal(body.actions.length, 1);
+          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
