@@ -77,6 +77,46 @@ describe('Zetta Query Api', function() {
     peerRegistry = new PeerRegistry();
   });
 
+  describe('invalid query', function() {
+    var app = null;
+
+    beforeEach(function() {
+      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
+        .use(Scout)
+        .name('local')
+        .expose('*')
+        ._run();
+    });
+
+    it('returns an error on /', function(done) {
+      request(getHttpServer(app))
+        .get('/?ql=where%20')
+        .expect(getBody(function(res, body){
+          assert.deepEqual(body.class, ['query-error']);
+        }))
+        .end(done);
+    });
+
+    it('returns an error on / when querying across servers', function(done) {
+      request(getHttpServer(app))
+        .get('/?server=*&ql=where%20')
+        .expect(getBody(function(res, body){
+          assert.deepEqual(body.class, ['query-error']);
+        }))
+        .end(done);
+    });
+
+    it('returns an error on /servers/<id>', function(done) {
+      request(getHttpServer(app))
+        .get('/servers/local?ql=where%20')
+        .expect(getBody(function(res, body){
+          assert.deepEqual(body.class, ['query-error']);
+        }))
+        .end(done);
+    });
+  });
+
   describe('queries on / with just a ql parameter', function() {
     var app = null;
 
