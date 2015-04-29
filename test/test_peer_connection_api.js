@@ -106,6 +106,64 @@ describe('Peer Connection API', function() {
     });
   }); 
 
+  describe('Root API for peers', function() {
+    var cloud = null;
+    var cloudUrl = null;
+    var cloudPort = null;
+    var db1 = null;
+    var db2 = null;
+
+    beforeEach(function(done) {
+      
+      cloud = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      cloud.name('cloud');
+      cloud.silent();
+      
+      cloud.listen(0, function(err) {
+        if(err) {
+          return done(err);
+        }
+        
+        cloudPort = cloud.httpServer.server.address().port;
+        cloudUrl = 'http://localhost:' + cloudPort;
+        done();  
+      });  
+    });
+
+    afterEach(function(done) {
+      cloud.httpServer.server.close();
+      done();
+    });
+
+    it('will have rel of server on peer', function(done) {
+      this.timeout(10000);
+      var connected = false;
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.name('local');
+
+      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+        setImmediate(function() {
+          var url = '/';
+          request(getHttpServer(cloud))
+            .get(url)
+            .expect(getBody(function(res, body) {
+              var peerLinks = body.links.filter(function(link) { return link.rel.indexOf('http://rels.zettajs.io/peer') !== -1; });
+              var peerLink = peerLinks[0];
+              assert.ok(peerLink.rel.indexOf('http://rels.zettajs.io/server') !== -1);
+            }))
+            .end(done); 
+        });
+      });
+
+      z.silent();
+      z.link(cloudUrl);
+      z.listen(0);
+
+       
+    });  
+    
+  });
+
   describe('/peer-management disconnection API', function() {
     var cloud = null;
     var cloudUrl = null;
