@@ -254,7 +254,7 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body) {
-          assert.equal(body.properties.name, 'detroit1');
+          assert.equal(body.properties.server, 'detroit1');
           assert.equal(body.properties.ql, 'where type = "testdriver"');
         }))
         .end(done);
