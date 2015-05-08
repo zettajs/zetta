@@ -201,12 +201,11 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have one action.', function(done) {
+    it('should have no actions.', function(done) {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=local')
         .expect(getBody(function(res, body) {
           assert.equal(body.actions.length, 1);
-          assert.equal(body.actions[0].name, 'query-devices');
         }))
         .end(done);
     });
@@ -246,7 +245,7 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body){
-          assert.deepEqual(body.class, ['server', 'search-results']);
+          assert.deepEqual(body.class, ['root', 'search-results']);
         }))
         .end(done);
     });
@@ -261,12 +260,11 @@ describe('Zetta Query Api', function() {
         .end(done);
     });
 
-    it('should have one action.', function(done) {
+    it('should have no actions.', function(done) {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 1);
-          assert.equal(body.actions[0].name, 'query-devices');
+          assert.ok(!body.actions);
         }))
         .end(done);
     });
@@ -275,9 +273,8 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 2);
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
-          assert.notEqual(body.links[2].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
         }))
         .end(done);
     });
@@ -386,7 +383,9 @@ describe('Zetta Query Api', function() {
           }
         });
  
-    });    it('should have two classes', function(done) {
+    });
+    
+    it('should have two classes', function(done) {
       request(getHttpServer(app))
         .get('/servers/detroit1?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body){
