@@ -43,6 +43,7 @@ function checkDeviceOnRootUri(entity) {
   assert(entity.links);
   hasLinkRel(entity.links, rels.self);
   hasLinkRel(entity.links, rels.server);
+  hasLinkRel(entity.links, rels.type);
 }
 
 function hasLinkRel(links, rel, title, href) {
@@ -131,6 +132,16 @@ describe('Zetta Api', function() {
           assert(body.links);
           hasLinkRel(body.links, 'self');
           hasLinkRel(body.links, 'monitor');
+        }))
+        .end(done);
+    });
+
+    it('should have a metadata link', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert(body.links);
+          hasLinkRel(body.links, rels.metadata);
         }))
         .end(done);
     });

@@ -162,9 +162,9 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
-          assert.notEqual(body.links[2].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
+          assert.notEqual(body.links[3].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
         }))
         .end(done);
     });
@@ -214,9 +214,9 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=local')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
-          assert.notEqual(body.links[2].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
+          assert.notEqual(body.links[3].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
         }))
         .end(done);
     });
@@ -273,7 +273,7 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/?ql=where%20type%20=%20"testdriver"&server=detroit1')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 2);
+          assert.equal(body.links.length, 3);
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
         }))
         .end(done);
@@ -357,9 +357,9 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/servers/local?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
-          assert.notEqual(body.links[2].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
+          assert.notEqual(body.links[3].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
         }))
         .end(done);
     });
@@ -418,9 +418,9 @@ describe('Zetta Query Api', function() {
       request(getHttpServer(app))
         .get('/servers/detroit1?ql=where%20type%20=%20"testdriver"')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
-          assert.notEqual(body.links[2].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
+          assert.notEqual(body.links[3].href.indexOf("topic=query%2Fwhere%20type%20%3D%20%22testdriver%22"), -1);
         }))
         .end(done);
     });
