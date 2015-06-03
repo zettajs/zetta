@@ -57,7 +57,7 @@ describe('Virtual Device', function() {
             deviceJson = JSON.parse(buf.toString());
             vdevice = new VirtualDevice(deviceJson, socket);
             vdevice.on('ready', function() {
-              done();
+              setTimeout(done, 100);
             });
           });
           res.on('error', function(err) {
@@ -239,12 +239,12 @@ describe('Virtual Device', function() {
               assert.equal(recv, 3);
               assert.equal(wsRecv, 1);
               done();
-            }, 100);
-          },100);
+            }, 300);
+          },300);
         });
         socket.on('error', done);
 
-      }, 100);
+      }, 300);
     });
 
   });
