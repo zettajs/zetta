@@ -20,6 +20,7 @@ var Zetta = module.exports = function(opts) {
 
   this._name = os.hostname(); // optional name, defaults to OS hostname
   this.id = this._name;
+  this._properties = {}; // custom properties
 
   this._exposeQuery = '';
   this._scouts = [];
@@ -66,9 +67,31 @@ Zetta.prototype.logger = function(func) {
 };
 
 Zetta.prototype.name = function(name) {
+  if (name === '*') {
+    throw new Error('Cannot set name to *');
+  }
+
   this._name = name;
   this.id = this._name;
   return this;
+};
+
+Zetta.prototype.properties = function(props) {
+  var self = this;
+  if (typeof props === 'object') {
+    delete props.name; // cannot overide name
+    this._properties = props;
+  }
+  return this;
+};
+
+Zetta.prototype.getProperties = function() {
+  var self = this;
+  var ret = { name: this._name };
+  Object.keys(this._properties).forEach(function(k) {
+    ret[k] = self._properties[k];
+  });
+  return ret;
 };
 
 Zetta.prototype.use = function() {

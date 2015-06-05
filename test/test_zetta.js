@@ -28,6 +28,12 @@ describe('Zetta', function() {
     assert.equal(z._name, 'local');
   });
 
+  it('should throw error if setting name to *', function() {
+    assert.throws(function() {
+      var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('*').silent();
+    }, Error);
+  });
+
   it('has the silent() function to suppress logging.', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
   });
@@ -364,5 +370,16 @@ describe('Zetta', function() {
 
   });
 
+  it('has the properties() function to add custom properties to the api.', function() {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    assert(typeof z.properties, 'function');
+    z.properties({ test: 'abc' });
+  });
+
+  it('.getProperties() returns properties.', function() {
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('test');
+    z.properties({ someKey: 123 });
+    assert.deepEqual(z.getProperties(), { name: 'test', someKey: 123 });
+  });
 
 });
