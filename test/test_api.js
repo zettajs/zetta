@@ -86,6 +86,7 @@ describe('Zetta Api', function() {
     beforeEach(function(done) {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .silent()
+        .properties({ custom: 123 })
         .use(Scout)
         .use(HttpDriver)
         .name('local')
@@ -121,6 +122,16 @@ describe('Zetta Api', function() {
         .get(url)
         .expect(getBody(function(res, body) {
           assert.equal(body.properties.name, 'local');
+        }))
+        .end(done);
+    });
+
+    it('should have custom properties in resp', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(body.properties.name, 'local');
+          assert.equal(body.properties.custom, 123);
         }))
         .end(done);
     });
