@@ -19,7 +19,7 @@ describe('Event Websocket Proxied Through Peer', function() {
         base = 'localhost:' + cluster.servers['cloud deploy']._testPort + '/servers/' + cluster.servers['cloud deploy'].locatePeer(id);
         var did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit 1'].runtime._jsDevices[did];
-        done();
+        setTimeout(done, 300);
       })
       .run(function(err) {
         if (err) {
@@ -139,16 +139,13 @@ describe('Event Websocket Proxied Through Peer', function() {
             count++;
           });
 
-          setTimeout(function(){
-            device.incrementStreamValue();
-          }, 20)
-          
           setTimeout(function() {
-            if (count === 1) {
+            device.incrementStreamValue();
+
+            setTimeout(function() {
+              assert.equal(count, 1, 'Should have only received 1 message. Received: ' + count);
               done();
-            } else {
-              throw new Error('Should have only recieved one message. ' + count);
-            }
+            }, 100);
           }, 100);
         });
       });
