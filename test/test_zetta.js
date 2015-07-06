@@ -38,9 +38,10 @@ describe('Zetta', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
   });
 
-  it('test try catch', function(done) {
+  it('errors thrown in zetta apps should propagate.', function(done) {
     var d = require('domain').create();
     d.on('error', function(err) {
+      assert.equal(err.message, '123');
       done();
     });
     d.run(function() {
