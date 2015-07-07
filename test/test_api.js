@@ -1,6 +1,8 @@
 var assert = require('assert');
+var http = require('http');
 var os = require('os');
 var request = require('supertest');
+var spdy = require('spdy');
 var zetta = require('../zetta');
 var Query = require('calypso').Query;
 var rels = require('zetta-rels');
@@ -157,7 +159,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should have monitor log link formatted correctly', function(done) {
+    it('should have monitor log link formatted correctly for HTTP requests', function(done) {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {          
@@ -165,9 +167,54 @@ describe('Zetta Api', function() {
             return l.rel.indexOf('monitor') > -1;
           })[0];
           var obj = require('url').parse(link.href, true);
+          assert.equal(obj.protocol, 'ws:');
           assert(obj.query.topic);
         }))
         .end(done);
+    });
+
+    it('should have monitor log link formatted correctly for SPDY requests', function(done) {
+      var a = getHttpServer(app);
+
+      if (!a.address()) a.listen(0);
+
+      var agent = spdy.createAgent({
+        host: '127.0.0.1',
+        port: a.address().port,
+        spdy: {
+          plain: true,
+          ssl: false
+        }
+      });
+
+      var request = http.get({
+        host: '127.0.0.1',
+        port: a.address().port,
+        path: url,
+        agent: agent
+      }, function(response) {
+
+        var buffers = [];
+        response.on('readable', function() {
+          var data;
+          while ((data = response.read()) !== null) {
+            buffers.push(data);
+          }
+        });
+
+        response.on('end', function() {
+          var body = JSON.parse(Buffer.concat(buffers));
+          var link = body.links.filter(function(l) {
+            return l.rel.indexOf('monitor') > -1;
+          })[0];
+          var obj = require('url').parse(link.href, true);
+          assert.equal(obj.protocol, 'http:');
+          assert(obj.query.topic);
+          agent.close();
+        });
+
+        response.on('end', done);
+      }).end();
     });
 
     it('should have valid entities', function(done) {
@@ -569,7 +616,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('device should have monitor link for bar', function(done) {
+    it('device should have monitor link for bar formatted correctly for HTTP requests', function(done) {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
@@ -578,8 +625,55 @@ describe('Zetta Api', function() {
           });
 
           hasLinkRel(fooBar, rels.binaryStream);
+          var parsed = require('url').parse(fooBar[0].href);
+          assert.equal(parsed.protocol, 'ws:');
         }))
         .end(done);
+    });
+
+    it('should have a monitor link for bar formatted correctly for SPDY requests', function(done) {
+      var a = getHttpServer(app);
+
+      if (!a.address()) a.listen(0);
+
+      var agent = spdy.createAgent({
+        host: '127.0.0.1',
+        port: a.address().port,
+        spdy: {
+          plain: true,
+          ssl: false
+        }
+      });
+
+      var request = http.get({
+        host: '127.0.0.1',
+        port: a.address().port,
+        path: url,
+        agent: agent
+      }, function(response) {
+
+        var buffers = [];
+        response.on('readable', function() {
+          var data;
+          while ((data = response.read()) !== null) {
+            buffers.push(data);
+          }
+        });
+
+        response.on('end', function() {
+          var body = JSON.parse(Buffer.concat(buffers));
+          var fooBar = body.links.filter(function(link) {
+            return link.title === 'foobar';
+          });
+
+          hasLinkRel(fooBar, rels.binaryStream);
+          var parsed = require('url').parse(fooBar[0].href);
+          assert.equal(parsed.protocol, 'http:');
+          agent.close();
+        });
+
+        response.on('end', done);
+      }).end();
     });
 
     it('device action should return a 400 status code on a missing request body', function(done) {
