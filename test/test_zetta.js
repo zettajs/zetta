@@ -38,6 +38,26 @@ describe('Zetta', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
   });
 
+  it('errors thrown in zetta apps should propagate.', function(done) {
+    var d = require('domain').create();
+    d.on('error', function(err) {
+      assert.equal(err.message, '123');
+      done();
+    });
+    d.run(function() {
+      zetta()
+        .silent()
+        .use(ExampleDevice)
+        .use(function(server) {
+          var ledQuery = server.where({ type: 'testdriver' });
+          server.observe(ledQuery, function(led) {
+            throw new Error('123');
+          })
+        })
+        .listen(0);
+    });
+  });
+
   it('has the logger() function to pass in custom logging.', function(done) {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.logger(function(log) {
