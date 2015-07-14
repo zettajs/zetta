@@ -46,6 +46,7 @@ function checkDeviceOnRootUri(entity) {
   hasLinkRel(entity.links, rels.self);
   hasLinkRel(entity.links, rels.server);
   hasLinkRel(entity.links, rels.type);
+  hasLinkRel(entity.links, rels.edit);
 }
 
 function hasLinkRel(links, rel, title, href) {
@@ -598,6 +599,15 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('device should have edit link', function(done) {
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, 'edit');
+        }))
+        .end(done);
+    });
+
     it('device should have up link to server', function(done) {
       request(getHttpServer(app))
         .get(url)
@@ -719,6 +729,7 @@ describe('Zetta Api', function() {
         }))
         .end(done);
     });
+
     it('should return 500 when a error is passed in a callback of device driver', function(done) {
       request(getHttpServer(app))
         .post(url)
@@ -730,7 +741,72 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('should support device updates using PUT', function(done) {
+      request(getHttpServer(app))
+        .put(url)
+        .type('json')
+        .send({ foo: 1, bar: 2, value: 3 })
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 200);
+          assert.equal(body.properties.foo, 1);
+          assert.equal(body.properties.bar, 2);
+          assert.equal(body.properties.value, 3);
+        }))
+        .end(done);
+    });
 
+    it('should return a 404 when updating a non-existent device', function(done) {
+      request(getHttpServer(app))
+        .put(url + '1234567890')
+        .type('json')
+        .send({ foo: 1, bar: 2, value: 3 })
+        .expect(function(res) {
+          assert.equal(res.statusCode, 404);
+        })
+        .end(done);
+    });
+
+    it('should return a 400 when updating with a Content-Range header', function(done) {
+      request(getHttpServer(app))
+        .put(url)
+        .set('Content-Range', 'bytes 0-499/1234')
+        .type('json')
+        .send({ foo: 1, bar: 2, value: 3 })
+        .expect(function(res) {
+          assert.equal(res.statusCode, 400);
+        })
+        .end(done);
+    });
+
+    it('should return a 400 when receiving invalid JSON input', function(done) {
+      request(getHttpServer(app))
+        .put(url)
+        .type('json')
+        .send('{"name":}')
+        .expect(function(res) {
+          assert.equal(res.statusCode, 400);
+        })
+        .end(done);
+    });
+
+    it('should not include reserved fields on device updates', function(done) {
+      var input = { foo: 1, bar: 2, value: 3, id: 'abcdef',
+        _x: 4, type: 'h', state: 'yo', streams: 's' };
+
+      request(getHttpServer(app))
+        .put(url)
+        .type('json')
+        .send(input)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 200);
+          assert.notEqual(body.properties.id, 'abcdef');
+          assert.notEqual(body.properties._x, 4);
+          assert.notEqual(body.properties.streams, 's');
+          assert.notEqual(body.properties.state, 'yo');
+          assert.notEqual(body.properties.type, 'h');
+        }))
+        .end(done);
+    });
  });
 
 
