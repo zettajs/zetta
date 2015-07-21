@@ -1,3 +1,5 @@
+[![Zetta](http://www.zettajs.org/images/logos/zetta-logo.svg)](http://www.zettajs.org/)
+
 # Zetta 
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/zettajs/zetta?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -28,6 +30,18 @@ Zetta also allows you to write stateless applications that live in the server it
 
 Zetta can create persistent connections between servers to expose APIs in new and unqiue ways. You can peer a Zetta server in your home with a server in the cloud, and allow for access to devices on the open internet.
 
+# Getting started with Zetta
+
+This is the quintessential "Hello World!" program for Zetta. This program will generate your first Zetta UI for a particular server.
+
+```javascript
+var zetta = require('zetta');
+
+zetta()
+  .name('hello.world')
+  .listen(1337);
+```
+
 # Installation
 
 Retrieving the Zetta package is fairly straight forward.
@@ -43,17 +57,7 @@ npm install
 npm install zetta
 ```
 
-# Getting started with Zetta
 
-This is the quintessential "Hello World!" program for Zetta. This program will generate your first Zetta UI for a particular server.
-
-```javascript
-var zetta = require('zetta');
-
-zetta()
-  .name('hello.world')
-  .listen(1337);
-```
 # Community
 
 The Zetta community is steadily growing. We have a few channels that you can talk to the Zetta team on.
