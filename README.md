@@ -5,7 +5,21 @@
 
 # What is it?
 
-Zetta is an open source Node.js based platform for the internet of things. It's a complete toolkit for generating HTTP APIs for devices. Zetta is protocol agnostic meaning that it can support almost all device protocols, and mediate them to HTTP.
+Zetta is an open source Node.js based platform for the internet of things. It's a complete toolkit for generating HTTP APIs for devices. Zetta is protocol agnostic meaning that it can support almost all device protocols, and mediate them to HTTP. Zetta was built from the ground up to solve specific problems around generating consistent interfaces for devices, and allowing to stream real time state of devices.
+
+# Getting started with Zetta
+
+This is the quintessential "Hello World!" program for Zetta. This program will generate your first Zetta UI for a particular server.
+
+```javascript
+var zetta = require('zetta');
+
+zetta()
+  .name('hello.world')
+  .listen(1337);
+```
+
+# Key Concepts
 
 **JavaScript**
 
@@ -27,17 +41,6 @@ Zetta also allows you to write stateless applications that live in the server it
 
 Zetta can create persistent connections between servers to expose APIs in new and unqiue ways. You can peer a Zetta server in your home with a server in the cloud, and allow for access to devices on the open internet.
 
-# Getting started with Zetta
-
-This is the quintessential "Hello World!" program for Zetta. This program will generate your first Zetta UI for a particular server.
-
-```javascript
-var zetta = require('zetta');
-
-zetta()
-  .name('hello.world')
-  .listen(1337);
-```
 
 # Installation
 
