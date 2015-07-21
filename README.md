@@ -9,7 +9,7 @@ Zetta is an open source Node.js based platform for the internet of things. It's 
 
 **JavaScript**
 
-Zetta has developers express devices as state machines using an elegant and expressive syntax. 
+Zetta has developers express devices as state machines using an elegant and expressive syntax. Zetta is a completely nodejs based framework that is cross platform, and easily deployable to multiple cloud services.
 
 **APIs**
 
@@ -17,11 +17,11 @@ Zetta then takes that JavaScript, and generates a consistent Hypermedia HTTP API
 
 **Queries**
 
-Zetta has a robust query system that allows you to not only search for devices, but also subscribe to websockets to be notified when new devices come online that fulfill the query.
+Zetta has a robust query system that allows you to not only search for devices, but also subscribe to websockets to be notified when new devices come online that fulfill the query. The queries have a SQL-like syntax that makes it easy to wrangle devices in the API, and Zetta itself.
 
 **Apps**
 
-Zetta also allows you to write stateless applications that live in the server itself. You can query for devices, and wire up interactions between them in these applications.
+Zetta also allows you to write stateless applications that live in the server itself. You can query for devices, and wire up interactions between them in these applications. These apps will run consistently whether or not your hub has internet connectivity.
 
 **Peering** 
 
