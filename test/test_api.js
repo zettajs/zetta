@@ -745,15 +745,26 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .put(url)
         .type('json')
-        .send({ foo: 1, bar: 2, value: 3 })
+        .send({ bar: 2, value: 3 })
         .expect(getBody(function(res, body) {
           assert.equal(res.statusCode, 200);
-          assert.equal(body.properties.foo, 1);
           assert.equal(body.properties.bar, 2);
           assert.equal(body.properties.value, 3);
         }))
         .end(done);
     });
+
+    it('should not overwrite monitor properties using PUT', function(done) {
+      request(getHttpServer(app))
+        .put(url)
+        .type('json')
+        .send({ foo: 1 })
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 200);
+          assert.equal(body.properties.foo, 0);
+        }))
+        .end(done); 
+     });
 
     it('should return a 404 when updating a non-existent device', function(done) {
       request(getHttpServer(app))
