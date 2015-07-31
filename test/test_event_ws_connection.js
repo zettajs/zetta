@@ -1,5 +1,6 @@
 var assert = require('assert');
 var http = require('http');
+var urlParse = require('url').parse;
 var WebSocket = require('ws');
 var request = require('supertest');
 var util = require('util');
@@ -191,7 +192,60 @@ describe('Event Websocket', function() {
       }, 20);
     });
 
+    it('websocket should connect and recv device log events from property API updates', function(done) {
+      var url = 'ws://' + deviceUrl + '/logs';
+      var error = 0;
+      var open = false;
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        open = true;
+        
+      });
+      socket.on('close', function(err) {
+        open = false;
+      });
+      socket.on('error', function(err) {
+        error++;
+      });
 
+      setTimeout(function() {
+        assert.equal(error, 0);
+        assert.equal(open, true, 'ws should be opened');
+
+        deviceUrlHttp = 'http://' + deviceUrlHttp; 
+        var parsed = urlParse(deviceUrlHttp); 
+        var reqOpts = {
+          hostname: 'localhost',
+          port: parseInt(parsed.port),
+          method: 'PUT',
+          path: parsed.path,
+          headers: {
+            'Content-Type': 'application/json'  
+          }  
+        }
+
+        var req = http.request(reqOpts);
+        req.write(JSON.stringify({ fu: 'bar' }));
+        req.end();
+        var recv = 0;
+        var timer = null;
+        socket.on('message', function(buf, flags) {
+          var msg = JSON.parse(buf);
+          recv++;
+          assert(msg.timestamp);
+          assert(msg.topic);
+          assert.equal(msg.transition, 'zetta-properties-update');
+          assert.equal(msg.properties.fu, 'bar');
+          assert.equal(msg.properties.foo, 0);
+
+          if (recv === 1) {
+            clearTimeout(timer);
+            socket.close();
+            done();
+          }
+        });
+      }, 20);
+    });
 
     it('websocket should connect and recv device log events', function(done) {
       var url = 'ws://' + deviceUrl + '/logs';

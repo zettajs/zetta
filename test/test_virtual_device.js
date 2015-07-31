@@ -109,42 +109,37 @@ describe('Virtual Device', function() {
     });
 
     it('call should work with arguments, after peer reconnects', function(done) {
-      vdevice.call('test', 'hello', function(err) {
-        assert.equal(err, null);
-      });
+
       var timer = setTimeout(function() {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 1500);
 
-      var recv = 0;
-      device.on('test', function() {
-        recv++;
-        
-        if (recv === 1) {
-          clearTimeout(timer);
-          assert.equal(device.value, 'hello');
+      vdevice.call('test', 'hello', function(err) {
+        assert.equal(err, null);
 
-          var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
-          socket.close();
+        clearTimeout(timer);
+        assert.equal(device.value, 'hello');
 
-          setTimeout(function() {
-            vdevice.call('test', 'hello1', function(err) {
-              assert.equal(err, null);
-            });
-            var timer = setTimeout(function() {
-              done(new Error('Faied to recv transition call on detroit device'));
-            }, 1500);
+        var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
+        socket.close();
 
-            device.on('test', function() {
-              clearTimeout(timer);
-              assert.equal(device.value, 'hello1');
-              done();
-            });
+        setTimeout(function() {
+          vdevice.call('test', 'hello1', function(err) {
+            assert.equal(err, null);
+          });
+          var timer = setTimeout(function() {
+            done(new Error('Faied to recv transition call on detroit device'));
           }, 1500);
-        }
-      });
-    });
 
+          device.on('test', function() {
+            clearTimeout(timer);
+            assert.equal(device.value, 'hello1');
+            done();
+          });
+        }, 1500);
+      });
+
+    });
   });
 
   describe('Device log monitor stream', function() {
