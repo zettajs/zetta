@@ -2,6 +2,7 @@ var assert = require('assert');
 var http = require('http');
 var urlParse = require('url').parse;
 var WebSocket = require('ws');
+var WebSocketServer = WebSocket.Server;
 var request = require('supertest');
 var util = require('util');
 var Scout = require('../zetta_runtime').Scout;
@@ -102,7 +103,73 @@ describe('Event Websocket', function() {
 
   });
 
+  describe('Embedding a websocket server', function() {
+    var app = null;
+    var port = null;
+    var wss = null;
+    
+    beforeEach(function(done) {
+      var peerRegistry = new PeerRegistry();
+      var registry = new MockRegistry();
+      app = zetta({registry: registry, peerRegistry: peerRegistry});
+      app.silent();
+      app.use(function(server) {
+        var server = server.httpServer.server;
+        wss = new WebSocketServer({server: server, path: '/foo'});  
+      });
+      app.listen(0, function(err){
+        port = app.httpServer.server.address().port;
+        done(err);
+      });
+    });
 
+    it('can connect to the custom server', function(done) {
+      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      ws.on('open', function open() {
+        done();  
+      });
+    });
+
+    it('will fire the connection event on the server', function(done) {
+      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      ws.on('open', function open() {
+      });
+      wss.on('connection', function(ws) {
+        done();  
+      });
+    });
+    
+    it('can send data down the server websocket', function(done) {
+      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      ws.on('open', function open() {
+      });
+
+      ws.on('message', function() {
+        done();  
+      });
+      wss.on('connection', function(ws) {
+        ws.send('foo');
+      });
+    });
+
+    it('can send data up the server websocket', function(done) {
+      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      wss.on('connection', function(ws) {
+        ws.on('message', function() {
+          done();  
+        });  
+      });
+
+      ws.on('open', function open() {
+        ws.send('foo');
+      });
+    });
+
+    afterEach(function(done) {
+      app.httpServer.server.close();
+      done();  
+    }); 
+  });
 
   describe('Receive json messages', function() {
 
