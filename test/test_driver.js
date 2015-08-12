@@ -1,3 +1,4 @@
+var util = require('util');
 var PubSub = require('../lib/pubsub_service');
 var Logger = require('../lib/logger');
 var Runtime = require('../zetta_runtime');
@@ -292,6 +293,103 @@ describe('Driver', function() {
     });
     
   });
+
+  describe('Remote Update and Fetch Hooks', function() {
+
+    it('can pass config a remoteFetch function to be called when .properties() is called', function() {
+      var Device = Runtime.Device;
+      var SomeDevice = function() {
+        this.hidden = 'hidden prop';
+        Device.call(this);
+      };
+      util.inherits(SomeDevice, Device);
+      SomeDevice.prototype.init = function(config) {
+        config
+          .type('some-device')
+          .name('device-1')
+          .remoteFetch(function() {
+            assert.equal(this.hidden, 'hidden prop');
+            return { prop: 123 };
+          })
+      };
+
+      var machine = Scientist.init(Scientist.create(SomeDevice));
+      assert.deepEqual(machine.properties(), { 
+        name: 'device-1',
+        prop: 123,
+        type: 'some-device',
+        id: machine.id
+      });
+    })
+
+    it('handle remote update method, will update non reserved properties and remove old properties', function(done) {
+      var Device = Runtime.Device;
+      var SomeDevice = function() {
+        this.ip = '1.2.3.4';
+        this.mutable = 'abc';
+        this.deleted = 'gone after update';
+        Device.call(this);
+      };
+      util.inherits(SomeDevice, Device);
+      SomeDevice.prototype.init = function(config) {
+        config
+          .type('some-device')
+          .name('device-1');
+      };
+
+      var machine = Scientist.init(Scientist.create(SomeDevice));
+      machine._registry = reg;
+      machine._pubsub = pubsub;
+      machine._log = log;
+      machine._handleRemoteUpdate({ mutable: 123 }, function(err) {
+        assert.equal(err, null);
+        assert.equal(machine.ip, undefined);
+        assert.equal(machine.mutable, 123);
+        assert.equal(machine.deleted, undefined);
+        done();
+      });
+    })
+
+
+    it('can pass config a remoteUpdate function to be called when remoteUpdates are called', function(done) {
+      var Device = Runtime.Device;
+      var SomeDevice = function() {
+        this.ip = '1.2.3.4';
+        this.mutable = 'abc';
+        this.deleted = 'gone after update';
+        Device.call(this);
+      };
+      util.inherits(SomeDevice, Device);
+      SomeDevice.prototype.init = function(config) {
+        config
+          .type('some-device')
+          .name('device-1')
+          .remoteUpdate(function(properties, cb) {
+            var self = this;
+            // make sure ip cant be updated
+            delete properties.ip;
+
+            Object.keys(properties).forEach(function(key) {
+              self[key] = properties[key];
+            });
+
+            this.save(cb);
+          })
+      };
+
+      var machine = Scientist.init(Scientist.create(SomeDevice));
+      machine._registry = reg;
+      machine._pubsub = pubsub;
+      machine._log = log;
+      machine._handleRemoteUpdate({ mutable: 123 }, function(err) {
+        assert.equal(err, null);
+        assert.equal(machine.ip, '1.2.3.4');
+        assert.equal(machine.mutable, 123);
+        done();
+      });
+    })
+
+  })
 
 
 });
