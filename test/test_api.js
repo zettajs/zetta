@@ -3,9 +3,10 @@ var http = require('http');
 var os = require('os');
 var request = require('supertest');
 var spdy = require('spdy');
-var zetta = require('../zetta');
+var zetta = require('../');
 var Query = require('calypso').Query;
 var rels = require('zetta-rels');
+var zettacluster = require('zetta-cluster');
 var Scout = require('./fixture/example_scout');
 var Driver = require('./fixture/example_driver');
 var HttpDriver = require('./fixture/example_http_driver');
@@ -820,5 +821,42 @@ describe('Zetta Api', function() {
     });
  });
 
+  describe('Proxied requests', function() {
+    var base = null;
+    var cluster = null;
+
+    beforeEach(function(done) {
+      cluster = zettacluster({ zetta: zetta })
+        .server('cloud')
+        .server('detroit', [Scout], ['cloud'])
+        .on('ready', function(){
+          base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer('detroit');
+          setTimeout(done, 300);
+        })
+        .run(function(err) {
+          console.log(err)
+          if (err) {
+            done(err);
+          }
+        });
+    });
+
+    afterEach(function(done) {
+      cluster.stop();
+      setTimeout(done, 10); // fix issues with server not being closed before a new one starts
+    });
+
+    it('zetta should not crash when req to hub is pending and hub disconnects', function(done) {
+      http.get('http://' + base, function(res) {
+        assert.equal(res.statusCode, 502);
+        done();
+      }).on('socket', function(socket) {
+        socket.on('connect', function() {
+          cluster.servers['cloud'].httpServer.peers['detroit'].close();
+        });
+      })
+    })
+
+  })
 
 });
