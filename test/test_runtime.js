@@ -32,7 +32,8 @@ describe('Runtime', function(){
     });
 
     it('calls the calls the filter method on deviceready', function() {
-      var d = { type: 'test' };
+      var d = new EventEmitter();
+      d.type = 'test';
 
       runtime
         .filter(function(e) {
@@ -44,7 +45,8 @@ describe('Runtime', function(){
     });
 
     it('calls subscribe when the observable chain is complete.', function(done) {
-      var d = { type: 'test' };
+      var d = new EventEmitter();
+      d.type = 'test';
       runtime
         .subscribe(function(d) {
           assert.equal(d.type, 'test');
@@ -55,7 +57,9 @@ describe('Runtime', function(){
     });
 
     it('calls map on the observable chain when an event occurs', function(done) {
-      var d = { type: 'test' };
+      var d = new EventEmitter();
+      d.type = 'test';
+
       runtime
         .map(function(d) {
           assert.equal(d.type, 'test');
@@ -71,8 +75,10 @@ describe('Runtime', function(){
     });
 
     it('only calls zip when all conditions are fulfilled.', function(done) {
-      var d1 = { type: 'test' };
-      var d2 = { type: 'test2' };
+      var d1 = new EventEmitter();
+      d1.type = 'test';
+      var d2 = new EventEmitter();
+      d2.type = 'test2';
 
       var filter2 = runtime.filter(function(d) {
         return d.type == 'test2';
@@ -115,7 +121,8 @@ describe('Runtime', function(){
 
       it('will take a single query as the first argument', function(done) {
         var q = runtime.where({ type: 'test' });
-        var d = { type: 'test' };
+        var d = new EventEmitter();
+        d.type = 'test';
 
         runtime.observe(q, function(device) {
           assert.equal(device.type, 'test');
@@ -127,7 +134,8 @@ describe('Runtime', function(){
 
       it('will call the observe callback when the query is fullfilled.', function(done) {
         var q = runtime.where({type: 'test'});
-        var d = { type: 'test' };
+        var d = new EventEmitter();
+        d.type = 'test';
         runtime.observe([q], function(device) {
           assert.equal(device.type, 'test');
           done();
@@ -140,8 +148,10 @@ describe('Runtime', function(){
           var q1 = runtime.where({ type: 'test1' });
           var q2 = runtime.where({ type: 'test2' });
 
-          var d1 = { type: 'test1' };
-          var d2 = { type: 'test2' };
+          var d1 = new EventEmitter();
+          d1.type = 'test1'; 
+          var d2 = new EventEmitter();
+          d2.type = 'test2';
 
           runtime.observe([q1, q2], function(one, two) {
             assert.equal(one.type, 'test1');
@@ -157,9 +167,10 @@ describe('Runtime', function(){
           var q1 = runtime.where({ type: 'test1' });
           var q2 = runtime.where({ type: 'test2' });
 
-          var d1 = { type: 'test1' };
-          var d2 = { type: 'test2' };
-
+          var d1 = new EventEmitter();
+          d1.type = 'test1'; 
+          var d2 = new EventEmitter();
+          d2.type = 'test2';          
           runtime.observe([q1, q2], function(one, two) {
             assert.equal(one.type, 'test1');
             assert.equal(two.type, 'test2');
@@ -176,7 +187,8 @@ describe('Runtime', function(){
         var q1 = runtime.where({ type: 'test1' });
         var q2 = runtime.where({ type: 'test2' });
 
-        var d2 = { type: 'test2' };
+        var d2 = new EventEmitter();
+        d2.type = 'test2';
 
         runtime.observe([q1, q2], function(one, two) {
           assert.equal(one.type, 'test1');
@@ -186,6 +198,55 @@ describe('Runtime', function(){
 
         runtime.emit('deviceready', d2);
       });
+  });
+
+  describe('Device deletion from runtime', function() {
+    it('will delete a remote device from the runtime', function(done) {
+      var peerName = 'hub';
+      var id = '1';
+      var peer = new EventEmitter();
+      peer.subscribe = function() {};
+      peer.name = peerName;
+      var data = { 'properties': { 'id': id }, 'actions': [], 'links': [{'title': 'logs', 'href': 'http://localhost/servers/hub/devices/1?topic=logs', 'rel': []}]};
+      runtime._remoteDevices[peerName] = {};
+      var virtualDevice = runtime._createRemoteDevice(peer, data);
+      virtualDevice._eventEmitter.emit('zetta-device-destroy');
+      setTimeout(function() {
+        assert.ok(!runtime._remoteDevices[peerName][id]);
+        done();
+      }, 100);
+    });
+
+
+    it('will delete a device from the runtime', function(done) {
+      var emitter = new EventEmitter();
+      emitter.id = '1';
+      emitter.type = 'test1';
+      runtime._jsDevices['1'] = emitter;
+      runtime.registry.db.put('1', {'id': '1', 'type': 'test1'}, {valueEncoding: 'json'}, function() {
+        runtime.emit('deviceready', emitter);
+        emitter.emit('destroy', emitter);
+        setTimeout(function() {    
+          assert.ok(!runtime._jsDevices.hasOwnProperty('1'));
+          done();
+        }, 100);
+      });
+    });  
+
+    it('will delete a device from the runtime using _destroyDevice', function(done) {
+      var emitter = new EventEmitter();
+      emitter.id = '1';
+      emitter.type = 'test1';
+      runtime._jsDevices['1'] = emitter;
+      runtime.registry.db.put('1', {'id': '1', 'type': 'test1'}, {valueEncoding: 'json'}, function() {
+        runtime.emit('deviceready', emitter);
+        runtime._destroyDevice(emitter, function(err) {
+          assert.ok(!err);
+          assert.ok(!runtime._jsDevices.hasOwnProperty('1'));
+          done();
+        });
+      });
+    });
   });
 
   describe('Extended reactive syntax', function() {
@@ -207,8 +268,10 @@ describe('Runtime', function(){
           done();
         });
 
-        var d1 = { type: 'test1' };
-        var d2 = { type: 'test2' };
+        var d1 = new EventEmitter();
+        d1.type = 'test1';
+        var d2 = new EventEmitter();
+        d2.type = 'test2';
 
         runtime.emit('deviceready', d1);
         runtime.emit('deviceready', d2);
@@ -239,8 +302,10 @@ describe('Runtime', function(){
           });
         });
 
-        var d1 = { type: 'test1' };
-        var d2 = { type: 'test2' };
+        var d1 = new EventEmitter();
+        d1.type = 'test1';
+        var d2 = new EventEmitter();
+        d2.type = 'test2';
 
         runtime.emit('deviceready', d1);
         runtime.emit('deviceready', d2);
@@ -250,7 +315,8 @@ describe('Runtime', function(){
       });
 
       it('will only fire take one time', function(done) {
-        var d = { type: 'test' };
+        var d = new EventEmitter();
+        d.type = 'test';
         var fired = 0;
         var emitter = new EventEmitter();
         runtime
@@ -269,7 +335,8 @@ describe('Runtime', function(){
       });
 
       it('will only fire take twice.', function(done) {
-        var d = { type: 'test' };
+        var d = new EventEmitter();
+        d.type = 'test';
         var fired = 0;
         var emitter = new EventEmitter();
         runtime
@@ -290,9 +357,6 @@ describe('Runtime', function(){
         runtime.emit('deviceready', d);
         emitter.emit('complete');
       });
-
-
-
     });
   });
 });

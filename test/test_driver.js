@@ -391,5 +391,17 @@ describe('Driver', function() {
 
   })
 
+  describe('Deletion', function() {
+    it('should have a destroy function', function() {
+      assert.ok(machine.destroy);  
+    });     
 
+    it('should emit a destroy event when destroy is called.', function(done) {
+      machine.on('destroy', function(m) {
+        assert.ok(m);
+        done();  
+      });  
+      machine.destroy();
+    });
+  });
 });

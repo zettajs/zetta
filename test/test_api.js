@@ -755,6 +755,17 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it.only('should support device deletes using DELETE', function(done) {
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 204);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 0);
+        }))
+        .end(done);
+
+    });
+
     it('should not overwrite monitor properties using PUT', function(done) {
       request(getHttpServer(app))
         .put(url)
