@@ -2,6 +2,11 @@ var Runtime = require('../lib/runtime');
 var assert = require('assert');
 var Registry = require('./fixture/mem_registry');
 var EventEmitter = require('events').EventEmitter;
+EventEmitter.prototype._sendLogStreamEvent = function(topic, args, cb) {
+  if(cb) {
+    cb()
+  }
+};
 
 describe('Runtime', function(){
   describe('Reactive', function(done){
