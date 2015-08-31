@@ -755,7 +755,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it.only('should support device deletes using DELETE', function(done) {
+    it('should support device deletes using DELETE', function(done) {
       request(getHttpServer(app))
         .del(url)
         .expect(getBody(function(res, body) {
