@@ -23,7 +23,7 @@
     "titan": "~0.1.1",
     "ws": "^0.4.31",
     "zetta-auto-scout": "^0.8.0",
-    "zetta-device": "^0.13.0",
+    "zetta-device": "^0.14.0",
     "zetta-http-device": "^0.4.0",
     "zetta-rels": "^0.4.0",
     "zetta-scientist": "^0.4.0",
