@@ -23,12 +23,12 @@
     "titan": "~0.1.1",
     "ws": "^0.4.31",
     "zetta-auto-scout": "^0.8.0",
-    "zetta-device": "^0.12.0",
+    "zetta-device": "^0.15.0",
     "zetta-http-device": "^0.4.0",
     "zetta-rels": "^0.4.0",
     "zetta-scientist": "^0.4.0",
     "zetta-scout": "^0.5.0",
-    "zetta-streams": "^0.2.0"
+    "zetta-streams": "^0.3.0"
   },
   "devDependencies": {
     "memdown": "^0.10.2",
