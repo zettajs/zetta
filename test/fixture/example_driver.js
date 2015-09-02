@@ -18,7 +18,7 @@ TestDriver.prototype.init = function(config) {
     .state('ready')
     .type('testdriver')
     .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change', 'test', 'error'] })
+    .when('ready', { allow: ['change', 'test', 'error', 'test-number', 'test-text', 'test-none', 'test-date'] })
     .when('changed', { allow: ['prepare', 'test', 'error'] })
     .map('change', this.change)
     .map('prepare', this.prepare)
@@ -26,7 +26,11 @@ TestDriver.prototype.init = function(config) {
     .map('error', this.returnError, [{ name: 'error', type: 'string'}])
     .monitor('foo')
     .stream('bar', this.streamBar)
-    .stream('foobar', this.streamFooBar, {binary: true});
+    .stream('foobar', this.streamFooBar, {binary: true})
+    .map('test-number', function(x, cb) { cb(); }, [{ name: 'value', type: 'number'}])
+    .map('test-text', function(x, cb) { cb(); }, [{ name: 'value', type: 'text'}])
+    .map('test-none', function(x, cb) { cb(); }, [{ name: 'value'}])
+    .map('test-date', function(x, cb) { cb(); }, [{ name: 'value', type: 'date'}])
 };
 
 TestDriver.prototype.test = function(value, cb) {

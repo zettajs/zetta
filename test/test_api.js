@@ -568,7 +568,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 3);
+          assert.equal(body.actions.length, 7);
           var action = body.actions[0];
           assert.equal(action.name, 'change');
           assert.equal(action.method, 'POST');
@@ -582,7 +582,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 3);
+          assert.equal(body.actions.length, 7);
           body.actions.forEach(function(action) {
             assert(action.class.indexOf('transition') >= 0);
           })
@@ -719,6 +719,32 @@ describe('Zetta Api', function() {
         }))
         .end(done);
     });
+
+
+    var createTransitionArgTest = function(action, testType, input) {
+      it('api should decode transition args to ' + testType + ' for ' + action, function(done) {
+        var device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
+        
+        var orig = device._transitions[action].handler;
+        device._transitions[action].handler = function(x) {
+          assert.equal(typeof x, testType);
+          orig.apply(device, arguments);
+        };
+        
+        request(getHttpServer(app))
+          .post(url)
+          .type('form')
+          .expect(200)
+          .send({ action: action, value: input })
+          .end(done);
+      });
+    };
+    
+    createTransitionArgTest('test-number', 'number', 123)
+    createTransitionArgTest('test-text', 'string', 'Hello');
+    createTransitionArgTest('test-none', 'string', 'Anything');
+    createTransitionArgTest('test-date', 'object', '2015-01-02');
+    createTransitionArgTest('test-date', 'object', 'asdasd');
 
     it('device action should return 400 when not available.', function(done) {
       request(getHttpServer(app))
