@@ -2,6 +2,7 @@ var util = require('util');
 var PubSub = require('../lib/pubsub_service');
 var Logger = require('../lib/logger');
 var Runtime = require('../zetta_runtime');
+var Device = Runtime.Device;
 var Scientist = require('zetta-scientist');
 var assert = require('assert');
 var SensorDriver = require('./fixture/sensor_driver');
@@ -31,6 +32,14 @@ describe('Driver', function() {
 
   it('should be attached to the zetta runtime', function() {
     assert.ok(Runtime.Device);
+  });
+
+  it('should expose an enableStream function', function() {
+    assert.ok(Device.prototype.enableStream);  
+  });
+  
+  it('should expose a disableStream function', function() {
+    assert.ok(Device.prototype.disableStream);
   });
 
   describe('Configuration', function() {
@@ -387,9 +396,8 @@ describe('Driver', function() {
         assert.equal(machine.mutable, 123);
         done();
       });
-    })
-
-  })
+    });
+  });
 
 
 });
