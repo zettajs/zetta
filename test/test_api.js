@@ -766,6 +766,66 @@ describe('Zetta Api', function() {
 
     });
 
+    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE', function(done) {
+      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      var device = app.runtime._jsDevices[deviceKey];
+
+      var remoteDestroy = function(cb) {
+        cb(null, false);  
+      }
+
+      device._remoteDestroy = remoteDestroy.bind(device);
+
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 500);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 1);
+        }))
+        .end(done);
+
+    });
+
+    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE if callback has an error', function(done) {
+      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      var device = app.runtime._jsDevices[deviceKey];
+
+      var remoteDestroy = function(cb) {
+        cb(new Error('Oof! Ouch!'));  
+      }
+
+      device._remoteDestroy = remoteDestroy.bind(device);
+
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 500);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 1);
+        }))
+        .end(done);
+
+    });
+
+    it('remoteDestroy hook should allow the device to be destroyed when callback is called with true', function(done) {
+      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      var device = app.runtime._jsDevices[deviceKey];
+
+      var remoteDestroy = function(cb) {
+        cb(null, true);  
+      }
+
+      device._remoteDestroy = remoteDestroy.bind(device);
+
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 204);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 0);
+        }))
+        .end(done);
+
+    });
+
     it('should not overwrite monitor properties using PUT', function(done) {
       request(getHttpServer(app))
         .put(url)
