@@ -403,5 +403,31 @@ describe('Driver', function() {
       });  
       machine.destroy();
     });
+
+    it('handle remote destroy method, will return true by default', function(done) {
+      var Device = Runtime.Device;
+      var SomeDevice = function() {
+        this.ip = '1.2.3.4';
+        this.mutable = 'abc';
+        this.deleted = 'gone after update';
+        Device.call(this);
+      };
+      util.inherits(SomeDevice, Device);
+      SomeDevice.prototype.init = function(config) {
+        config
+          .type('some-device')
+          .name('device-1');
+      };
+
+      var machine = Scientist.init(Scientist.create(SomeDevice));
+      machine._registry = reg;
+      machine._pubsub = pubsub;
+      machine._log = log;
+      machine._handleRemoteDestroy(function(err, destroyFlag) {
+        assert.equal(err, null);
+        assert.equal(destroyFlag, true);
+        done();
+      });
+    });
   });
 });
