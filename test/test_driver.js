@@ -73,9 +73,18 @@ describe('Driver', function() {
 
   describe('Transitions', function() {
 
-    it('shuld not throw when calling an invalid transition name.', function(done) {
+    it('should not throw when calling an invalid transition name.', function(done) {
       machine.call('not-a-transition', function(err) {
         assert(err);
+        done();
+      });
+    });
+
+    it('should not throw when calling a transition when destroyed.', function(done) {
+      machine.state = 'zetta-device-destroy';
+      machine.call('prepare', function(err) {
+        assert(err);
+        assert.equal(err.message, 'Machine destroyed. Cannot use transition prepare');
         done();
       });
     });
