@@ -252,6 +252,22 @@ describe('Runtime', function(){
         });
       });
     });
+
+    it('_destroyDevice callback will pass an error if _sendLogStreamEvent is not a function on the device prototype.', function(done) {
+      var emitter = new EventEmitter();
+      emitter.id = '1';
+      emitter.type = 'test1';
+      emitter._sendLogStreamEvent = null;
+      runtime._jsDevices['1'] = emitter;
+      runtime.registry.db.put('1', {'id': '1', 'type': 'test1'}, {valueEncoding: 'json'}, function() {
+        runtime.emit('deviceready', emitter);
+        runtime._destroyDevice(emitter, function(err) {
+          assert.ok(err);
+          assert.equal(err.message, 'Device not compatible');
+          done();
+        });
+      });
+    });
   });
 
   describe('Extended reactive syntax', function() {
