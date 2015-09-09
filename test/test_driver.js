@@ -73,9 +73,18 @@ describe('Driver', function() {
 
   describe('Transitions', function() {
 
-    it('shuld not throw when calling an invalid transition name.', function(done) {
+    it('should not throw when calling an invalid transition name.', function(done) {
       machine.call('not-a-transition', function(err) {
         assert(err);
+        done();
+      });
+    });
+
+    it('should not throw when calling a transition when destroyed.', function(done) {
+      machine.state = 'zetta-device-destroy';
+      machine.call('prepare', function(err) {
+        assert(err);
+        assert.equal(err.message, 'Machine destroyed. Cannot use transition prepare');
         done();
       });
     });
@@ -391,5 +400,43 @@ describe('Driver', function() {
 
   })
 
+  describe('Deletion', function() {
+    it('should have a destroy function', function() {
+      assert.ok(machine.destroy);  
+    });     
 
+    it('should emit a destroy event when destroy is called.', function(done) {
+      machine.on('destroy', function(m) {
+        assert.ok(m);
+        done();  
+      });  
+      machine.destroy();
+    });
+
+    it('handle remote destroy method, will return true by default', function(done) {
+      var Device = Runtime.Device;
+      var SomeDevice = function() {
+        this.ip = '1.2.3.4';
+        this.mutable = 'abc';
+        this.deleted = 'gone after update';
+        Device.call(this);
+      };
+      util.inherits(SomeDevice, Device);
+      SomeDevice.prototype.init = function(config) {
+        config
+          .type('some-device')
+          .name('device-1');
+      };
+
+      var machine = Scientist.init(Scientist.create(SomeDevice));
+      machine._registry = reg;
+      machine._pubsub = pubsub;
+      machine._log = log;
+      machine._handleRemoteDestroy(function(err, destroyFlag) {
+        assert.equal(err, null);
+        assert.equal(destroyFlag, true);
+        done();
+      });
+    });
+  });
 });
