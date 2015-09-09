@@ -627,6 +627,44 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('disabling a stream should remove it from the API.', function(done) {
+      Object.keys(app.runtime._jsDevices).forEach(function(name) {
+        var device = app.runtime._jsDevices[name];
+        device.disableStream('foo');  
+      });
+
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          var foo = body.links.filter(function(link) {
+            return link.title === 'foo';
+          });
+
+          assert.equal(foo.length, 0);
+        }))
+        .end(done);
+    });
+
+    it('enabling a stream should show it in the API.', function(done) {
+      var device = null;
+      Object.keys(app.runtime._jsDevices).forEach(function(name) {
+        device = app.runtime._jsDevices[name];
+        device.disableStream('foo');  
+        device.enableStream('foo');
+      });
+
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          var foo = body.links.filter(function(link) {
+            return link.title === 'foo';
+          });
+
+          assert.equal(foo.length, 1);
+        }))
+        .end(done);
+    });
+
     it('device should have monitor link for bar formatted correctly for HTTP requests', function(done) {
       request(getHttpServer(app))
         .get(url)
