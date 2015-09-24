@@ -744,7 +744,30 @@ describe('Zetta Api', function() {
     createTransitionArgTest('test-text', 'string', 'Hello');
     createTransitionArgTest('test-none', 'string', 'Anything');
     createTransitionArgTest('test-date', 'object', '2015-01-02');
-    createTransitionArgTest('test-date', 'object', 'asdasd');
+
+    it('api should respond with 400 when argument is not expected number', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .expect(400)
+        .expect(function(res) {
+          assert(res.text.indexOf('Invalid argument.') > -1);
+        })
+        .send({ action: 'test-number', value: 'some string' })
+        .end(done);
+    })
+
+    it('api should respond with 400 when argument is not expected Date', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .expect(400)
+        .expect(function(res) {
+          assert(res.text.indexOf('Invalid argument.') > -1);
+        })
+        .send({ action: 'test-date', value: 'some string' })
+        .end(done);
+    })
 
     it('device action should return 400 when not available.', function(done) {
       request(getHttpServer(app))
