@@ -750,9 +750,10 @@ describe('Zetta Api', function() {
         .post(url)
         .type('form')
         .expect(400)
-        .expect(function(res) {
-          assert(res.text.indexOf('Invalid argument.') > -1);
-        })
+        .expect(getBody(function(res, body) {
+          assert(body.class.indexOf('input-error') > -1);
+          assert.equal(body.properties.errors.length, 1);
+        }))
         .send({ action: 'test-number', value: 'some string' })
         .end(done);
     })
@@ -762,9 +763,10 @@ describe('Zetta Api', function() {
         .post(url)
         .type('form')
         .expect(400)
-        .expect(function(res) {
-          assert(res.text.indexOf('Invalid argument.') > -1);
-        })
+        .expect(getBody(function(res, body) {
+          assert(body.class.indexOf('input-error') > -1);
+          assert.equal(body.properties.errors.length, 1);
+        }))
         .send({ action: 'test-date', value: 'some string' })
         .end(done);
     })
