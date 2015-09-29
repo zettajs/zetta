@@ -105,20 +105,33 @@ describe('Peer Connection API', function() {
       });
     }
 
-    it('exposes actions on the full entity', function(done) {
-      peerRegistry.save({id:'foo', connectionId:'12345'}, function() {
-        var url = '/peer-management/foo';
-        request(getHttpServer(app))
-          .get(url)
-          .expect(getBody(function(res, body) {
-            assert.equal(body.actions.length, 2);
-            body.actions.forEach(function(action) {
-              assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
-            });
-           }))
-           .end(done);
-       });
-    });
+    checkPeersActionsOnFullEntity('initiator', 'connected', 2);
+    checkPeersActionsOnFullEntity('initiator', 'disconnected', 2);
+    checkPeersActionsOnFullEntity('acceptor', 'connected', 2);
+    checkPeersActionsOnFullEntity('acceptor', 'disconnected', 0);
+    
+    function checkPeersActionsOnFullEntity(direction, status, numberOfActionsExpected) {
+      it('when ' + direction + ' exposes ' + numberOfActionsExpected + ' actions on the full entity when ' + status, function(done) {
+        var peer = {
+          id:'foo',
+          connectionId:'12345',
+          direction: direction,
+          status: status
+        };
+        peerRegistry.save(peer, function() {
+          var url = '/peer-management/foo';
+          request(getHttpServer(app))
+            .get(url)
+            .expect(getBody(function(res, body) {
+              assert.equal(body.actions.length, numberOfActionsExpected);
+              body.actions.forEach(function(action) {
+                assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
+              });
+            }))
+            .end(done);
+        });
+      }); 
+    }
   }); 
 
   describe('Root API for peers', function() {
