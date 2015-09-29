@@ -412,24 +412,31 @@ Zetta.prototype._runPeer = function(peer) {
 
   // when websocket is established
   peerClient.on('connecting', function() {
-    peer.status = 'connecting';
-    self.peerRegistry.save(peer);
+    self.peerRegistry.get(peer.id, function(err, result) {
+      result.status = 'connecting';
+      result.connectionId = peerClient.connectionId;
+      self.peerRegistry.save(result);
+    });
   });
 
   // when peer handshake is made
   peerClient.on('connected', function() {
-    peer.status = 'connected';
-    peer.connectionId = peerClient.connectionId;
-    self.peerRegistry.save(peer);
+    self.peerRegistry.get(peer.id, function(err, result) {
+      result.status = 'connected';
+      result.connectionId = peerClient.connectionId;
+      self.peerRegistry.save(result);
 
-    // peer-event
-    self.pubsub.publish('_peer/connect', { peer: peerClient});
+      // peer-event
+      self.pubsub.publish('_peer/connect', { peer: peerClient});
+    });
   });
 
   peerClient.on('error', function(error) {
+
     self.peerRegistry.get(peer.id, function(err, result) {
       result.status = 'failed';
       result.error = error;
+      result.connectionId = peerClient.connectionId;
       self.peerRegistry.save(result);
 
       // peer-event
@@ -440,12 +447,17 @@ Zetta.prototype._runPeer = function(peer) {
   peerClient.on('closed', function() {
     self.peerRegistry.get(peer.id, function(err, result) {
       result.status = 'disconnected';
+      result.connectionId = peerClient.connectionId;
 
       // peer-event
       self.pubsub.publish('_peer/disconnect', { peer: peerClient });
-      self.peerRegistry.save(result, function() { });
-   });
+      self.peerRegistry.save(result);
+    });
   });
 
   peerClient.start();
+
+  // update initial connectionId in db
+  peer.connectionId = peerClient.connectionId;
+  self.peerRegistry.save(peer);
 }
