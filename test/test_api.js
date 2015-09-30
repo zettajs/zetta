@@ -353,6 +353,15 @@ describe('Zetta Api', function() {
         .end(done)
     });
 
+    it('should contain link for event stream', function(done) {
+      request(getHttpServer(app))
+        .get('/')
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, rels.events);
+        }))
+        .end(done)
+    });
+
     it('should use a default server name if none has been provided', function(done) {
       var app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent()._run();
 
