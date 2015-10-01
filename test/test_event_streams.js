@@ -63,7 +63,7 @@ describe('Event Streams', function() {
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
-          var msg = { action: 'unsubscribe', subscriptionId, json.subscriptionId };
+          var msg = { action: 'unsubscribe', subscriptionId: json.subscriptionId };
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json2 = JSON.parse(buffer);  
