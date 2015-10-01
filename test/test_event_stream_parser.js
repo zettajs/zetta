@@ -67,4 +67,38 @@ describe('Event Stream Parser', function() {
     var parser = new EventStreamParser();
     assert(parser.validate(message));  
   });
+
+  it('should emit event for message type when parsing buffer', function(done) {
+    var parser = new EventStreamParser();
+    var message = { type: 'event', timestamp: 1, topic: 'Detroit/led/1234/state', subscriptionId: 1 };
+    parser.on('event', function(msg) {
+      assert.equal(msg.type, message.type);
+      assert.equal(msg.timestamp, message.timestamp);
+      assert.equal(msg.topic, message.topic);
+      assert.equal(msg.subscriptionId, message.subscriptionId);
+      done();
+    });
+
+    parser.add(new Buffer(JSON.stringify(message)));
+  })
+
+  it('should emit error for invalid message type when parsing buffer', function(done) {
+    var parser = new EventStreamParser();
+    var message = { type: 'not-a-message', timestamp: 1, topic: 'Detroit/led/1234/state', subscriptionId: 1 };
+    parser.on('error', function(msg) {
+      done();
+    });
+
+    parser.add(new Buffer(JSON.stringify(message)));
+  })
+
+  it('should emit error for invalid JSON when parsing buffer', function(done) {
+    var parser = new EventStreamParser();
+    parser.on('error', function(msg) {
+      done();
+    });
+
+    parser.add(new Buffer('some text'));
+  })
+
 });
