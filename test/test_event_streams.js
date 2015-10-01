@@ -55,7 +55,7 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    it('unsubscribing to a topic receives a unsubscription-ack', function(idx, done) {
+    itBoth('unsubscribing to a topic receives a unsubscription-ack', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       ws.on('open', function() {
@@ -77,13 +77,71 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    it('verify error message format', function(){})
+    itBoth('verify error message format', function(){})
 
-    it('specific topic subscription only receives messages with that topic', function() {})
+    itBoth('specific topic subscription only receives messages witBothh that topic', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = 'hub/led/1234/state';
+      ws.on('open', function() {
+        var msg = { action: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+    });
 
-    it('wildcard topic receives all messages for all topics', function() {})
+    itBoth('wildcard topic receives all messages for all topics', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var topic = 'hub/led/*/state';
+      ws.on('open', function() {
+        var msg = { action: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+            if(count === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);  
+    });
 
-    it('topic that doesnt exist still opens stream', function(idx, done) {
+    itBoth('topic that doesnt exist still opens stream', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       ws.on('open', function() {
@@ -99,15 +157,117 @@ describe('Event Streams', function() {
         });
       });
       ws.on('error', done);
-    })
+    });
 
-    it('wildcard and specific topic will each publish a message on a subscription', function() {})
+    itBoth('wildcard and specific topic will each publish a message on a subscription', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var ackCount = 0;
+      var topicOne = 'hub/led/*/state';
+      var topicTwo = 'hub/led/1234/state';
+      var data = null;
+      ws.on('open', function() {
+        var msgOne = { action: 'subscribe', topic: topicOne };
+        var msgTwo = { action: 'subscribe', topic: topicTwo };
+        ws.send(JSON.stringify(msgOne));
+        ws.send(JSON.stringify(msgTwo));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+            ackCount++;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            assert.equal(json.data, data);
+            count++;
+            if(count === 2) {
+              assert.equal(ackCount, 2);
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);     
+    });
 
-    it('topic format is {server}/{type}/{id}/{streamName}', function() {})
+    itBoth('adding limit to subscription should limit number of messages received', function(idx, done){
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var topic = 'hub/led/1234/state';
+      var data = null;
+      ws.on('open', function() {
+        var msg = { action: 'subscribe', topic: topic, limit: 10 };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId, subscriptionId);
+            assert.equal(json.data);
+            count++;
+            if(count === 10) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);  
+    });
 
-    it('adding limit to subscription should limit number of messages received', function(){})
-
-    it('when limit is reached a unsubscribe-ack should be received', function(){})
+    itBoth('when limit is reached a unsubscribe-ack should be received', function(idx, done){
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var topic = 'hub/led/1234/state';
+      var data = null;
+      ws.on('open', function() {
+        var msg = { action: 'subscribe', topic: topic, limit: 10 };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else if(json.type === 'event') {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId, subscriptionId);
+            assert.equal(json.data);
+            count++;
+          } else if(json.type === 'unsubscribe-ack') {
+            assert.equal(json.type, 'unsubscribe-ack');
+            assert(timestamp);
+            assert.equal(json.subscriptionId, subscriptionId);
+            done();  
+          }
+        });
+      });
+      ws.on('error', done);  
+    });
 
   });
 
