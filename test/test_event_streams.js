@@ -41,7 +41,7 @@ describe('Event Streams', function() {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: 'hub/led/1234/state' };
+        var msg = { type: 'subscribe', topic: 'hub/led/1234/state' };
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
@@ -59,11 +59,11 @@ describe('Event Streams', function() {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: 'hub/led/1234/state' };
+        var msg = { type: 'subscribe', topic: 'hub/led/1234/state' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.once('message', function(buffer) {
           var json = JSON.parse(buffer);
-          var msg = { action: 'unsubscribe', subscriptionId: json.subscriptionId };
+          var msg = { type: 'unsubscribe', subscriptionId: json.subscriptionId };
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json2 = JSON.parse(buffer);  
@@ -77,15 +77,15 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('verify error message format', function(){})
+    itBoth('verify error message format', function(){});
 
-    itBoth('specific topic subscription only receives messages witBothh that topic', function(idx, done) {
+    itBoth('specific topic subscription only receives messages with that topic', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       var subscriptionId = null;
       var topic = 'hub/led/1234/state';
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: topic };
+        var msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
@@ -115,7 +115,7 @@ describe('Event Streams', function() {
       var count = 0;
       var topic = 'hub/led/*/state';
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: topic };
+        var msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
@@ -144,14 +144,15 @@ describe('Event Streams', function() {
     itBoth('topic that doesnt exist still opens stream', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var topic = 'blah/foo/1/blah';
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: 'random_topic' };
+        var msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
           assert.equal(json.type, 'subscribe-ack');
           assert(json.timestamp);
-          assert.equal(json.topic, 'random_topic');
+          assert.equal(json.topic, topic);
           assert(json.subscriptionId);
           done();
         });
@@ -169,8 +170,8 @@ describe('Event Streams', function() {
       var topicTwo = 'hub/led/1234/state';
       var data = null;
       ws.on('open', function() {
-        var msgOne = { action: 'subscribe', topic: topicOne };
-        var msgTwo = { action: 'subscribe', topic: topicTwo };
+        var msgOne = { type: 'subscribe', topic: topicOne };
+        var msgTwo = { type: 'subscribe', topic: topicTwo };
         ws.send(JSON.stringify(msgOne));
         ws.send(JSON.stringify(msgTwo));
         ws.on('message', function(buffer) {
@@ -207,7 +208,7 @@ describe('Event Streams', function() {
       var topic = 'hub/led/1234/state';
       var data = null;
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: topic, limit: 10 };
+        var msg = { type: 'subscribe', topic: topic, limit: 10 };
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
@@ -241,7 +242,7 @@ describe('Event Streams', function() {
       var topic = 'hub/led/1234/state';
       var data = null;
       ws.on('open', function() {
-        var msg = { action: 'subscribe', topic: topic, limit: 10 };
+        var msg = { type: 'subscribe', topic: topic, limit: 10 };
         ws.send(JSON.stringify(msg));
         ws.on('message', function(buffer) {
           var json = JSON.parse(buffer);
