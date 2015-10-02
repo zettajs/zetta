@@ -338,7 +338,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get('/')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'self');
         }))
         .end(done)

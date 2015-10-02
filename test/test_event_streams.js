@@ -8,16 +8,27 @@ describe('Event Streams', function() {
   var cluster = null;
   var urls = [];
   var baseUrl = '/events';
+  var devices = [];
+  var validTopics = [];
   
   beforeEach(function(done) {
     urls = [];
+    devices = [];
+    validTopics = [];
     cluster = zettacluster({ zetta: zetta })
       .server('cloud')
-      .server('hub', [Driver], ['cloud'])
+      .server('hub', [Driver, Driver], ['cloud'])
       .on('ready', function() {
         app = cluster.servers['cloud'];
         urls.push('localhost:' + cluster.servers['cloud']._testPort);
         urls.push('localhost:' + cluster.servers['hub']._testPort);
+        
+        Object.keys(cluster.servers['hub'].runtime._jsDevices).forEach(function(id) {
+          var device = cluster.servers['hub'].runtime._jsDevices[id];
+          devices.push(device);
+          validTopics.push('hub/' + device.type + '/' + device.id + '/state');
+        });
+
         done();
       })
       .run(function(err){
@@ -83,7 +94,7 @@ describe('Event Streams', function() {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       var subscriptionId = null;
-      var topic = 'hub/led/1234/state';
+      var topic = validTopics[0];
       ws.on('open', function() {
         var msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
@@ -95,6 +106,10 @@ describe('Event Streams', function() {
             assert.equal(json.topic, topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+            }, 50);
           } else {
             assert.equal(json.type, 'event');
             assert(json.timestamp);

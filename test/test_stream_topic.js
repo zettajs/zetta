@@ -29,4 +29,21 @@ describe('Stream Topic', function() {
     assert.equal(t.streamName, 'state');
     assert.equal(t.streamQuery, 'select * where data > 80'); 
   });
+
+  it('will correctly parse topics without the leading server name', function() {
+    var t = new StreamTopic();
+    t.parse('led/1234/state');
+    assert.equal(t.serverName, null);
+    assert.equal(t.deviceType, 'led');
+    assert.equal(t.deviceId, '1234');
+    assert.equal(t.streamName, 'state');    
+  })
+
+  it('hash() will return the original input', function() {
+    var t = new StreamTopic();
+    var topic = '{^Det.+$}/led/1234/state?select * where data > 80';
+    t.parse(topic);
+    assert.equal(t.hash(), topic);
+  })
+  
 });
