@@ -220,7 +220,7 @@ describe('Event Streams', function() {
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       var subscriptionId = null;
       var count = 0;
-      var topic = 'hub/led/1234/state';
+      var topic = validTopics[0];
       var data = null;
       ws.on('open', function() {
         var msg = { type: 'subscribe', topic: topic, limit: 10 };
@@ -233,15 +233,25 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-          } else {
+
+            setTimeout(function() {
+              for(var i=0; i<11; i++) {
+                devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
+              }
+            }, 50);
+          } else if (json.type !== 'unsubscribe-ack') {
             assert.equal(json.type, 'event');
             assert(json.timestamp);
             assert(json.topic);
             assert(json.subscriptionId, subscriptionId);
-            assert.equal(json.data);
+            assert(json.data);
+
             count++;
             if(count === 10) {
-              done();
+              setTimeout(function() {
+                assert.equal(count, 10);
+                done();
+              }, 200)
             }
           }
         });
@@ -254,7 +264,7 @@ describe('Event Streams', function() {
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       var subscriptionId = null;
       var count = 0;
-      var topic = 'hub/led/1234/state';
+      var topic = validTopics[0];
       var data = null;
       ws.on('open', function() {
         var msg = { type: 'subscribe', topic: topic, limit: 10 };
@@ -267,18 +277,24 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
+            setTimeout(function() {
+              for(var i=0; i<11; i++) {
+                devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
+              }
+            }, 50);
           } else if(json.type === 'event') {
             assert.equal(json.type, 'event');
             assert(json.timestamp);
             assert(json.topic);
             assert(json.subscriptionId, subscriptionId);
-            assert.equal(json.data);
+            assert(json.data);
             count++;
           } else if(json.type === 'unsubscribe-ack') {
             assert.equal(json.type, 'unsubscribe-ack');
-            assert(timestamp);
+            assert(json.timestamp);
             assert.equal(json.subscriptionId, subscriptionId);
-            done();  
+            assert.equal(count, 10);
+            done();
           }
         });
       });
