@@ -112,9 +112,6 @@ describe('EventBroker', function() {
 
       clientA.emit('close');
 
-      done();
-      return;
-
       setTimeout(function() {
         assert.equal(recievedA, 1);
         assert.equal(recievedB, 2);

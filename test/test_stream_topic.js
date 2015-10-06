@@ -29,4 +29,38 @@ describe('Stream Topic', function() {
     assert.equal(t.streamName, 'state');
     assert.equal(t.streamQuery, 'select * where data > 80'); 
   });
+
+  it('will correctly parse topics without the leading server name', function() {
+    var t = new StreamTopic();
+    t.parse('led/1234/state');
+    assert.equal(t.serverName, null);
+    assert.equal(t.deviceType, 'led');
+    assert.equal(t.deviceId, '1234');
+    assert.equal(t.streamName, 'state');    
+  })
+
+  it('hash() will return the original input', function() {
+    var t = new StreamTopic();
+    var topic = '{^Det.+$}/led/1234/state?select * where data > 80';
+    t.parse(topic);
+    assert.equal(t.hash(), topic);
+  })
+
+  describe.only('.match()', function() {
+
+    function matchTest(query, topic, eval) {
+      it('should return ' + eval + ' for query ' + query + ' on topic ' + topic, function() {
+        var t = StreamTopic.parse(query);
+        assert.equal(t.match(topic), eval);
+      })
+    }
+
+    matchTest('led/123/*', 'led/123/state', true);
+    matchTest('led/321/*', 'led/123/state', false);
+    matchTest('led/**', 'led/123/state', true);
+    matchTest('{^Det.+$}/led/123/state', 'Detroit-123/led/123/state', true);
+    matchTest('{^Det.+$}/led/123/state', 'hub/led/123/state', false);
+    matchTest('{^Det.+$}/led/**', 'Detroit-123/led/123/stream', true);
+  })
+  
 });
