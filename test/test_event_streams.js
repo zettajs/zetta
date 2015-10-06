@@ -123,12 +123,14 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('wildcard topic receives all messages for all topics', function(idx, done) {
+    describe.only('tmp', function() {
+    itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       var subscriptionId = null;
       var count = 0;
-      var topic = 'hub/led/*/state';
+      var topic = 'hub/testdriver/*/state';
+      var lastTopic = null;
       ws.on('open', function() {
         var msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
@@ -140,10 +142,17 @@ describe('Event Streams', function() {
             assert.equal(json.topic, topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+              devices[1].call('change');
+            }, 50);
           } else {
             assert.equal(json.type, 'event');
             assert(json.timestamp);
             assert(json.topic);
+            assert.notEqual(json.topic, lastTopic);
+            lastTopic = json.topic;
             assert.equal(json.subscriptionId, subscriptionId);
             assert(json.data);
             count++;
@@ -155,6 +164,7 @@ describe('Event Streams', function() {
       });
       ws.on('error', done);  
     });
+})
 
     itBoth('topic that doesnt exist still opens stream', function(idx, done) {
       var endpoint = urls[idx];
