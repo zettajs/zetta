@@ -158,7 +158,6 @@ describe('Driver', function() {
       
       var recv = 0;
       pubsub.subscribe(topic, function(topic, msg) {
-        console.log(topic, msg)
         assert.ok(msg.timestamp);
         assert.ok(msg.topic);
         assert.ok(!msg.data);
