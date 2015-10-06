@@ -79,6 +79,18 @@ describe('Virtual Device', function() {
   
   describe('.call method', function() {
 
+    it('call should work without a callback function', function(done) {
+      vdevice.call('change')
+      var timer = setTimeout(function() {
+        done(new Error('Faied to recv transition call on detroit device'));
+      }, 100);
+
+      device.on('change', function() {
+        clearTimeout(timer);
+        done();
+      });
+    });
+
     it('call should work without arguments', function(done) {
       vdevice.call('change', function(err) {
         assert.equal(err, null);
