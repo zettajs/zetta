@@ -123,6 +123,42 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('wildcard server topic subscription only receives messages with that topic', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = validTopics[0];
+      topic = topic.replace('hub', '*');
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+            }, 50);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            console.log(json);
+            assert.equal(json.topic, validTopics[0]);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+    }); 
+    
+
     itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -189,9 +225,8 @@ describe('Event Streams', function() {
       var subscriptionId = null;
       var count = 0;
       var ackCount = 0;
-      var topicOne = 'hub/led/*/state';
-      var topicTwo = 'hub/led/1234/state';
-      var data = null;
+      var topicOne = validTopics[0];
+      var topicTwo = 'hub/testdriver/*/state';
       ws.on('open', function() {
         var msgOne = { type: 'subscribe', topic: topicOne };
         var msgTwo = { type: 'subscribe', topic: topicTwo };
@@ -206,12 +241,16 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
             ackCount++;
+            setTimeout(function() {
+              for(var i=0; i<11; i++) {
+                devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
+              }
+            }, 50);
           } else {
             assert.equal(json.type, 'event');
             assert(json.timestamp);
             assert(json.topic);
             assert(json.subscriptionId);
-            assert.equal(json.data, data);
             count++;
             if(count === 2) {
               assert.equal(ackCount, 2);
