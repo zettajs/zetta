@@ -123,6 +123,68 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('multiple clients specific topic subscription only receives messages with that topic', function(idx, done) {
+      var endpoint = urls[idx];
+      var topic = validTopics[0];
+      
+      var connected = 0;
+      var recv = 0;
+
+      var ws1 = new WebSocket('ws://' + endpoint + baseUrl);
+      ws1.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws1.send(JSON.stringify(msg));
+        var subscriptionId = null;
+        ws1.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            connected++;
+            subscriptionId = json.subscriptionId;
+            if (connected === 2) {
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            }
+          } else {
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            recv++;
+            if (recv === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws1.on('error', done);
+
+      var ws2 = new WebSocket('ws://' + endpoint + baseUrl);
+      ws2.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws2.send(JSON.stringify(msg));
+        var subscriptionId = null;
+        ws2.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            subscriptionId = json.subscriptionId;
+            connected++;
+            if (connected === 2) {
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            }
+          } else {
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            recv++;
+            if (recv === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws2.on('error', done);
+    });
+
     itBoth('wildcard server topic subscription only receives messages with that topic', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -147,7 +209,6 @@ describe('Event Streams', function() {
           } else {
             assert.equal(json.type, 'event');
             assert(json.timestamp);
-            console.log(json);
             assert.equal(json.topic, validTopics[0]);
             assert.equal(json.subscriptionId, subscriptionId);
             assert(json.data);
