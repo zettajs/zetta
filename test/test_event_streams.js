@@ -123,7 +123,6 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    describe.only('tmp', function() {
     itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -164,7 +163,6 @@ describe('Event Streams', function() {
       });
       ws.on('error', done);  
     });
-})
 
     itBoth('topic that doesnt exist still opens stream', function(idx, done) {
       var endpoint = urls[idx];
