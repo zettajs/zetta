@@ -18,17 +18,19 @@ describe('Event Streams', function() {
     cluster = zettacluster({ zetta: zetta })
       .server('cloud')
       .server('hub', [Driver, Driver], ['cloud'])
+      .server('hub2', [Driver, Driver], ['cloud'])
       .on('ready', function() {
         app = cluster.servers['cloud'];
         urls.push('localhost:' + cluster.servers['cloud']._testPort);
         urls.push('localhost:' + cluster.servers['hub']._testPort);
         
-        Object.keys(cluster.servers['hub'].runtime._jsDevices).forEach(function(id) {
-          var device = cluster.servers['hub'].runtime._jsDevices[id];
-          devices.push(device);
-          validTopics.push('hub/' + device.type + '/' + device.id + '/state');
-        });
-
+        ['hub', 'hub2'].forEach(function(hubname) {
+          Object.keys(cluster.servers[hubname].runtime._jsDevices).forEach(function(id) {
+            var device = cluster.servers[hubname].runtime._jsDevices[id];
+            devices.push(device);
+            validTopics.push(hubname + '/' + device.type + '/' + device.id + '/state');
+          });
+        })
         done();
       })
       .run(function(err){
@@ -217,7 +219,46 @@ describe('Event Streams', function() {
         });
       });
       ws.on('error', done);
-    }); 
+    });
+
+
+    it('wildcard server topic subscription receives messages from both hubs', function(done) {
+      var endpoint = urls[0];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '*/testdriver/*/state';
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        var recv = 0;
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+              devices[2].call('change');
+            }, 50);
+          } else {
+            recv++;
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            if (recv === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
     
 
     itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
