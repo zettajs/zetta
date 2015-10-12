@@ -1,5 +1,6 @@
 var StreamTopic = require('../lib/stream_topic');
 var assert = require('assert');
+var Query = require('calypso').Query;
 
 describe('Stream Topic', function() {
   it('will correctly parse a topic of all valid strings', function() {
@@ -27,7 +28,7 @@ describe('Stream Topic', function() {
     assert.equal(t.deviceType, 'led');
     assert.equal(t.deviceId, '1234');
     assert.equal(t.streamName, 'state');
-    assert.equal(t.streamQuery, 'select * where data > 80'); 
+    assert(t.streamQuery instanceof Query); 
   });
 
   it('will correctly parse topics without the leading server name', function() {

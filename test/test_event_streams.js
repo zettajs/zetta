@@ -471,12 +471,11 @@ describe('Event Streams', function() {
               devices[0].incrementStreamValue();
             }, 50);
           } else if(json.type === 'event') {
-            console.log(json)
             assert.equal(json.type, 'event');
             assert(json.timestamp);
             assert(json.topic);
             assert(json.subscriptionId, subscriptionId);
-            assert(json.data);;
+            assert(json.data);
             done();
           }
         });
