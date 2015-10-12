@@ -50,7 +50,6 @@ TestDriver.prototype.prepare = function(cb) {
 };
 
 TestDriver.prototype.streamObject = function(stream) {
-  console.log('set stream object');
   this._streamObject = stream;  
 };
 
@@ -67,7 +66,6 @@ TestDriver.prototype.incrementStreamValue = function() {
 
 TestDriver.prototype.publishStreamObject = function(obj) {
   if(this._streamObject) {
-    console.log('exists write : ', obj);
     this._streamObject.write(obj);  
   } 
 };

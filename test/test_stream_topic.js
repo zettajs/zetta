@@ -28,7 +28,7 @@ describe('Stream Topic', function() {
     assert.equal(t.deviceType, 'led');
     assert.equal(t.deviceId, '1234');
     assert.equal(t.streamName, 'state');
-    assert(t.streamQuery instanceof Query); 
+    assert.equal(t.streamQuery, 'select * where data > 80'); 
   });
 
   it('will correctly parse topics without the leading server name', function() {
