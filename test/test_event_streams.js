@@ -483,6 +483,46 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
+    describe.only('tmp', function() {
+    itBoth('query field selector * should only return properties in selection', function(idx, done){
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var topic = 'hub/testdriver/' + devices[0].id + '/fooobject?select * where data.data > 1';
+      var data = {data: 2, foo: 'bar', quux: 2};
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          console.log(json);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+            setTimeout(function() {
+              devices[0].publishStreamObject(data);
+            }, 50);
+          } else if(json.type === 'event') {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            assert.equal(json.data.data, 2);
+            assert.equal(json.data.foo, 'bar');
+            assert.equal(json.data.quux, 1);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);  
+    }); 
+    });
+
   });
 
   describe('SPDY API', function() {

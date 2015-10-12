@@ -27,6 +27,7 @@ TestDriver.prototype.init = function(config) {
     .monitor('foo')
     .stream('bar', this.streamBar)
     .stream('foobar', this.streamFooBar, {binary: true})
+    .stream('fooobject', this.streamObject)
     .map('test-number', function(x, cb) { cb(); }, [{ name: 'value', type: 'number'}])
     .map('test-text', function(x, cb) { cb(); }, [{ name: 'value', type: 'text'}])
     .map('test-none', function(x, cb) { cb(); }, [{ name: 'value'}])
@@ -48,6 +49,11 @@ TestDriver.prototype.prepare = function(cb) {
   cb();
 };
 
+TestDriver.prototype.streamObject = function(stream) {
+  console.log('set stream object');
+  this._streamObject = stream;  
+};
+
 TestDriver.prototype.returnError = function(error, cb) {
   cb(new Error(error));
 };
@@ -58,6 +64,13 @@ TestDriver.prototype.incrementStreamValue = function() {
     this._stream.write(this.bar);
   }
 }
+
+TestDriver.prototype.publishStreamObject = function(obj) {
+  if(this._streamObject) {
+    console.log('exists write : ', obj);
+    this._streamObject.write(obj);  
+  } 
+};
 
 TestDriver.prototype.streamBar = function(stream) {
   this._stream = stream;
