@@ -983,13 +983,16 @@ describe('Zetta Api', function() {
 
   describe('Proxied requests', function() {
     var base = null;
+    var cloudUrl = null;
     var cluster = null;
 
     beforeEach(function(done) {
       cluster = zettacluster({ zetta: zetta })
         .server('cloud')
         .server('detroit', [Scout], ['cloud'])
+        .server('sanjose', [Scout], ['cloud'])
         .on('ready', function(){
+          cloudUrl = 'localhost:' + cluster.servers['cloud']._testPort;
           base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer('detroit');
           setTimeout(done, 300);
         })
@@ -1014,6 +1017,21 @@ describe('Zetta Api', function() {
         socket.on('connect', function() {
           cluster.servers['cloud'].httpServer.peers['detroit'].close();
         });
+      })
+    })
+
+    it('zetta should return 404 on non-existent peer', function(done) {
+      http.get('http://' + cloudUrl + '/servers/some-peer', function(res) {
+        assert.equal(res.statusCode, 404);
+        done();
+      })
+    })
+
+    it('zetta should return 404 on disconnected peer', function(done) {
+      cluster.servers['detroit']._peerClients[0].close()
+      http.get('http://' + cloudUrl + '/servers/detroit', function(res) {
+        assert.equal(res.statusCode, 404);
+        done();
       })
     })
 
