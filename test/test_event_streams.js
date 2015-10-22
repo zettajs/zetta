@@ -3,6 +3,172 @@ var WebSocket = require('ws');
 var zetta = require('./..');
 var zettacluster = require('zetta-cluster');
 var Driver = require('./fixture/example_driver');
+var MemRegistry = require('./fixture/mem_registry');
+var MemPeerRegistry = require('./fixture/mem_peer_registry');
+
+describe('Peering Event Streams', function() {
+  var cloud = null;
+  var cloudUrl = null;
+  var baseUrl = '/events';
+  
+  beforeEach(function(done) {
+    cloud = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    cloud.silent();
+    cloud.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      } 
+      cloudUrl = 'http://localhost:' + cloud.httpServer.server.address().port;
+      done(); 
+    });
+  });
+  
+  afterEach(function(done) {
+    cloud.httpServer.server.close();
+    done();
+  });
+  
+  it('will receive a _peer/connect event when subscribed', function(done) {
+    var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    z.silent();
+    z.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      }  
+      var zPort = z.httpServer.server.address().port;
+      var endpoint = 'localhost:' + zPort;
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: '_peer/connect' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, '_peer/connect');
+            assert(json.subscriptionId);
+          } else if(json.type === 'event') {
+            assert.equal(json.topic, '_peer/connect');
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+      z.link(cloudUrl);
+    });
+  });
+
+  it('will receive a _peer/disconnect event when subscribed', function(done) {
+    var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    z.silent();
+    z.pubsub.subscribe('_peer/connect', function(topic, data) {
+       var peer = data.peer; 
+       peer.close();
+    });
+    z.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      }  
+      var zPort = z.httpServer.server.address().port;
+      var endpoint = 'localhost:' + zPort;
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: '_peer/disconnect' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, '_peer/disconnect');
+            assert(json.subscriptionId);
+          } else if(json.type === 'event') {
+            assert.equal(json.topic, '_peer/disconnect');
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+      z.link(cloudUrl);
+    });
+  });  
+
+  it('will receive a _peer/connect event when subscribed with wildcards', function(done) {
+    var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    z.silent();
+    z.pubsub.subscribe('_peer/connect', function(topic, data) {
+       var peer = data.peer; 
+    });
+    z.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      }  
+      var zPort = z.httpServer.server.address().port;
+      var endpoint = 'localhost:' + zPort;
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: '_peer/*' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, '_peer/*');
+            assert(json.subscriptionId);
+          } else if(json.type === 'event') {
+            assert.equal(json.topic, '_peer/connect');
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+      z.link(cloudUrl);
+    });
+  }); 
+  it('will receive a _peer/connect and _peer/disconnect event when subscribed with wildcards', function(done) {
+    var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    z.silent();
+    z.pubsub.subscribe('_peer/connect', function(topic, data) {
+       var peer = data.peer; 
+       peer.close();
+    });
+    var recv = 0;
+    z.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      }  
+      var zPort = z.httpServer.server.address().port;
+      var endpoint = 'localhost:' + zPort;
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: '_peer/*' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, '_peer/*');
+            assert(json.subscriptionId);
+          } else if(json.type === 'event') {
+            recv++;
+            if(recv == 1) {
+              assert.equal(json.topic, '_peer/connect');
+            } else if(recv == 2) {
+              assert.equal(json.topic, '_peer/disconnect');
+              done();  
+            }
+            
+          }
+        });
+      });
+      ws.on('error', done);
+      z.link(cloudUrl);
+    });
+  });
+});
 
 describe('Event Streams', function() {
   var cluster = null;
