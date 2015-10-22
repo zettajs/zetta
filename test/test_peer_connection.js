@@ -141,18 +141,22 @@ describe('Peer Connection Logic', function() {
         .link(cloudUrl)
         .listen(0);
 
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      var onConnect = function(topic, data) {
+        cloud.pubsub.unsubscribe('_peer/connect', onConnect);
         assert(cloud.httpServer.peers['test-peer']);
+        cloud.pubsub.subscribe('_peer/disconnect', onDisconnect);
         var peer = cloud.httpServer.peers['test-peer'];
-
-        cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
-          assert.equal(cloud.httpServer.peers['test-peer'].state, PeerSocket.DISCONNECTED);
-        });
-
         peer.emit('error', new Error('some error'));
         peer.emit('error', new Error('some error'));
+      };
+
+      var onDisconnect = function(topic, data) {
+        assert.equal(data.peer.state, PeerSocket.DISCONNECTED);
+        cloud.pubsub.unsubscribe('_peer/disconnect', onDisconnect);
         done();
-      })
+      };
+
+      cloud.pubsub.subscribe('_peer/connect', onConnect);
     });
 
 
@@ -162,34 +166,43 @@ describe('Peer Connection Logic', function() {
         .silent()
         .link(cloudUrl)
         .listen(0);
-
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      
+      var onConnect =  function(topic, data) {
         assert(cloud.httpServer.peers['test-peer']);
+        cloud.pubsub.unsubscribe('_peer/connect', onConnect);
+        cloud.pubsub.subscribe('_peer/disconnect', onDisconnect);
         var peer = cloud.httpServer.peers['test-peer'];
-
-        cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
-          assert.equal(cloud.httpServer.peers['test-peer'].state, PeerSocket.DISCONNECTED);
-        });
-
         peer.emit('end');
         peer.emit('end');
+      };
+
+      var onDisconnect = function(topic, data) {
+        assert.equal(data.peer.state, PeerSocket.DISCONNECTED);
+        cloud.pubsub.unsubscribe('_peer/disconnect', onDisconnect);
         done();
-      })
+      }
+      
+      cloud.pubsub.subscribe('_peer/connect', onConnect)
     });
 
   });
 
   describe('Handle timings with ws connects vs actual peer connects', function() {
-    var z = null;
+    var hub = null;
     beforeEach(function(done) {
-      z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+      hub = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .name('peer-1')
         .silent()
         .listen(0, done);
     })
 
+    afterEach(function(done) {
+      hub.httpServer.server.close();
+      done();
+    })
+
     it('peer connects should be the same peer object on the cloud', function(done) {
-      var client = new PeerClient(cloudUrl, z);
+      var client = new PeerClient(cloudUrl, hub);
 
       cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
         assert(data.peer === cloud.httpServer.peers['peer-1']);
@@ -200,7 +213,7 @@ describe('Peer Connection Logic', function() {
     })
 
     it('peer connects should be the same peer object on the cloud with reconnect', function(done) {
-      var client = new PeerClient(cloudUrl, z);
+      var client = new PeerClient(cloudUrl, hub);
 
       var count = 0;
       cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
@@ -216,7 +229,7 @@ describe('Peer Connection Logic', function() {
 
     it('peer connects should be the same peer object on the cloud with reconnect with timing issue', function(done) {
       this.timeout(5000);
-      var client = new PeerClient(cloudUrl, z);
+      var client = new PeerClient(cloudUrl, hub);
 
       var lastPeer = null;
       var count = 0;
