@@ -719,6 +719,110 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
+    describe('Protocol Errors', function() {
+
+      itBoth('invalid stream query should result in a 400 error', function(idx, done){
+        var endpoint = urls[idx];
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        var subscriptionId = null;
+        var count = 0;
+        var topic = 'hub/testdriver/' + devices[0].id + '/fooobject?invalid stream query';
+        var data = { foo: 'bar', val: 2 };
+        ws.on('open', function() {
+          var msg = { type: 'subscribe', topic: topic };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            done();
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.code, 400);
+            assert(json.message);
+          });
+        });
+        ws.on('error', done);  
+      });
+
+      itBoth('invalid subscribe should result in a 400 error', function(idx, done){
+        var endpoint = urls[idx];
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        var subscriptionId = null;
+        var count = 0;
+        var topic = 'hub/testdriver/' + devices[0].id + '/fooobject';
+        ws.on('open', function() {
+          var msg = { type: 'subscribe' };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            done();
+            assert(json.timestamp);
+            assert.equal(json.code, 400);
+            assert(json.message);
+          });
+        });
+        ws.on('error', done);  
+      });
+
+      itBoth('unsubscribing from an invalid subscriptionId should result in a 400 error', function(idx, done){
+        var endpoint = urls[idx];
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        var subscriptionId = null;
+        var count = 0;
+        ws.on('open', function() {
+          var msg = { type: 'unsubscribe', subscriptionId: 123 };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            done();
+            assert(json.timestamp);
+            assert.equal(json.code, 405);
+            assert(json.message);
+          });
+        });
+        ws.on('error', done);  
+      });
+
+      itBoth('unsubscribing from a missing subscriptionId should result in a 400 error', function(idx, done){
+        var endpoint = urls[idx];
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        var subscriptionId = null;
+        var count = 0;
+        ws.on('open', function() {
+          var msg = { type: 'unsubscribe' };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            done();
+            assert(json.timestamp);
+            assert.equal(json.code, 400);
+            assert(json.message);
+          });
+        });
+        ws.on('error', done);  
+      });
+
+      itBoth('on invalid message should result in a 400 error', function(idx, done){
+        var endpoint = urls[idx];
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        var subscriptionId = null;
+        var count = 0;
+        ws.on('open', function() {
+          var msg = { test: 123 };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            done();
+            assert(json.timestamp);
+            assert.equal(json.code, 400);
+            assert(json.message);
+          });
+        });
+        ws.on('error', done);  
+      });
+
+
+    })
+
   });
 
   describe('SPDY API', function() {
