@@ -219,7 +219,7 @@ describe('Zetta Api', function() {
       }).end();
     });
 
-    it('should have an events link formatted correctly for SPDY requests', function(done) {
+    it('should not have an events link for SPDY requests', function(done) {
       var a = getHttpServer(app);
 
       if (!a.address()) a.listen(0);
@@ -250,11 +250,10 @@ describe('Zetta Api', function() {
 
         response.on('end', function() {
           var body = JSON.parse(Buffer.concat(buffers));
-          var link = body.links.filter(function(l) {
+          var links = body.links.filter(function(l) {
             return l.rel.indexOf('http://rels.zettajs.io/events') > -1;
-          })[0];
-          var obj = require('url').parse(link.href, true);
-          assert.equal(obj.protocol, 'http:');
+          });
+          assert.equal(links.length, 0);
           agent.close();
         });
 
