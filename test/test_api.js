@@ -219,6 +219,49 @@ describe('Zetta Api', function() {
       }).end();
     });
 
+    it('should have an events link formatted correctly for SPDY requests', function(done) {
+      var a = getHttpServer(app);
+
+      if (!a.address()) a.listen(0);
+
+      var agent = spdy.createAgent({
+        host: '127.0.0.1',
+        port: a.address().port,
+        spdy: {
+          plain: true,
+          ssl: false
+        }
+      });
+
+      var request = http.get({
+        host: '127.0.0.1',
+        port: a.address().port,
+        path: '/',
+        agent: agent
+      }, function(response) {
+
+        var buffers = [];
+        response.on('readable', function() {
+          var data;
+          while ((data = response.read()) !== null) {
+            buffers.push(data);
+          }
+        });
+
+        response.on('end', function() {
+          var body = JSON.parse(Buffer.concat(buffers));
+          var link = body.links.filter(function(l) {
+            return l.rel.indexOf('http://rels.zettajs.io/events') > -1;
+          })[0];
+          var obj = require('url').parse(link.href, true);
+          assert.equal(obj.protocol, 'http:');
+          agent.close();
+        });
+
+        response.on('end', done);
+      }).end();
+    });  
+
     it('should have valid entities', function(done) {
       request(getHttpServer(app))
         .get(url)
