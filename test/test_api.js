@@ -219,6 +219,48 @@ describe('Zetta Api', function() {
       }).end();
     });
 
+    it('should not have an events link for SPDY requests', function(done) {
+      var a = getHttpServer(app);
+
+      if (!a.address()) a.listen(0);
+
+      var agent = spdy.createAgent({
+        host: '127.0.0.1',
+        port: a.address().port,
+        spdy: {
+          plain: true,
+          ssl: false
+        }
+      });
+
+      var request = http.get({
+        host: '127.0.0.1',
+        port: a.address().port,
+        path: '/',
+        agent: agent
+      }, function(response) {
+
+        var buffers = [];
+        response.on('readable', function() {
+          var data;
+          while ((data = response.read()) !== null) {
+            buffers.push(data);
+          }
+        });
+
+        response.on('end', function() {
+          var body = JSON.parse(Buffer.concat(buffers));
+          var links = body.links.filter(function(l) {
+            return l.rel.indexOf('http://rels.zettajs.io/events') > -1;
+          });
+          assert.equal(links.length, 0);
+          agent.close();
+        });
+
+        response.on('end', done);
+      }).end();
+    });  
+
     it('should have valid entities', function(done) {
       request(getHttpServer(app))
         .get(url)
@@ -338,7 +380,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get('/')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'self');
         }))
         .end(done)
@@ -349,6 +391,15 @@ describe('Zetta Api', function() {
         .get('/')
         .expect(getBody(function(res, body) {
           hasLinkRel(body.links, rels.server);
+        }))
+        .end(done)
+    });
+
+    it('should contain link for event stream', function(done) {
+      request(getHttpServer(app))
+        .get('/')
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, rels.events);
         }))
         .end(done)
     });

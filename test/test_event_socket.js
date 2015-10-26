@@ -67,6 +67,24 @@ describe('EventSocket', function() {
     },1);
   });
 
+  it('should init parser if passed streaming flag', function() {
+    var ws = new Ws();
+    var client = new EventSocket(ws, 'some-topic', true);
+    assert(client._parser)
+  })
 
+  it('should emit subscribe event when subscribe message is parsed', function(done) {
+    var ws = new Ws();
+    var client = new EventSocket(ws, 'some-topic', true);
+    client.on('subscribe', function(subscription) {
+      assert(subscription.subscriptionId);
+      assert(subscription.topic);
+      assert.equal(subscription.limit, 10);
+      done();
+    })
+
+    var msg = { type: 'subscribe', topic: 'Detroit/led/1234/state', limit: 10};
+    ws.emit('message', new Buffer(JSON.stringify(msg)));
+  })
 
 });
