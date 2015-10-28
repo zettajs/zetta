@@ -292,23 +292,38 @@ describe('Event Websocket', function() {
     it('websocket should recv connect and disconnect message for /peer-management', function(done) {
       var url = 'ws://localhost:' + port + '/peer-management';
       var socket = new WebSocket(url);
+      var peer = null;
       
       socket.on('open', function(err) {
         socket.once('message', function(buf, flags) {
-          var msg = JSON.parse(buf);          
-          assert.equal(msg.topic, 'connect');
+          var msg = JSON.parse(buf);        
+          assert.equal(msg.topic, '_peer/connect');
+          assert(msg.timestamp);
+          assert.equal(msg.data.id, 'some-peer');
+          assert(msg.data.connectionId);
+          assert.equal(Object.keys(msg).length, 3);
+
           socket.once('message', function(buf, flags) {
             var msg = JSON.parse(buf);
-            assert.equal(msg.topic, 'disconnect');
+            assert.equal(msg.topic, '_peer/disconnect');
+            assert(msg.timestamp);
+            assert.equal(msg.data.id, 'some-peer');
+            assert(msg.data.connectionId);
+            assert.equal(Object.keys(msg).length, 3);
             done();
           });
-          app.pubsub.publish('_peer/disconnect', { topic: 'disconnect'});
+
+          // disconnect
+          peer._peerClients[0].close();
         });
-        app.pubsub.publish('_peer/connect', { topic: 'connect'});
+        peer = zetta({registry: new MockRegistry(), peerRegistry: new PeerRegistry() });
+        peer.name('some-peer');
+        peer.silent();
+        peer.link('http://localhost:' + port);
+        peer.listen(0);
       });
       socket.on('error', done);
     });
-
   });
 
 
