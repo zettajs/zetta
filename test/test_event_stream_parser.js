@@ -1,4 +1,4 @@
-var EventStreamParser = require('../lib/event_streams_parser');
+var EventStreamParser = require('zetta-events-stream-protocol').Parser;
 var assert = require('assert');
 
 describe('Event Stream Parser', function() {

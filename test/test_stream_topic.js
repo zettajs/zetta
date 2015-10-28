@@ -1,4 +1,4 @@
-var StreamTopic = require('../lib/stream_topic');
+var StreamTopic = require('zetta-events-stream-protocol').StreamTopic;
 var assert = require('assert');
 var Query = require('calypso').Query;
 
