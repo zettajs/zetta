@@ -51,8 +51,8 @@ describe('Event Websocket', function() {
       }
       app = zetta({registry: registry, peerRegistry: peerRegistry});
       app.silent();
-      app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
-      app.use(GoodScout)
+      app.name('BC2832FD-9437-4473-A4A8-AC1D56B12C61');
+      app.use(GoodScout);
       app.listen(0, function(err){
         port = app.httpServer.server.address().port;
         deviceUrl = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';

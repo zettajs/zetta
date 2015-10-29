@@ -487,6 +487,35 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('subscription to non existent hub does not return data for that subscriptionId', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);   
+      var validTopic = validTopics[0];
+      var invalidTopic = validTopic.replace('hub/', 'notahub/');
+      var invalidSubscriptionId = null;
+
+      ws.on('open', function() {
+        ws.send(JSON.stringify({ type: 'subscribe', topic: invalidTopic }));
+        ws.send(JSON.stringify({ type: 'subscribe', topic: validTopic }));
+
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if (json.type === 'subscribe-ack') {
+            if (json.topic === invalidTopic) {
+              invalidSubscriptionId = json.subscriptionId;
+            }
+            setTimeout(function() {
+              devices[0].call('change');
+            }, 50)
+          } else {
+            assert.notEqual(json.subscriptionId, invalidSubscriptionId);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
     itBoth('wildcard and specific topic will each publish a message on a subscription', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
