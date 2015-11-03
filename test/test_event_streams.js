@@ -429,6 +429,103 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
     
+    it('wildcard topic ** will subscribe to all topics for both hubs', function(done) {
+      var endpoint = urls[0]; // cloud
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '**';
+
+      var neededTopics = [];
+      devices.forEach(function(device, idx) {
+        var server = (idx < 2) ? 'hub' : 'hub2';
+        neededTopics.push(server + '/' + device.type + '/' + device.id + '/' + 'state');
+        neededTopics.push(server + '/' + device.type + '/' + device.id + '/' + 'logs');
+      });
+
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+              devices[1].call('change');
+              devices[2].call('change');
+              devices[3].call('change');
+            }, 250);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            var idx = neededTopics.indexOf(json.topic);
+            assert.notEqual(idx, -1);
+            neededTopics.splice(idx, 1);
+            if (neededTopics.length === 0) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+    it('wildcard topic ** will subscribe to all topics for single hub', function(done) {
+      var endpoint = urls[1]; // hub
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '**';
+
+      var neededTopics = [];
+      for (var i=0; i<2; i++) {
+        var device = devices[i];
+        neededTopics.push('hub/' + device.type + '/' + device.id + '/' + 'state');
+        neededTopics.push('hub/' + device.type + '/' + device.id + '/' + 'logs');
+      }
+
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+              devices[1].call('change');
+              devices[2].call('change');
+              devices[3].call('change');
+            }, 50);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            var idx = neededTopics.indexOf(json.topic);
+            assert.notEqual(idx, -1);
+            neededTopics.splice(idx, 1);
+            if (neededTopics.length === 0) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
 
     itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
       var endpoint = urls[idx];
@@ -835,6 +932,34 @@ describe('Event Streams', function() {
 
     describe('Protocol Errors', function() {
 
+      var makeTopicStringErrorsTest = function(topic) {
+        itBoth('invalid stream topic "' + topic + '" should result in a 400 error', function(idx, done){
+          var endpoint = urls[idx];
+          var ws = new WebSocket('ws://' + endpoint + baseUrl);
+          ws.on('open', function() {
+            var msg = { type: 'subscribe', topic: topic };
+            ws.send(JSON.stringify(msg));
+            ws.on('message', function(buffer) {
+              var json = JSON.parse(buffer);
+              assert(json.timestamp);
+              assert.equal(json.topic, topic);
+              assert.equal(json.code, 400);
+              assert(json.message);
+              done();
+            });
+          });
+          ws.on('error', done);  
+        });
+      };
+
+      makeTopicStringErrorsTest('*');
+      makeTopicStringErrorsTest('hub');
+      makeTopicStringErrorsTest('{hub.+}');
+      makeTopicStringErrorsTest('*/');
+      makeTopicStringErrorsTest('**/');
+      makeTopicStringErrorsTest('hub/');
+      makeTopicStringErrorsTest('{hub.+}/');
+
       itBoth('invalid stream query should result in a 400 error', function(idx, done){
         var endpoint = urls[idx];
         var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -847,11 +972,11 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.topic, topic);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -868,10 +993,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -887,10 +1012,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 405);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -906,10 +1031,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -925,10 +1050,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
