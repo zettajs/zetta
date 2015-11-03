@@ -283,7 +283,6 @@ describe('Remote queries', function() {
       socket.on('open', function(err) {
         socket.on('message', function(data) {
           var json = JSON.parse(data);
-
           // test links are properly set
           json.links.forEach(function(link) {
             assert(link.href.indexOf(urlLocal) > -1)

@@ -51,8 +51,8 @@ describe('Event Websocket', function() {
       }
       app = zetta({registry: registry, peerRegistry: peerRegistry});
       app.silent();
-      app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
-      app.use(GoodScout)
+      app.name('BC2832FD-9437-4473-A4A8-AC1D56B12C61');
+      app.use(GoodScout);
       app.listen(0, function(err){
         port = app.httpServer.server.address().port;
         deviceUrl = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
@@ -176,22 +176,13 @@ describe('Event Websocket', function() {
       openAndClose(function(){
         var s2 = new WebSocket(url);
         s2.on('open', function(err) {
-          var count = 0;
           s2.on('message', function(buf, flags) {
-            count++;
+            done();
           });
 
           setTimeout(function(){
             device.incrementStreamValue();
           }, 20)
-
-          setTimeout(function() {
-            if (count === 1) {
-              done();
-            } else {
-              throw new Error('Should have only recieved one message. ' + count);
-            }
-          }, 100);
         });
       });
 
@@ -271,6 +262,7 @@ describe('Event Websocket', function() {
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
+
           assert(msg.timestamp);
           assert(msg.topic);
           assert(msg.actions.filter(function(action) {
@@ -296,7 +288,7 @@ describe('Event Websocket', function() {
       
       socket.on('open', function(err) {
         socket.once('message', function(buf, flags) {
-          var msg = JSON.parse(buf);        
+          var msg = JSON.parse(buf);
           assert.equal(msg.topic, '_peer/connect');
           assert(msg.timestamp);
           assert.equal(msg.data.id, 'some-peer');
