@@ -112,10 +112,10 @@ describe('EventBroker', function() {
         done();
       }, 2);
 
-      app.pubsub.publish('_peer/connect', msg);
+      app.pubsub.publish('_peer/connect', {});
     }, 2);
 
-    app.pubsub.publish('_peer/connect', msg);
+    app.pubsub.publish('_peer/connect', {});
   });
 
 });

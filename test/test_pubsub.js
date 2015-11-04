@@ -1,6 +1,10 @@
 var assert = require('assert');
 var PubSub = require('../lib/pubsub_service');
 
+
+function makeFakeRequest(fd) {
+  return { connection: { socket: { _handle: { fd: (fd || 1) }} }};
+}
 var Response = function(cb) {
   this.cb = cb;
 };
@@ -33,7 +37,7 @@ describe('Pubsub Service', function() {
   it('subscribe takes a spdy response object', function() {
     var ps = new PubSub();
     var r = new Response(function() {});
-    ps.subscribe('some-topic', {response: r});
+    ps.subscribe('some-topic', {request: makeFakeRequest(1), response: r});
   });
 
   it('publish does not fail when there are no listeners', function() {
@@ -62,7 +66,7 @@ describe('Pubsub Service', function() {
       received++;
     });
 
-    ps.subscribe('some-topic', {response: r});
+    ps.subscribe('some-topic', {request:  makeFakeRequest(1), response: r});
     ps.publish('some-topic', 123);
     
     setTimeout(function(){
@@ -80,7 +84,7 @@ describe('Pubsub Service', function() {
       receivedA++;
     });
 
-    ps.subscribe('some-topic', {response: r});
+    ps.subscribe('some-topic', {request:  makeFakeRequest(1), response: r});
     ps.subscribe('some-topic', function() {receivedB++;});
     ps.publish('some-topic', 123);
     
@@ -109,6 +113,74 @@ describe('Pubsub Service', function() {
         ps.unsubscribe('some-topic', listener);
         done();
       }, 1);
+    }, 1);
+  });
+
+  it('one http subscription and one callback that match the same event will emit one event on both', function(done) {
+    var ps = new PubSub();
+    var receivedA = 0;
+    var receivedB = 0;
+
+    var r1 = new Response(function() {
+      receivedA++;
+    });
+
+    var listener = function() {receivedB++;};
+
+    ps.subscribe('led/123/state', {request:  makeFakeRequest(1), response: r1 });
+    ps.subscribe('led/*/state', listener);
+    ps.publish('led/123/state', 123);
+    
+    setTimeout(function(){
+      assert.equal(receivedA, 1);
+      assert.equal(receivedB, 1);
+      done();
+    }, 10);
+  });
+
+  it('two subscriptions with callback that match the same event will emit one event on both', function(done) {
+    var ps = new PubSub();
+    var receivedA = 0;
+    var receivedB = 0;
+    var receivedC = 0;
+
+    var listener1 = function() {receivedA++;};
+    var listener2 = function() {receivedB++;};
+    var listener3 = function() {receivedC++;};
+
+    ps.subscribe('led/123/state', listener1);
+    ps.subscribe('led/*/state', listener2);
+    ps.subscribe('led/*/state', listener3);
+    ps.publish('led/123/state', 123);
+    
+    setTimeout(function(){
+      assert.equal(receivedA, 1);
+      assert.equal(receivedB, 1);
+      done();
+    }, 1);
+  });
+
+  it('two http subscriptions that match the same event will only emit event on the first subscription', function(done) {
+    var ps = new PubSub();
+    var receivedA = 0;
+    var receivedB = 0;
+
+    var r1 = new Response(function() {
+      receivedA++;
+    });
+
+    var r2 = new Response(function() {
+      receivedB++;
+    });
+
+    ps.subscribe('led/123/state', {request:  makeFakeRequest(1), response: r1 });
+    ps.subscribe('led/*/state', {request:  makeFakeRequest(1), response: r2 });
+    ps.publish('led/123/state', 123);
+    
+    setTimeout(function(){
+      assert.equal(receivedA, 1);
+      assert.equal(receivedB, 0);
+      done();
     }, 1);
   });
   
