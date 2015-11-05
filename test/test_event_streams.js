@@ -59,6 +59,38 @@ describe('Peering Event Streams', function() {
     });
   });
 
+  it('will receive a _peer/connect event when subscribed to **', function(done) {
+    var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    z.silent();
+    z.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      }  
+      var zPort = z.httpServer.server.address().port;
+      var endpoint = 'localhost:' + zPort;
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: '**' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, '**');
+            assert(json.subscriptionId);
+          } else if(json.type === 'event') {
+            assert.equal(json.topic, '_peer/connect');
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+      z.link(cloudUrl);
+    });
+  });
+
+
   it('will receive a _peer/disconnect event when subscribed', function(done) {
     var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
