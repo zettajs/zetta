@@ -44,31 +44,6 @@ describe('EventBroker', function() {
     assert.equal(peer, broker.peers['some-peer2']);
   });
 
-
-  it.skip('it should add client and subscribe to topic', function() {
-    var ws = new Ws();
-    var client = new EventSocket(ws, query);
-    broker.client(client);
-    assert.equal(broker.clients.length, 1);
-    assert.equal(broker.subscriptions['_peer/connect'].count, 1);
-  });
-
-  it.skip('it should remove subscription when client closes', function(done) {
-    var ws = new Ws();
-    var client = new EventSocket(ws, query);
-    broker.client(client);
-    assert.equal(broker.clients.length, 1);
-    assert.equal(broker.subscriptions['_peer/connect'].count, 1);
-
-    client.emit('close');
-
-    setTimeout(function() {
-      assert.equal(broker.clients.length, 0);
-      assert(!broker.subscriptions['_peer/connect']);
-      done();
-    }, 1);
-  });
-
   it('it should pass data from local pubsub to clients', function(done) {
     var ws = new Ws();
     var client = new EventSocket(ws, query);

@@ -6,7 +6,7 @@ var Driver = require('./fixture/example_driver');
 var MemRegistry = require('./fixture/mem_registry');
 var MemPeerRegistry = require('./fixture/mem_peer_registry');
 
-describe.skip('Peering Event Streams', function() {
+describe('Peering Event Streams', function() {
   var cloud = null;
   var cloudUrl = null;
   var baseUrl = '/events';
@@ -170,7 +170,7 @@ describe.skip('Peering Event Streams', function() {
   });
 });
 
-describe.skip('Event Streams', function() {
+describe('Event Streams', function() {
   var cluster = null;
   var urls = [];
   var baseUrl = '/events';
@@ -900,7 +900,7 @@ describe.skip('Event Streams', function() {
             subscriptionId = json.subscriptionId;
 
             setTimeout(function() {
-              for(var i=0; i<11; i++) {
+              for(var i=0; i<15; i++) {
                 devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
               }
             }, 50);
