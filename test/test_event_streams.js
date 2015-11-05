@@ -453,6 +453,41 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('wildcard topic and static topic subscription will receive messages for both subscriptions', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var lastSubscriptionId = null;
+      var count = 0;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: validTopics[0] };
+        ws.send(JSON.stringify(msg));
+        msg = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.subscriptionId);
+            setTimeout(function() {
+              devices[0].call('change');
+            }, 50);
+          } else {
+            count++;
+            assert.notEqual(lastSubscriptionId, json.subscriptionId);
+            lastSubscriptionId = json.subscriptionId;
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, validTopics[0]);
+            assert(json.data);
+            if (count === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
 
     itBoth('wildcard device id topic subscription and cloud app query both will recieve data', function(idx, done) {
       var endpoint = urls[idx];
