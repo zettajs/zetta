@@ -45,7 +45,7 @@ describe('EventBroker', function() {
   });
 
 
-  it('it should add client and subscribe to topic', function() {
+  it.skip('it should add client and subscribe to topic', function() {
     var ws = new Ws();
     var client = new EventSocket(ws, query);
     broker.client(client);
@@ -53,7 +53,7 @@ describe('EventBroker', function() {
     assert.equal(broker.subscriptions['_peer/connect'].count, 1);
   });
 
-  it('it should remove subscription when client closes', function(done) {
+  it.skip('it should remove subscription when client closes', function(done) {
     var ws = new Ws();
     var client = new EventSocket(ws, query);
     broker.client(client);
