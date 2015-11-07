@@ -1033,6 +1033,48 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
+    itBoth('when limit is reached with a query selector a unsubscribe-ack should be received', function(idx, done){
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var topic = 'hub/testdriver/' + devices[0].id + '/bar?select data where data >= 5';
+      var data = null;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic, limit: 10 };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+            setTimeout(function() {
+              for(var i=0; i<16; i++) {
+                devices[0].incrementStreamValue();
+              }
+            }, 50);
+          } else if(json.type === 'event') {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+          } else if(json.type === 'unsubscribe-ack') {
+            assert.equal(json.type, 'unsubscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert.equal(count, 10);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);  
+    });
+
     itBoth('query field selector should only return properties in selection', function(idx, done){
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
