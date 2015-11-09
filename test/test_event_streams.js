@@ -59,6 +59,38 @@ describe('Peering Event Streams', function() {
     });
   });
 
+  it('will receive a _peer/connect event when subscribed to **', function(done) {
+    var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+    z.silent();
+    z.listen(0, function(err) {
+      if(err) {
+        return done(err);  
+      }  
+      var zPort = z.httpServer.server.address().port;
+      var endpoint = 'localhost:' + zPort;
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: '**' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, '**');
+            assert(json.subscriptionId);
+          } else if(json.type === 'event') {
+            assert.equal(json.topic, '_peer/connect');
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+      z.link(cloudUrl);
+    });
+  });
+
+
   it('will receive a _peer/disconnect event when subscribed', function(done) {
     var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
@@ -355,6 +387,69 @@ describe('Event Streams', function() {
       ws2.on('error', done);
     });
 
+    itBoth('multiple clients using different topic subscriptions only receive one message per event', function(idx, done) {
+      var endpoint = urls[idx];
+      var topic = validTopics[0];
+      
+      var connected = 0;
+      var recv1 = 0;
+
+      var ws1 = new WebSocket('ws://' + endpoint + baseUrl);
+      ws1.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws1.send(JSON.stringify(msg));
+        var subscriptionId = null;
+        ws1.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            connected++;
+            subscriptionId = json.subscriptionId;
+            if (connected === 2) {
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            }
+          } else {
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            recv1++;
+          }
+        });
+      });
+      ws1.on('error', done);
+
+      var recv2 = 0;
+      var ws2 = new WebSocket('ws://' + endpoint + baseUrl);
+      ws2.on('open', function() {
+        var msg = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
+        ws2.send(JSON.stringify(msg));
+        var subscriptionId = null;
+        ws2.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            subscriptionId = json.subscriptionId;
+            connected++;
+            if (connected === 2) {
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            }
+          } else {
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            recv2++;
+          }
+        });
+      });
+      ws2.on('error', done);
+
+      setTimeout(function() {
+        assert.equal(recv1, 1);
+        assert.equal(recv2, 1);
+        done();
+      }, 250);
+    });
+
     itBoth('wildcard server topic subscription only receives messages with that topic', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -390,6 +485,117 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('wildcard topic and static topic subscription will receive messages for both subscriptions', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var lastSubscriptionId = null;
+      var count = 0;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: validTopics[0] };
+        ws.send(JSON.stringify(msg));
+        msg = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.subscriptionId);
+            setTimeout(function() {
+              devices[0].call('change');
+            }, 50);
+          } else {
+            count++;
+            assert.notEqual(lastSubscriptionId, json.subscriptionId);
+            lastSubscriptionId = json.subscriptionId;
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, validTopics[0]);
+            assert(json.data);
+            if (count === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+    itBoth('wildcard device id topic subscription and cloud app query both will recieve data', function(idx, done) {
+      var endpoint = urls[idx];
+      var subscriptionId = null;
+      var topic = 'hub/testdriver/*/state';
+
+      var runtime = cluster.servers['cloud'].runtime;
+      var query = runtime.from('hub').where({ type: 'testdriver', id: devices[0].id });
+      runtime.observe(query, function(device) {
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        ws.on('open', function() {
+          var msg = { type: 'subscribe', topic: topic };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            if(json.type === 'subscribe-ack') {
+              assert.equal(json.type, 'subscribe-ack');
+              assert(json.timestamp);
+              assert.equal(json.topic, topic);
+              assert(json.subscriptionId);
+              subscriptionId = json.subscriptionId;
+
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            } else {
+              assert.equal(json.type, 'event');
+              assert(json.timestamp);
+              assert.equal(json.topic, validTopics[0]);
+              assert.equal(json.subscriptionId, subscriptionId);
+              assert(json.data);
+              done();
+            }
+          });
+        });
+        ws.on('error', done);
+      });
+    });
+
+    itBoth('wildcard device id topic subscription and hub app query both will recieve data', function(idx, done) {
+      var endpoint = urls[idx];
+      var subscriptionId = null;
+      var topic = 'hub/testdriver/*/state';
+
+      var runtime = cluster.servers['hub'].runtime;
+      var query = runtime.where({ type: 'testdriver', id: devices[0].id });
+      runtime.observe(query, function(device) {
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        ws.on('open', function() {
+          var msg = { type: 'subscribe', topic: topic };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            if(json.type === 'subscribe-ack') {
+              assert.equal(json.type, 'subscribe-ack');
+              assert(json.timestamp);
+              assert.equal(json.topic, topic);
+              assert(json.subscriptionId);
+              subscriptionId = json.subscriptionId;
+
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            } else {
+              assert.equal(json.type, 'event');
+              assert(json.timestamp);
+              assert.equal(json.topic, validTopics[0]);
+              assert.equal(json.subscriptionId, subscriptionId);
+              assert(json.data);
+              done();
+            }
+          });
+        });
+        ws.on('error', done);
+      });
+    });
 
     it('wildcard server topic subscription receives messages from both hubs', function(done) {
       var endpoint = urls[0];
@@ -429,6 +635,103 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
     
+    it('wildcard topic ** will subscribe to all topics for both hubs', function(done) {
+      var endpoint = urls[0]; // cloud
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '**';
+
+      var neededTopics = [];
+      devices.forEach(function(device, idx) {
+        var server = (idx < 2) ? 'hub' : 'hub2';
+        neededTopics.push(server + '/' + device.type + '/' + device.id + '/' + 'state');
+        neededTopics.push(server + '/' + device.type + '/' + device.id + '/' + 'logs');
+      });
+
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+              devices[1].call('change');
+              devices[2].call('change');
+              devices[3].call('change');
+            }, 250);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            var idx = neededTopics.indexOf(json.topic);
+            assert.notEqual(idx, -1);
+            neededTopics.splice(idx, 1);
+            if (neededTopics.length === 0) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+    it('wildcard topic ** will subscribe to all topics for single hub', function(done) {
+      var endpoint = urls[1]; // hub
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '**';
+
+      var neededTopics = [];
+      for (var i=0; i<2; i++) {
+        var device = devices[i];
+        neededTopics.push('hub/' + device.type + '/' + device.id + '/' + 'state');
+        neededTopics.push('hub/' + device.type + '/' + device.id + '/' + 'logs');
+      }
+
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].call('change');
+              devices[1].call('change');
+              devices[2].call('change');
+              devices[3].call('change');
+            }, 50);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            var idx = neededTopics.indexOf(json.topic);
+            assert.notEqual(idx, -1);
+            neededTopics.splice(idx, 1);
+            if (neededTopics.length === 0) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
 
     itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
       var endpoint = urls[idx];
@@ -664,7 +967,7 @@ describe('Event Streams', function() {
             subscriptionId = json.subscriptionId;
 
             setTimeout(function() {
-              for(var i=0; i<11; i++) {
+              for(var i=0; i<15; i++) {
                 devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
               }
             }, 50);
@@ -709,6 +1012,48 @@ describe('Event Streams', function() {
             setTimeout(function() {
               for(var i=0; i<11; i++) {
                 devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
+              }
+            }, 50);
+          } else if(json.type === 'event') {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+          } else if(json.type === 'unsubscribe-ack') {
+            assert.equal(json.type, 'unsubscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert.equal(count, 10);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);  
+    });
+
+    itBoth('when limit is reached with a query selector a unsubscribe-ack should be received', function(idx, done){
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var count = 0;
+      var topic = 'hub/testdriver/' + devices[0].id + '/bar?select data where data >= 5';
+      var data = null;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic, limit: 10 };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+            setTimeout(function() {
+              for(var i=0; i<16; i++) {
+                devices[0].incrementStreamValue();
               }
             }, 50);
           } else if(json.type === 'event') {
@@ -835,6 +1180,34 @@ describe('Event Streams', function() {
 
     describe('Protocol Errors', function() {
 
+      var makeTopicStringErrorsTest = function(topic) {
+        itBoth('invalid stream topic "' + topic + '" should result in a 400 error', function(idx, done){
+          var endpoint = urls[idx];
+          var ws = new WebSocket('ws://' + endpoint + baseUrl);
+          ws.on('open', function() {
+            var msg = { type: 'subscribe', topic: topic };
+            ws.send(JSON.stringify(msg));
+            ws.on('message', function(buffer) {
+              var json = JSON.parse(buffer);
+              assert(json.timestamp);
+              assert.equal(json.topic, topic);
+              assert.equal(json.code, 400);
+              assert(json.message);
+              done();
+            });
+          });
+          ws.on('error', done);  
+        });
+      };
+
+      makeTopicStringErrorsTest('*');
+      makeTopicStringErrorsTest('hub');
+      makeTopicStringErrorsTest('{hub.+}');
+      makeTopicStringErrorsTest('*/');
+      makeTopicStringErrorsTest('**/');
+      makeTopicStringErrorsTest('hub/');
+      makeTopicStringErrorsTest('{hub.+}/');
+
       itBoth('invalid stream query should result in a 400 error', function(idx, done){
         var endpoint = urls[idx];
         var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -847,11 +1220,11 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.topic, topic);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -868,10 +1241,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -887,10 +1260,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 405);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -906,10 +1279,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
@@ -925,10 +1298,10 @@ describe('Event Streams', function() {
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
-            done();
             assert(json.timestamp);
             assert.equal(json.code, 400);
             assert(json.message);
+            done();
           });
         });
         ws.on('error', done);  
