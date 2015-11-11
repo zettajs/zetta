@@ -70,7 +70,7 @@ describe('Event Websocket', function() {
 
 
   describe('Basic Connection', function() {
-
+    this.timeout(6000);
     it('http resource should exist with statusCode 200', function(done) {
       http.get('http://'+deviceUrlHttp, function(res) {
         assert.equal(res.statusCode, 200);
@@ -89,9 +89,35 @@ describe('Event Websocket', function() {
       socket.on('error', done);
     });
 
+    it('will return a 404 on non ws urls', function(done) {
+      var url = 'ws://localhost:' + port + '/not-a-endpoint';
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        done(new Error('Should not be open.'));
+      });
+      socket.on('error', function(err) {
+        assert.equal(err.message, 'unexpected server response (404)');
+        done();
+      });
+    });
+
+    it('will return a 404 on non ws urls for /events123123', function(done) {
+      var url = 'ws://localhost:' + port + '/events123123';
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        done(new Error('Should not be open.'));
+      });
+      socket.on('error', function(err) {
+        assert.equal(err.message, 'unexpected server response (404)');
+        done();
+      });
+    });
+
+
   });
 
   describe('Embedding a websocket server', function() {
+    this.timeout(6000);
     var app = null;
     var port = null;
     var wss = null;
@@ -150,6 +176,18 @@ describe('Event Websocket', function() {
 
       ws.on('open', function open() {
         ws.send('foo');
+      });
+    });
+
+    it('will return a 404 on non ws urls', function(done) {
+      var url = 'ws://localhost:' + port + '/not-a-endpoint';
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        done(new Error('Should not be open.'));
+      });
+      socket.on('error', function(err) {
+        assert.equal(err.message, 'unexpected server response (404)');
+        done();
       });
     });
 
