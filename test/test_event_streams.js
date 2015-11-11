@@ -65,7 +65,7 @@ describe('Peering Event Streams', function() {
     z.listen(0, function(err) {
       if(err) {
         return done(err);  
-      }  
+      }
       var zPort = z.httpServer.server.address().port;
       var endpoint = 'localhost:' + zPort;
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
@@ -873,6 +873,31 @@ describe('Event Streams', function() {
         });
       });
       ws.on('error', done);
+    });
+
+    it('subscription cloud will get _peer/connect events from hub', function(done) {
+      var endpoint = urls[0];
+      var topic = 'hub/**';
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        ws.send(JSON.stringify({ type: 'subscribe', topic: topic }));
+        
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if (json.type === 'subscribe-ack') {
+            var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+            z.name('some-peer');
+            z.link('http://' + urls[1]); // link to hub
+            z.silent();
+            z.listen(0);
+          } else if (json.type === 'event'){
+            assert.equal(json.topic, 'hub/_peer/connect');
+            assert.equal(json.data.id, 'some-peer');
+            done();
+          }
+        });
+
+      });
     });
 
     itBoth('subscription to non existent hub does not return data for that subscriptionId', function(idx, done) {
