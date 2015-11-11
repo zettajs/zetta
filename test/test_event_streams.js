@@ -1203,6 +1203,41 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
+    itBoth('subscribing to all ** and then unsubscribing followed by a peer connecting wont crash zetta', function(idx, done){
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var topic = '**';
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.topic);
+            assert(json.subscriptionId);
+            var msg = { type: 'unsubscribe', subscriptionId: json.subscriptionId };
+            ws.send(JSON.stringify(msg));
+          } else if(json.type === 'unsubscribe-ack') {
+            var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+            z.silent();
+            z.name('some-new-peer')
+            z.link('http://' + urls[0]);
+            z.use(function(server) {
+              server.pubsub.subscribe('_peer/connect', function(topic, data) {
+                setTimeout(function() {
+                  done();
+                }, 400);
+              });
+            });
+            z.listen(0);
+          }
+        });
+      });
+      ws.on('error', done);  
+    });
+
     describe('Protocol Errors', function() {
 
       var makeTopicStringErrorsTest = function(topic) {
