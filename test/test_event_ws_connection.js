@@ -100,6 +100,20 @@ describe('Event Websocket', function() {
         done();
       });
     });
+
+    it('will return a 404 on non ws urls for /events123123', function(done) {
+      var url = 'ws://localhost:' + port + '/events123123';
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        done(new Error('Should not be open.'));
+      });
+      socket.on('error', function(err) {
+        assert.equal(err.message, 'unexpected server response (404)');
+        done();
+      });
+    });
+
+
   });
 
   describe('Embedding a websocket server', function() {
