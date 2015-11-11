@@ -99,6 +99,30 @@ describe('Stream Topic', function() {
     assert.equal(t.streamQuery, 'select * where data > 80');
   });
 
+  it('will correctly parse **/some-topic', function() {
+    var t = new StreamTopic();
+    t.parse('**/some-topic');
+    assert.equal(t.serverName(), '*');
+    assert.equal(t.pubsubIdentifier(), '**/some-topic');
+    assert.equal(t.streamQuery, null); 
+  });
+
+  it('will correctly parse **/led/123/state', function() {
+    var t = new StreamTopic();
+    t.parse('**/led/123/state');
+    assert.equal(t.serverName(), '*');
+    assert.equal(t.pubsubIdentifier(), 'led/123/state');
+    assert.equal(t.streamQuery, null); 
+  });
+
+  it('will correctly parse **/123/state', function() {
+    var t = new StreamTopic();
+    t.parse('**/123/state');
+    assert.equal(t.serverName(), '*');
+    assert.equal(t.pubsubIdentifier(), '**/123/state');
+    assert.equal(t.streamQuery, null); 
+  });
+
 
   function checkSpecial(topic) {
     it('will correctly parse special topic ' + topic, function() {
