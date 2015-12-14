@@ -29,7 +29,7 @@ TestDriver.prototype.init = function(config) {
     .stream('foobar', this.streamFooBar, {binary: true})
     .stream('fooobject', this.streamObject)
     .map('test-number', function(x, cb) { cb(); }, [{ name: 'value', type: 'number'}])
-    .map('test-text', function(x, cb) { cb(); }, [{ name: 'value', type: 'text'}])
+    .map('test-text', function(x, cb) { this.message = x; cb(); }, [{ name: 'value', type: 'text'}])
     .map('test-none', function(x, cb) { cb(); }, [{ name: 'value'}])
     .map('test-date', function(x, cb) { cb(); }, [{ name: 'value', type: 'date'}])
 };
