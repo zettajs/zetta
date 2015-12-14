@@ -1096,7 +1096,7 @@ describe('Zetta Api', function() {
       })
     })
 
-    it.only('device action should support extended characters throw a proxied connection', function(done) {
+    it('device action should support extended characters throw a proxied connection', function(done) {
 
       var device = cluster.servers['detroit'].runtime._jsDevices[Object.keys(cluster.servers['detroit'].runtime._jsDevices)[0]];
 
