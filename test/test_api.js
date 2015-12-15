@@ -809,6 +809,16 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('device action should support extended characters', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .send({ action: 'test-text', value: "🙌💸🙌" })
+        .expect(getBody(function(res, body) {
+          assert.equal(body.properties.message, "🙌💸🙌");
+        }))
+        .end(done);
+    });
 
     var createTransitionArgTest = function(action, testType, input) {
       it('api should decode transition args to ' + testType + ' for ' + action, function(done) {
@@ -1085,6 +1095,21 @@ describe('Zetta Api', function() {
         done();
       })
     })
+
+    it('device action should support extended characters throw a proxied connection', function(done) {
+
+      var device = cluster.servers['detroit'].runtime._jsDevices[Object.keys(cluster.servers['detroit'].runtime._jsDevices)[0]];
+
+      request(getHttpServer(cluster.servers['cloud']))
+        .post('/servers/detroit/devices/' + device.id)
+        .type('form')
+        .send({ action: 'test-text', value: "🙌💸🙌" })
+        .expect(getBody(function(res, body) {
+          assert.equal(body.properties.message, "🙌💸🙌");
+        }))
+        .end(done);
+    });
+
 
   })
 
