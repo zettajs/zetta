@@ -36,7 +36,7 @@ npm install zetta
 
 * The [Zetta Doc Wiki](https://github.com/zettajs/zetta/wiki) is where you'll find all of the documentation for Zetta, including overviews, tutorials, and reference content. 
 
-* You can also visit the Zetta site at [http://zettajs.github.io/](http://zettajs.github.io/) projects recipes, event information, community links, and more. 
+* You can also visit the Zetta site at [http://zettajs.github.io/](http://zettajs.github.io/) project recipes, event information, community links, and more. 
 
 # Community
 
