@@ -51,8 +51,8 @@ describe('Event Websocket', function() {
       }
       app = zetta({registry: registry, peerRegistry: peerRegistry});
       app.silent();
-      app.id = 'BC2832FD-9437-4473-A4A8-AC1D56B12C61';
-      app.use(GoodScout)
+      app.name('BC2832FD-9437-4473-A4A8-AC1D56B12C61');
+      app.use(GoodScout);
       app.listen(0, function(err){
         port = app.httpServer.server.address().port;
         deviceUrl = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
@@ -70,7 +70,7 @@ describe('Event Websocket', function() {
 
 
   describe('Basic Connection', function() {
-
+    this.timeout(6000);
     it('http resource should exist with statusCode 200', function(done) {
       http.get('http://'+deviceUrlHttp, function(res) {
         assert.equal(res.statusCode, 200);
@@ -80,30 +80,44 @@ describe('Event Websocket', function() {
 
     it('websocket should connect', function(done) {
       var url = 'ws://' + deviceUrl + '/bar';
-      var error = 0;
-      var open = false;
+      var socket = new WebSocket(url);
+
+      socket.on('open', function(err) {
+        socket.close();
+        done();
+      });
+      socket.on('error', done);
+    });
+
+    it('will return a 404 on non ws urls', function(done) {
+      var url = 'ws://localhost:' + port + '/not-a-endpoint';
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
+        done(new Error('Should not be open.'));
       });
       socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-        socket.close();
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
+        assert.equal(err.message, 'unexpected server response (404)');
         done();
-      }, 20);
+      });
     });
+
+    it('will return a 404 on non ws urls for /events123123', function(done) {
+      var url = 'ws://localhost:' + port + '/events123123';
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        done(new Error('Should not be open.'));
+      });
+      socket.on('error', function(err) {
+        assert.equal(err.message, 'unexpected server response (404)');
+        done();
+      });
+    });
+
 
   });
 
   describe('Embedding a websocket server', function() {
+    this.timeout(6000);
     var app = null;
     var port = null;
     var wss = null;
@@ -165,6 +179,18 @@ describe('Event Websocket', function() {
       });
     });
 
+    it('will return a 404 on non ws urls', function(done) {
+      var url = 'ws://localhost:' + port + '/not-a-endpoint';
+      var socket = new WebSocket(url);
+      socket.on('open', function(err) {
+        done(new Error('Should not be open.'));
+      });
+      socket.on('error', function(err) {
+        assert.equal(err.message, 'unexpected server response (404)');
+        done();
+      });
+    });
+
     afterEach(function(done) {
       app.httpServer.server.close();
       done();  
@@ -188,22 +214,13 @@ describe('Event Websocket', function() {
       openAndClose(function(){
         var s2 = new WebSocket(url);
         s2.on('open', function(err) {
-          var count = 0;
           s2.on('message', function(buf, flags) {
-            count++;
+            done();
           });
 
           setTimeout(function(){
             device.incrementStreamValue();
           }, 20)
-
-          setTimeout(function() {
-            if (count === 1) {
-              done();
-            } else {
-              throw new Error('Should have only recieved one message. ' + count);
-            }
-          }, 100);
         });
       });
 
@@ -213,26 +230,10 @@ describe('Event Websocket', function() {
 
     it('websocket should connect and recv data in json form', function(done) {
       var url = 'ws://' + deviceUrl + '/bar';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
+
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-
         var recv = 0;
-        var timer = null;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
@@ -240,7 +241,6 @@ describe('Event Websocket', function() {
           assert(msg.topic);
           assert.equal(msg.data, recv);
           if (recv === 3) {
-            clearTimeout(timer);
             socket.close();
             done();
           }
@@ -249,36 +249,14 @@ describe('Event Websocket', function() {
         device.incrementStreamValue();
         device.incrementStreamValue();
         device.incrementStreamValue();
-
-        timer = setTimeout(function() {
-          assert.equal(recv, 3, 'should have received 3 messages');
-          socket.close();
-          done();
-        }, 100);
-
-      }, 20);
+      });
+      socket.on('error', done);
     });
 
     it('websocket should connect and recv device log events from property API updates', function(done) {
       var url = 'ws://' + deviceUrl + '/logs';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
-        open = true;
-        
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-
         deviceUrlHttp = 'http://' + deviceUrlHttp; 
         var parsed = urlParse(deviceUrlHttp); 
         var reqOpts = {
@@ -295,7 +273,6 @@ describe('Event Websocket', function() {
         req.write(JSON.stringify({ fu: 'bar' }));
         req.end();
         var recv = 0;
-        var timer = null;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
@@ -306,38 +283,24 @@ describe('Event Websocket', function() {
           assert.equal(msg.properties.foo, 0);
 
           if (recv === 1) {
-            clearTimeout(timer);
             socket.close();
             done();
           }
         });
-      }, 20);
+      });
+      socket.on('error', done);
     });
 
     it('websocket should connect and recv device log events', function(done) {
       var url = 'ws://' + deviceUrl + '/logs';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
+
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-
         var recv = 0;
-        var timer = null;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
           recv++;
+
           assert(msg.timestamp);
           assert(msg.topic);
           assert(msg.actions.filter(function(action) {
@@ -347,42 +310,50 @@ describe('Event Websocket', function() {
           assert.equal(msg.actions[0].href.replace('http://',''), deviceUrlHttp)
 
           if (recv === 1) {
-            clearTimeout(timer);
             socket.close();
             done();
           }
         });
 
         device.call('change');
-
-        timer = setTimeout(function() {
-          assert.equal(recv, 1, 'should have received 1 message');
-          socket.close();
-          done();
-        }, 100);
-      }, 20);
+      });
     });
 
     it('websocket should recv connect and disconnect message for /peer-management', function(done) {
       var url = 'ws://localhost:' + port + '/peer-management';
       var socket = new WebSocket(url);
+      var peer = null;
       
       socket.on('open', function(err) {
         socket.once('message', function(buf, flags) {
-          var msg = JSON.parse(buf);          
-          assert.equal(msg.topic, 'connect');
+          var msg = JSON.parse(buf);
+          assert.equal(msg.topic, '_peer/connect');
+          assert(msg.timestamp);
+          assert.equal(msg.data.id, 'some-peer');
+          assert(msg.data.connectionId);
+          assert.equal(Object.keys(msg).length, 3);
+
           socket.once('message', function(buf, flags) {
             var msg = JSON.parse(buf);
-            assert.equal(msg.topic, 'disconnect');
+            assert.equal(msg.topic, '_peer/disconnect');
+            assert(msg.timestamp);
+            assert.equal(msg.data.id, 'some-peer');
+            assert(msg.data.connectionId);
+            assert.equal(Object.keys(msg).length, 3);
             done();
           });
-          app.pubsub.publish('_peer/disconnect', { topic: 'disconnect'});
+
+          // disconnect
+          peer._peerClients[0].close();
         });
-        app.pubsub.publish('_peer/connect', { topic: 'connect'});
+        peer = zetta({registry: new MockRegistry(), peerRegistry: new PeerRegistry() });
+        peer.name('some-peer');
+        peer.silent();
+        peer.link('http://localhost:' + port);
+        peer.listen(0);
       });
       socket.on('error', done);
     });
-
   });
 
 
@@ -394,33 +365,15 @@ describe('Event Websocket', function() {
 
     it('websocket should connect and recv data in binary form', function(done) {
       var url = 'ws://' + deviceUrl + '/foobar';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-
         var recv = 0;
-        var timer = null;
         socket.on('message', function(buf, flags) {
           assert(Buffer.isBuffer(buf));
           assert(flags.binary);
           recv++;
           assert.equal(buf[0], recv);
           if (recv === 3) {
-            clearTimeout(timer);
             socket.close();
             done();
           }
@@ -429,14 +382,8 @@ describe('Event Websocket', function() {
         device.incrementFooBar();
         device.incrementFooBar();
         device.incrementFooBar();
-
-        timer = setTimeout(function() {
-          assert.equal(recv, 3, 'should have received 3 messages');
-          socket.close();
-          done();
-        }, 100);
-
-      }, 20);
+      });
+      socket.on('error', done);
     });
 
   });

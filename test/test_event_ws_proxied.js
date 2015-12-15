@@ -44,27 +44,9 @@ describe('Event Websocket Proxied Through Peer', function() {
 
     it('websocket should connect', function(done) {
       var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
-      socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-        socket.close();
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-        done();
-      }, 20);
+      socket.on('open', done);
     });
-
   });
 
 
@@ -73,24 +55,8 @@ describe('Event Websocket Proxied Through Peer', function() {
 
     it('websocket should connect and recv data in json form', function(done) {
       var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-
-        var timer = null;
         var recv = 0;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
@@ -99,25 +65,17 @@ describe('Event Websocket Proxied Through Peer', function() {
           assert(msg.topic);
           assert.equal(msg.data, recv);
           if (recv === 3) {
-            clearTimeout(timer);
-            socket.close();
             done();
           }
         });
 
-        device.incrementStreamValue();
-        device.incrementStreamValue();
-        device.incrementStreamValue();
-
-        timer = setTimeout(function() {
-          assert.equal(recv, 3, 'should have received 3 messages');
-          socket.close();
-          done();
+        setTimeout(function() {
+          device.incrementStreamValue();
+          device.incrementStreamValue();
+          device.incrementStreamValue();
         }, 100);
-
-      }, 20);
+      });
     });
-
 
     it('websocket should recv only one set of messages when reconnecting', function(done) {
       var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
@@ -145,7 +103,7 @@ describe('Event Websocket Proxied Through Peer', function() {
             setTimeout(function() {
               assert.equal(count, 1, 'Should have only received 1 message. Received: ' + count);
               done();
-            }, 100);
+            }, 500);
           }, 100);
         });
       });
@@ -156,29 +114,10 @@ describe('Event Websocket Proxied Through Peer', function() {
 
     it('websocket should connect and recv device log events', function(done) {
       var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/logs';
-
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-        
-        var recv = 0;
-        var timer = null;
         socket.on('message', function(buf, flags) {
           var msg = JSON.parse(buf);
-          recv++;
           assert(msg.timestamp);
           assert(msg.topic);
           assert(msg.actions.filter(function(action) {
@@ -186,25 +125,14 @@ describe('Event Websocket Proxied Through Peer', function() {
           }).length > 0);
           
           assert.equal(msg.actions[0].href.replace('http://',''), base + '/devices/' + device.id)
-          
-          if (recv === 1) {
-            clearTimeout(timer);
-            socket.close();
-            done();
-          }
+          done();
         });
         
-        device.call('change');
-        
-        timer = setTimeout(function() {
-          assert.equal(recv, 1, 'should have received 1 message');
-          socket.close();
-          done();
+        setTimeout(function() {
+          device.call('change');
         }, 100);
-      }, 20);    
+      });        
     });
-
-
 
   });
 
@@ -217,24 +145,8 @@ describe('Event Websocket Proxied Through Peer', function() {
 
     it('websocket should connect and recv data in binary form', function(done) {
       var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/foobar';
-      var error = 0;
-      var open = false;
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
-        open = true;
-      });
-      socket.on('close', function(err) {
-        open = false;
-      });
-      socket.on('error', function(err) {
-        error++;
-      });
-
-      setTimeout(function() {
-
-        assert.equal(error, 0);
-        assert.equal(open, true, 'ws should be opened');
-        var timer = null;
         var recv = 0;
         socket.on('message', function(buf, flags) {
           assert(Buffer.isBuffer(buf));
@@ -242,23 +154,16 @@ describe('Event Websocket Proxied Through Peer', function() {
           recv++;
           assert.equal(buf[0], recv);
           if (recv === 3) {
-            clearTimeout(timer);
-            socket.close();
             done();
           }
         });
 
-        device.incrementFooBar();
-        device.incrementFooBar();
-        device.incrementFooBar();
-
-        timer = setTimeout(function() {
-          assert.equal(recv, 3, 'should have received 3 messages');
-          socket.close();
-          done();
+        setTimeout(function() {
+          device.incrementFooBar();
+          device.incrementFooBar();
+          device.incrementFooBar();
         }, 100);
-
-      }, 20);
+      });
     });
 
   });

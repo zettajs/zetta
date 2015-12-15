@@ -74,36 +74,64 @@ describe('Peer Connection API', function() {
         ._run(done);
     });
     
-    it('exposes actions on the embedded entity', function(done) {
-      peerRegistry.save({id:'foo', connectionId:'12345'}, function() {
-        var url = '/peer-management';
-        request(getHttpServer(app))
-          .get(url)
-          .expect(getBody(function(res, body) {
-            assert.equal(body.entities.length, 1);
-            assert.equal(body.entities[0].actions.length, 2);
-            body.entities[0].actions.forEach(function(action) {
-              assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
-            })
-           }))
-           .end(done);
-       });
-    });  
+    checkPeersActionsForState('initiator', 'connected', 2);
+    checkPeersActionsForState('initiator', 'disconnected', 2);
+    checkPeersActionsForState('acceptor', 'connected', 2);
+    checkPeersActionsForState('acceptor', 'disconnected', 0);
+    
+    function checkPeersActionsForState(direction, status, numberOfActionsExpected) {
+      it('exposes ' + numberOfActionsExpected + ' actions on the embedded entity when ' + status + ' and ' + direction, function(done) {
 
-    it('exposes actions on the full entity', function(done) {
-      peerRegistry.save({id:'foo', connectionId:'12345'}, function() {
-        var url = '/peer-management/foo';
-        request(getHttpServer(app))
-          .get(url)
-          .expect(getBody(function(res, body) {
-            assert.equal(body.actions.length, 2);
-            body.actions.forEach(function(action) {
-              assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
-            });
-           }))
-           .end(done);
-       });
-    });
+        var peer = {
+          id:'foo',
+          connectionId:'12345',
+          direction: direction,
+          status: status
+        };
+        
+        peerRegistry.save(peer, function() {
+          var url = '/peer-management';
+          request(getHttpServer(app))
+            .get(url)
+            .expect(getBody(function(res, body) {
+              assert.equal(body.entities.length, 1);
+              assert.equal(body.entities[0].actions.length, numberOfActionsExpected);
+              body.entities[0].actions.forEach(function(action) {
+                assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
+              })
+            }))
+            .end(done);
+        });
+      });
+    }
+
+    checkPeersActionsOnFullEntity('initiator', 'connected', 2);
+    checkPeersActionsOnFullEntity('initiator', 'disconnected', 2);
+    checkPeersActionsOnFullEntity('acceptor', 'connected', 2);
+    checkPeersActionsOnFullEntity('acceptor', 'disconnected', 0);
+    
+    function checkPeersActionsOnFullEntity(direction, status, numberOfActionsExpected) {
+      it('when ' + direction + ' exposes ' + numberOfActionsExpected + ' actions on the full entity when ' + status, function(done) {
+        var peer = {
+          id:'foo',
+          connectionId:'12345',
+          direction: direction,
+          status: status
+        };
+        peerRegistry.save(peer, function() {
+          var url = '/peer-management/foo';
+          request(getHttpServer(app))
+            .get(url)
+            .expect(getBody(function(res, body) {
+              assert.equal(body.actions.length, numberOfActionsExpected);
+              body.actions.forEach(function(action) {
+                assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
+              });
+            }))
+            .end(done);
+        });
+      }); 
+    }
   }); 
 
   describe('Root API for peers', function() {
@@ -359,13 +387,23 @@ describe('Peer Connection API', function() {
       localTwo.silent();
 
       var url = 'http://localhost:';
-
+      var serverUrl = null;
       cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
         assert.equal(connectionId, data.peer.connectionId); 
       }); 
 
       localTwo.pubsub.subscribe('_peer/connect', function(topic, data) {
-        done();
+        // make sure there is only one peer in /peer-management list
+        // PUT Should not add a new peer
+        request(getHttpServer(localOne))
+          .get('/peer-management')
+          .expect(200)
+          .expect(getBody(function(res, body) {
+            assert.equal(body.entities.length, 1);
+            // url should be updated to new peer
+            assert.equal(body.entities[0].properties.url, serverUrl);
+          }))
+          .end(done);
       });
 
       localTwo.listen(0, function(err) {
@@ -374,7 +412,7 @@ describe('Peer Connection API', function() {
         }  
 
         localTwoPort = localTwo.httpServer.server.address().port;
-        var serverUrl = url + localTwoPort;
+        serverUrl = url + localTwoPort;
         putRequest(localPort, connectionId, serverUrl);
       });  
     });  

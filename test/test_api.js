@@ -219,6 +219,48 @@ describe('Zetta Api', function() {
       }).end();
     });
 
+    it('should not have an events link for SPDY requests', function(done) {
+      var a = getHttpServer(app);
+
+      if (!a.address()) a.listen(0);
+
+      var agent = spdy.createAgent({
+        host: '127.0.0.1',
+        port: a.address().port,
+        spdy: {
+          plain: true,
+          ssl: false
+        }
+      });
+
+      var request = http.get({
+        host: '127.0.0.1',
+        port: a.address().port,
+        path: '/',
+        agent: agent
+      }, function(response) {
+
+        var buffers = [];
+        response.on('readable', function() {
+          var data;
+          while ((data = response.read()) !== null) {
+            buffers.push(data);
+          }
+        });
+
+        response.on('end', function() {
+          var body = JSON.parse(Buffer.concat(buffers));
+          var links = body.links.filter(function(l) {
+            return l.rel.indexOf('http://rels.zettajs.io/events') > -1;
+          });
+          assert.equal(links.length, 0);
+          agent.close();
+        });
+
+        response.on('end', done);
+      }).end();
+    });  
+
     it('should have valid entities', function(done) {
       request(getHttpServer(app))
         .get(url)
@@ -338,7 +380,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get('/')
         .expect(getBody(function(res, body) {
-          assert.equal(body.links.length, 3);
+          assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'self');
         }))
         .end(done)
@@ -349,6 +391,15 @@ describe('Zetta Api', function() {
         .get('/')
         .expect(getBody(function(res, body) {
           hasLinkRel(body.links, rels.server);
+        }))
+        .end(done)
+    });
+
+    it('should contain link for event stream', function(done) {
+      request(getHttpServer(app))
+        .get('/')
+        .expect(getBody(function(res, body) {
+          hasLinkRel(body.links, rels.events);
         }))
         .end(done)
     });
@@ -568,7 +619,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 3);
+          assert.equal(body.actions.length, 7);
           var action = body.actions[0];
           assert.equal(action.name, 'change');
           assert.equal(action.method, 'POST');
@@ -582,7 +633,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 3);
+          assert.equal(body.actions.length, 7);
           body.actions.forEach(function(action) {
             assert(action.class.indexOf('transition') >= 0);
           })
@@ -623,6 +674,44 @@ describe('Zetta Api', function() {
         .get(url)
         .expect(getBody(function(res, body) {
           hasLinkRel(body.links, 'monitor');
+        }))
+        .end(done);
+    });
+
+    it('disabling a stream should remove it from the API.', function(done) {
+      Object.keys(app.runtime._jsDevices).forEach(function(name) {
+        var device = app.runtime._jsDevices[name];
+        device.disableStream('foo');  
+      });
+
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          var foo = body.links.filter(function(link) {
+            return link.title === 'foo';
+          });
+
+          assert.equal(foo.length, 0);
+        }))
+        .end(done);
+    });
+
+    it('enabling a stream should show it in the API.', function(done) {
+      var device = null;
+      Object.keys(app.runtime._jsDevices).forEach(function(name) {
+        device = app.runtime._jsDevices[name];
+        device.disableStream('foo');  
+        device.enableStream('foo');
+      });
+
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          var foo = body.links.filter(function(link) {
+            return link.title === 'foo';
+          });
+
+          assert.equal(foo.length, 1);
         }))
         .end(done);
     });
@@ -720,6 +809,57 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+
+    var createTransitionArgTest = function(action, testType, input) {
+      it('api should decode transition args to ' + testType + ' for ' + action, function(done) {
+        var device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
+        
+        var orig = device._transitions[action].handler;
+        device._transitions[action].handler = function(x) {
+          assert.equal(typeof x, testType);
+          orig.apply(device, arguments);
+        };
+        
+        request(getHttpServer(app))
+          .post(url)
+          .type('form')
+          .expect(200)
+          .send({ action: action, value: input })
+          .end(done);
+      });
+    };
+    
+    createTransitionArgTest('test-number', 'number', 123)
+    createTransitionArgTest('test-text', 'string', 'Hello');
+    createTransitionArgTest('test-none', 'string', 'Anything');
+    createTransitionArgTest('test-date', 'object', '2015-01-02');
+
+    it('api should respond with 400 when argument is not expected number', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .expect(400)
+        .expect(getBody(function(res, body) {
+          assert(body.class.indexOf('input-error') > -1);
+          assert.equal(body.properties.errors.length, 1);
+        }))
+        .send({ action: 'test-number', value: 'some string' })
+        .end(done);
+    })
+
+    it('api should respond with 400 when argument is not expected Date', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .expect(400)
+        .expect(getBody(function(res, body) {
+          assert(body.class.indexOf('input-error') > -1);
+          assert.equal(body.properties.errors.length, 1);
+        }))
+        .send({ action: 'test-date', value: 'some string' })
+        .end(done);
+    })
+
     it('device action should return 400 when not available.', function(done) {
       request(getHttpServer(app))
         .post(url)
@@ -753,6 +893,77 @@ describe('Zetta Api', function() {
           assert.equal(body.properties.value, 3);
         }))
         .end(done);
+    });
+
+    it('should support device deletes using DELETE', function(done) {
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 204);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 0);
+        }))
+        .end(done);
+
+    });
+
+    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE', function(done) {
+      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      var device = app.runtime._jsDevices[deviceKey];
+
+      var remoteDestroy = function(cb) {
+        cb(null, false);  
+      }
+
+      device._remoteDestroy = remoteDestroy.bind(device);
+
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 500);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 1);
+        }))
+        .end(done);
+
+    });
+
+    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE if callback has an error', function(done) {
+      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      var device = app.runtime._jsDevices[deviceKey];
+
+      var remoteDestroy = function(cb) {
+        cb(new Error('Oof! Ouch!'));  
+      }
+
+      device._remoteDestroy = remoteDestroy.bind(device);
+
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 500);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 1);
+        }))
+        .end(done);
+
+    });
+
+    it('remoteDestroy hook should allow the device to be destroyed when callback is called with true', function(done) {
+      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      var device = app.runtime._jsDevices[deviceKey];
+
+      var remoteDestroy = function(cb) {
+        cb(null, true);  
+      }
+
+      device._remoteDestroy = remoteDestroy.bind(device);
+
+      request(getHttpServer(app))
+        .del(url)
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 204);
+          assert.equal(Object.keys(app.runtime._jsDevices).length, 0);
+        }))
+        .end(done);
+
     });
 
     it('should not overwrite monitor properties using PUT', function(done) {
@@ -823,13 +1034,16 @@ describe('Zetta Api', function() {
 
   describe('Proxied requests', function() {
     var base = null;
+    var cloudUrl = null;
     var cluster = null;
 
     beforeEach(function(done) {
       cluster = zettacluster({ zetta: zetta })
         .server('cloud')
         .server('detroit', [Scout], ['cloud'])
+        .server('sanjose', [Scout], ['cloud'])
         .on('ready', function(){
+          cloudUrl = 'localhost:' + cluster.servers['cloud']._testPort;
           base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer('detroit');
           setTimeout(done, 300);
         })
@@ -854,6 +1068,21 @@ describe('Zetta Api', function() {
         socket.on('connect', function() {
           cluster.servers['cloud'].httpServer.peers['detroit'].close();
         });
+      })
+    })
+
+    it('zetta should return 404 on non-existent peer', function(done) {
+      http.get('http://' + cloudUrl + '/servers/some-peer', function(res) {
+        assert.equal(res.statusCode, 404);
+        done();
+      })
+    })
+
+    it('zetta should return 404 on disconnected peer', function(done) {
+      cluster.servers['detroit']._peerClients[0].close()
+      http.get('http://' + cloudUrl + '/servers/detroit', function(res) {
+        assert.equal(res.statusCode, 404);
+        done();
       })
     })
 
