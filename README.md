@@ -3,50 +3,23 @@
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/zettajs/zetta?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/zettajs/zetta.svg?branch=master)](https://travis-ci.org/zettajs/zetta) 
 
-# What is it?
+# What is Zetta?
 
-Zetta is an open source Node.js based platform for the internet of things. It's a complete toolkit for generating HTTP APIs for devices. Zetta is protocol agnostic meaning that it can support almost all device protocols, and mediate them to HTTP. Zetta was built from the ground up to solve specific problems around generating consistent interfaces for devices, and allowing to stream real time state of devices.
+Zetta is an open source, API-first, [Node.js](https://nodejs.org)-based platform for the Internet of Things. To learn more about Zetta now, jump to [Introduction to Zetta](https://github.com/zettajs/zetta/wiki/Overview) on the [Zetta doc wiki](https://github.com/zettajs/zetta/wiki). 
+
+# Key concepts
+
+On the [Zetta Doc wiki](https://github.com/zettajs/zetta/wiki), you'll find a [conceptual overview](https://github.com/zettajs/zetta/wiki/Overview), getting started [tutorials](https://github.com/zettajs/zetta/wiki/Mock-Device), the API reference, and other topics to help you build Zetta projects. 
 
 # Getting started with Zetta
 
-This is the quintessential "Hello World!" program for Zetta. This program will generate your first Zetta UI for a particular server.
+The Zetta [Quick Start](https://github.com/zettajs/zetta/wiki/Quick-Start) is the quinessential "Hello World" project for Zetta. Learn how to install Zetta, create a new Zetta project, fire up a Zetta server, and call a Zetta API. It just takes a few minutes!
 
-```javascript
-var zetta = require('zetta');
+# Installing Zetta
 
-zetta()
-  .name('hello.world')
-  .listen(1337);
-```
+You can install Zetta by cloning it from GitHub or using NPM:
 
-# Key Concepts
-
-**JavaScript**
-
-Zetta has developers express devices as state machines using an elegant and expressive syntax. Zetta is a completely nodejs based framework that is cross platform, and easily deployable to multiple cloud services.
-
-**APIs**
-
-Zetta then takes that JavaScript, and generates a consistent Hypermedia HTTP API for those devices. Our HTTP APIs are expressed using the [Siren specification](https://github.com/kevinswiber/siren). We also expose websocket endpoints to stream real time events out of the Zetta system. This paradigm of merging Hypermedia with websocket streaming is also known as Reactive Hypermedia.
-
-**Queries**
-
-Zetta has a robust query system that allows you to not only search for devices, but also subscribe to websockets to be notified when new devices come online that fulfill the query. The queries have a SQL-like syntax that makes it easy to wrangle devices in the API, and Zetta itself.
-
-**Apps**
-
-Zetta also allows you to write stateless applications that live in the server itself. You can query for devices, and wire up interactions between them in these applications. These apps will run consistently whether or not your hub has internet connectivity.
-
-**Peering** 
-
-Zetta can create persistent connections between servers to expose APIs in new and unqiue ways. You can peer a Zetta server in your home with a server in the cloud, and allow for access to devices on the open internet.
-
-
-# Installation
-
-Retrieving the Zetta package is fairly straight forward.
-
-**git**
+**Clone from GitHub**
 ```bash
 git clone git@github.com:zettajs/zetta.git && cd zetta
 
@@ -59,18 +32,23 @@ npm install zetta
 ```
 
 
+# Docs
+
+* The [Zetta Doc Wiki](https://github.com/zettajs/zetta/wiki) is where you'll find all of the documentation for Zetta, including overviews, tutorials, and reference content. 
+
+* You can also visit the Zetta site at [http://zettajs.github.io/](http://zettajs.github.io/) projects recipes, event information, community links, and more. 
+
 # Community
 
-The Zetta community is steadily growing. We have a few channels that you can talk to the Zetta team on.
+The supportive Zetta community is steadily growing. We have channels where you can interact with the Zetta team directly as well as with other Zetta enthusiasts.
 
 * [Google group](https://groups.google.com/forum/#!forum/zetta-discuss)
 * [Gitter chat](https://gitter.im/zettajs/zetta) 
 
-You can also file an issue on our github issues page.
+# Issues
 
-# Docs
+You can file issues on our GitHub [issues page](https://github.com/zettajs/zetta/issues).
 
-Visit our site at [http://zettajs.github.io/](http://zettajs.github.io/) for documentation, and recipes for building systems with Zetta. 
 
 ## License
 
