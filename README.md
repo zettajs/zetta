@@ -13,7 +13,7 @@ On the [Zetta Doc wiki](https://github.com/zettajs/zetta/wiki), you'll find a [c
 
 # Getting started with Zetta
 
-The Zetta [Quick Start](https://github.com/zettajs/zetta/wiki/Quick-Start) is the quinessential "Hello World" project for Zetta. Learn how to install Zetta, create a new Zetta project, fire up a Zetta server, and call a Zetta API. It just takes a few minutes!
+The Zetta [Quick Start](https://github.com/zettajs/zetta/wiki/Quick-Start) is the quintessential "Hello World" project for Zetta. Learn how to install Zetta, create a new Zetta project, fire up a Zetta server, and call a Zetta API. It just takes a few minutes!
 
 # Installing Zetta
 
