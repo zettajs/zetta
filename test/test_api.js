@@ -337,9 +337,6 @@ describe('Zetta Api', function() {
         }))
         .end(done);
     });
-
-
-
   });
 
   describe('/', function() {
@@ -1112,5 +1109,50 @@ describe('Zetta Api', function() {
 
 
   })
+
+  describe('Server name issues', function() {
+    var cluster;
+    var hubName = 'hub 1';
+    var getServer = function(peerName) {
+      return cluster.servers[peerName].httpServer.server;
+    };
+    beforeEach(function(done) {
+      cluster = zettacluster({ zetta: zetta })
+        .server('cloud')
+        .server(hubName, [Scout], ['cloud'])
+        .on('ready', done)
+        .run(function(err) {
+          if (err) {
+            done(err);
+          }
+        });
+    });
+
+    it('server name with space has correct path to root of server', function(done) {
+      request(getServer('cloud'))
+        .get('/')
+        .expect(getBody(function(res, body) {
+          var link = body.links.filter(function(link) { return link.title === hubName})[0];
+          var parsed = require('url').parse(link.href);
+          assert.equal(decodeURI(parsed.path), '/servers/' + hubName);
+        }))
+        .end(done);
+    })
+
+    it('server name with space has correct path to device', function(done) {
+      request(getServer('cloud'))
+        .get('/servers/' + hubName)
+        .expect(getBody(function(res, body) {
+          body.entities.forEach(function(entity) {
+            entity.links.forEach(function(link) {
+              var parsed = require('url').parse(link.href);
+              assert.equal(decodeURI(parsed.path).indexOf('/servers/' + hubName), 0);
+            });
+          });
+        }))
+        .end(done);
+    })
+  })
+
 
 });
