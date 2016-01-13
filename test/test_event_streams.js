@@ -1412,7 +1412,7 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('unsubscribing from an invalid subscriptionId should result in a 400 error', function(idx, done){
+      itBoth('unsubscribing from an invalid subscriptionId should result in a 405 error', function(idx, done){
         var endpoint = urls[idx];
         var ws = new WebSocket('ws://' + endpoint + baseUrl);
         var subscriptionId = null;
