@@ -266,6 +266,40 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('sending ping request will return a pong response without data field', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'ping'};
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          assert.equal(json.type, 'pong');
+          assert(json.timestamp);
+          assert.equal(json.data, undefined);
+          done();
+        });
+      });
+      ws.on('error', done);
+    });
+
+    itBoth('sending ping request will return a pong response with data field', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      ws.on('open', function() {
+        var msg = { type: 'ping', data: 'Application data'};
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          assert.equal(json.type, 'pong');
+          assert(json.timestamp);
+          assert.equal(json.data, 'Application data');
+          done();
+        });
+      });
+      ws.on('error', done);
+    });
+
     itBoth('unsubscribing to a topic receives a unsubscription-ack', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
