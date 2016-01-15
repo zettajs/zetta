@@ -1,5 +1,7 @@
 var assert = require('assert');
 var util = require('util');
+var fs = require('fs');
+var https = require('https');
 var zetta = require('../zetta');
 var MemRegistry = require('./fixture/mem_registry');
 var MemPeerRegistry = require('./fixture/mem_peer_registry');
@@ -57,6 +59,31 @@ describe('Zetta', function() {
         })
         .listen(0);
     });
+  });
+
+  it('support tls options for https server', function(done) {
+    var options = {
+      key: fs.readFileSync(__dirname + '/fixture/keys/key.pem'),
+      cert: fs.readFileSync(__dirname + '/fixture/keys/cert.pem')
+    };
+    
+    var z = zetta({ registry: reg, peerRegistry: peerRegistry, tls: options })
+      .silent()
+      .listen(0, function(err) {
+        if (err) return done(err);
+
+        var port = z.httpServer.server.address().port;
+        var req = https.get({
+          host: 'localhost',
+          port: port,
+          path: '/',
+          rejectUnauthorized: false
+        }, function(res) {
+          assert.equal(res.statusCode, 200);
+          done();
+        });
+        req.on('error', done);
+      });
   });
 
   it('has the logger() function to pass in custom logging.', function(done) {

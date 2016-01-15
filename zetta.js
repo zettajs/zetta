@@ -35,7 +35,13 @@ var Zetta = module.exports = function(opts) {
   this.log.init();
   this._silent = false;
 
-  this.httpServer = new HttpServer(this);
+  var httpOptions = {};
+  if (typeof opts.tls === 'object') {
+    Object.keys(opts.tls).forEach(function(k) {
+      httpOptions[k] = opts.tls[k];
+    });
+  }
+  this.httpServer = new HttpServer(this, httpOptions);
 
   var runtimeOptions = {
     pubsub: this.pubsub,
