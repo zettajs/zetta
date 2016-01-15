@@ -1412,13 +1412,32 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('unsubscribing from an invalid subscriptionId should result in a 400 error', function(idx, done){
+      itBoth('unsubscribing from an invalid subscriptionId should result in a 405 error', function(idx, done){
         var endpoint = urls[idx];
         var ws = new WebSocket('ws://' + endpoint + baseUrl);
         var subscriptionId = null;
         var count = 0;
         ws.on('open', function() {
           var msg = { type: 'unsubscribe', subscriptionId: 123 };
+          ws.send(JSON.stringify(msg));
+          ws.on('message', function(buffer) {
+            var json = JSON.parse(buffer);
+            assert(json.timestamp);
+            assert.equal(json.code, 405);
+            assert(json.message);
+            done();
+          });
+        });
+        ws.on('error', done);  
+      });
+
+      itBoth('invalid type should result in a 405 error', function(idx, done){
+        var endpoint = urls[idx];
+        var ws = new WebSocket('ws://' + endpoint + baseUrl);
+        var subscriptionId = null;
+        var count = 0;
+        ws.on('open', function() {
+          var msg = { type: 'not-a-type', topic: '**' };
           ws.send(JSON.stringify(msg));
           ws.on('message', function(buffer) {
             var json = JSON.parse(buffer);
