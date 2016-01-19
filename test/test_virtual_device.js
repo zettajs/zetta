@@ -342,7 +342,27 @@ describe('Virtual Device', function() {
       assert.ok(data);
       assert.equal(Object.keys(data)[0], 'action');
       assert.equal(data.action, 'turn-on');
-    }); 
+    });
+
+    it('exposes .available() method', function() {
+      assert.equal(typeof device.available, 'function');
+      assert.equal(device.available('turn-on'), true);
+      assert.equal(device.available('turn-off'), false);
+    });
+
+    it('exposes .properties() method', function() {
+      assert.equal(typeof device.properties, 'function');
+      var properties = device.properties();
+      assert.equal(properties.id, device.id);
+      assert.equal(properties.name, device.name);
+      assert.equal(properties.state, device.state);
+      assert.equal(properties.type, device.type);
+    });
+
+    it('exposes .transitionsAvailable() method', function() {
+      assert.equal(typeof device.transitionsAvailable, 'function');
+      assert.deepEqual(device.transitionsAvailable(), ['turn-on']);
+    });
   });
 
 });
