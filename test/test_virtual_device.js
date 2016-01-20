@@ -367,7 +367,13 @@ describe('Virtual Device', function() {
       assert.ok(data);
       assert.equal(Object.keys(data)[0], 'action');
       assert.equal(data.action, 'turn-on');
-    }); 
+    });
+
+    it('exposes .available() method', function() {
+      assert.equal(typeof device.available, 'function');
+      assert.equal(device.available('turn-on'), true);
+      assert.equal(device.available('turn-off'), false);
+    });
   });
 
 });
