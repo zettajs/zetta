@@ -91,6 +91,31 @@ describe('Virtual Device', function() {
       });
     });
 
+    it('_update should always be called with data.actions in proper format', function(done) {
+      var called = 0;
+      var orig = vdevice._update;
+      vdevice._update = function(data) {
+        called++;
+        assert(Array.isArray(data.actions));
+        data.actions.forEach(function(action) {
+          assert(action.class);
+          assert(action.name);
+          assert(action.method);
+          assert(action.href);
+          assert(action.fields);
+        });
+        orig.apply(vdevice, arguments);
+
+        // _update is called twice on transitions. Once for the return of the transition http POST and again
+        // for the log topic update.
+        if (called === 2) {
+          done();
+        }
+      };
+
+      vdevice.call('change');
+    });
+    
     it('call should work without arguments', function(done) {
       vdevice.call('change', function(err) {
         assert.equal(err, null);
