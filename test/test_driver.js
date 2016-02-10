@@ -219,6 +219,11 @@ describe('Driver', function() {
       machine.foo = 1;
       assert.equal(machine.foo, 1);
     });
+
+    it('should be able to pass disable option to monitor', function() {
+      assert.equal(machine._streams['disabledMonitor'].enabled, false);
+      assert.equal(machine._streams['enabledMonitor'].enabled, true);
+    });
   });
 
   describe('Streams', function(){
@@ -236,6 +241,11 @@ describe('Driver', function() {
       assert.ok(machine.streams.foo);
       wireUpPubSub('foo', done);
       machine.foo++;
+    });
+
+    it('should be able to pass disable option to stream', function() {
+      assert.equal(machine._streams['disabledStream'].enabled, false);
+      assert.equal(machine._streams['enabledStream'].enabled, true);
     });
 
     it('should have createReadSteam on device', function(){
