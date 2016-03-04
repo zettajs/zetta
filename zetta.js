@@ -203,7 +203,7 @@ Zetta.prototype.listen = function() {
     var cb = function(err) {
       if (err) {
         if (callback) {
-          callback(err);
+          return callback(err);
         } else {
           throw err;
         }
