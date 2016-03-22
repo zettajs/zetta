@@ -363,6 +363,22 @@ describe('Zetta Query Api', function() {
         }))
         .end(done);
     });
+
+
+    it('should return empty list if no devices are provisioned on server', function(done) {
+      var app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        .silent()
+        .name('local')
+        ._run();
+      
+      request(getHttpServer(app))
+        .get('/servers/local?ql=where%20type%20=%20"testdriver"')
+        .expect(getBody(function(res, body){
+          assert.equal(body.entities.length, 0);
+          assert.deepEqual(body.class, ['server', 'search-results']);
+        }))
+        .end(done);
+    });
   });
 
   describe('proxied queries on /servers/<id>', function() {
