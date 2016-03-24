@@ -18,8 +18,9 @@ TestDriver.prototype.init = function(config) {
     .state('ready')
     .type('testdriver')
     .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change', 'test', 'error', 'test-number', 'test-text', 'test-none', 'test-date'] })
+    .when('ready', { allow: ['_ignore-me', 'change', 'test', 'error', 'test-number', 'test-text', 'test-none', 'test-date'] })
     .when('changed', { allow: ['prepare', 'test', 'error'] })
+    .map('_ignore-me', this._ignoreMe)
     .map('change', this.change)
     .map('prepare', this.prepare)
     .map('test', this.test, [{ name: 'value', type: 'number'}])
@@ -40,6 +41,11 @@ TestDriver.prototype.init = function(config) {
 
 TestDriver.prototype.test = function(value, cb) {
   this.value = value;
+  cb();
+};
+
+TestDriver.prototype._ignoreMe = function(cb) {
+  this.state = 'changed';
   cb();
 };
 

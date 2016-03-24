@@ -119,8 +119,25 @@ describe('Driver', function() {
       });
     });
 
+    it('should change the state from ready to changed when calling hidden underscored _ignore-me.', function(done) {
+      machine.call('_ignore-me', function() {
+        assert.equal(machine.state, 'changed');
+        done();
+      });
+    });
+
     it('should be able to call transiton afterchange after change was called', function(done) {
       machine.call('change', function() {
+        assert.equal(machine.state, 'changed');
+        machine.call('prepare', function(err) {
+          assert.equal(machine.state, 'ready');
+          done();
+        });
+      });
+    });
+
+    it('should be able to call transiton afterchange after hidden underscored _ignore-me was called', function(done) {
+      machine.call('_ignore-me', function() {
         assert.equal(machine.state, 'changed');
         machine.call('prepare', function(err) {
           assert.equal(machine.state, 'ready');
@@ -191,6 +208,44 @@ describe('Driver', function() {
       });
     });
 
+    it('should not publish hidden underscored transitions to pubsub', function(done) {
+      var topic = machine.type + '/' + machine.id + '/logs';
+
+      var recv = 0;
+      pubsub.subscribe(topic, function(topic, msg) {
+        assert.ok(msg.timestamp);
+        assert.ok(msg.topic);
+        assert.ok(!msg.data);
+        assert.ok(msg.properties);
+        assert.ok(msg.input);
+        assert.ok(msg.transition);
+        recv++;
+      });
+      machine.call('_ignore-me');
+      setImmediate(function() {
+        assert.equal(recv, 0);
+        done();
+      });
+    });
+
+    it('should not publish hidden underscored transitions to logs', function(done) {
+      var recv = 0;
+      pubsub.subscribe('logs', function(topic, msg) {
+        assert.ok(msg.timestamp);
+        assert.ok(msg.topic);
+        assert.ok(!msg.data);
+        assert.ok(msg.properties);
+        assert.ok(msg.input);
+        assert.ok(msg.transition);
+        recv++;
+      });
+      machine.call('_ignore-me');
+      setImmediate(function() {
+        assert.equal(recv, 0);
+        done();
+      });
+    });
+
     it('transitionsAvailable should return proper transitions', function() {
       //.when('ready', { allow: ['change', 'test'] })
       //.when('changed', { allow: ['prepare', 'test'] })
@@ -206,6 +261,17 @@ describe('Driver', function() {
       assert(Object.keys(transitions).indexOf('test') > -1);
 
     });
+
+    it('transitionsAvailable should hide transitions that begin with an underscore', function() {
+      //.when('ready', { allow: ['_ignore-me', 'change', 'test'] })
+      //.when('changed', { allow: ['prepare', 'test'] })
+
+      machine.state = 'ready';
+      var transitions = machine.transitionsAvailable();
+      assert.equal(Object.keys(transitions).indexOf('_ignore-me'), -1);
+
+    });
+
   });
 
   describe('Monitors', function(){
