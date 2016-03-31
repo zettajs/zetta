@@ -1,5 +1,6 @@
 var assert = require('assert');
 var os = require('os');
+var util = require('util');
 var request = require('supertest');
 var zetta = require('../');
 var Query = require('calypso').Query;
@@ -10,6 +11,25 @@ var HttpDriver = require('./fixture/example_http_driver');
 var Registry = require('./fixture/mem_registry');
 var PeerRegistry = require('./fixture/mem_peer_registry');
 var zettacluster = require('zetta-cluster');
+var Scientist = require('zetta-scientist');
+var Runtime = require('../zetta_runtime');
+var Device = Runtime.Device;
+
+function TestDriver() {
+  Device.call(this);
+  this.foo = 'fooData';
+  this.bar = 'barData';
+  this.id = '123456789';
+}
+util.inherits(TestDriver, Device);
+
+TestDriver.prototype.init = function(config) {
+  config
+    .name('Test')
+    .type('testdriver')
+    .state('ready');
+};
+
 
 function getHttpServer(app) {
   return app.httpServer.server;
@@ -308,9 +328,73 @@ describe('Zetta Query Api', function() {
           hasLinkRel(body.links, 'http://rels.zettajs.io/query');
         }))
         .end(done);
-
     });
   });
+
+  describe('Non provisioned devices', function() {
+    beforeEach(function(done) {
+      machine = Scientist.create(TestDriver);
+      Scientist.init(machine);
+      reg.save(machine, function(err) {
+        assert.ok(!err);
+        app = zetta({ registry: reg, peerRegistry: peerRegistry })
+          .silent()
+          .use(Scout)
+          .name('local')
+          .expose('*')
+          ._run();
+        done();
+      });
+    });
+    
+    it('queries on /servers/<id> should return no results', function(done) {
+      request(getHttpServer(app))
+        .get('/servers/local?ql=where%20type%20=%20"testdriver"')
+        .expect(getBody(function(res, body) {
+          assert.equal(body.entities.length, 1);
+          body.entities.forEach(function(entity) {
+            assert(entity.links);
+          })
+        }))
+        .end(done);
+    })
+
+    it('queries on /?server=<server> should return no results', function(done) {
+      request(getHttpServer(app))
+        .get('/?ql=where%20type%20=%20"testdriver"&server=local')
+        .expect(getBody(function(res, body) {
+          assert.equal(body.entities.length, 1);
+          body.entities.forEach(function(entity) {
+            assert(entity.links);
+          })
+        }))
+        .end(done);
+    })
+
+    it('queries on /?server=* should return no results', function(done) {
+      request(getHttpServer(app))
+        .get('/?ql=where%20type%20=%20"testdriver"&server=*')
+        .expect(getBody(function(res, body) {
+          assert.equal(body.entities.length, 1);
+          body.entities.forEach(function(entity) {
+            assert(entity.links);
+          })
+        }))
+        .end(done);
+    })
+
+    it('queries on / should return no results', function(done) {
+      request(getHttpServer(app))
+        .get('/?ql=where%20type%20=%20"testdriver"')
+        .expect(getBody(function(res, body) {
+          assert.equal(body.entities.length, 1);
+          body.entities.forEach(function(entity) {
+            assert(entity.links);
+          })
+        }))
+        .end(done);
+    })
+  })
  
   describe('queries on /servers/<id>', function() {
     var app = null;
