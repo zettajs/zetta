@@ -1,7 +1,7 @@
 {
   "name": "zetta",
   "version": "1.0.0-beta.6",
-  "description": "The runtime components for Zetta.",
+  "description": "An API-first, open source software platform for the Internet of Things. http://zettajs.org",
   "main": "zetta_runtime.js",
   "dependencies": {
     "api-media-type": "^0.1.0",
@@ -46,15 +46,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/zettajs/zetta-runtime.git"
+    "url": "git://github.com/zettajs/zetta.git"
   },
   "keywords": [
-    "zetta"
+    "zetta",
+    "iot",
+    "internet of things",
+    "api",
+    "hypermedia"
   ],
   "author": "Kevin Swiber <kswiber@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zettajs/zetta-runtime/issues"
+    "url": "https://github.com/zettajs/zetta/issues"
   },
-  "homepage": "https://github.com/zettajs/zetta-runtime"
+  "homepage": "http://www.zettajs.org/"
 }
