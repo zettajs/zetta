@@ -36,6 +36,10 @@ var Zetta = module.exports = function(opts) {
   this._silent = false;
 
   var httpOptions = {};
+  if(typeof opts.useXForwardedHostHeader !== 'undefined') {
+    httpOptions.useXForwardedHostHeader = opts.useXForwardedHostHeader;
+  }
+
   if (typeof opts.tls === 'object') {
     Object.keys(opts.tls).forEach(function(k) {
       httpOptions[k] = opts.tls[k];
