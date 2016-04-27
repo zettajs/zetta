@@ -1,6 +1,6 @@
 {
   "name": "zetta",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "An API-first, open source software platform for the Internet of Things. http://zettajs.org",
   "main": "zetta_runtime.js",
   "dependencies": {
