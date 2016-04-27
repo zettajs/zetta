@@ -83,6 +83,26 @@ describe('Zetta Api', function() {
   });
 
 
+  it('allow for x-forwarded-host header to be disabled', function(done) {
+    var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedHostHeader: false  })
+        .silent()
+        .name('local')
+        ._run(function(err) {
+          if (err) {
+            return done(err);
+          }
+
+          request(getHttpServer(app))
+            .get('/')
+            .set('x-forwarded-host', 'google.com')
+            .expect(getBody(function(res, body) {
+              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
+              assert.notEqual(self.href, 'http://google.com/');
+            }))
+            .end(done);
+        });
+  })
+
   describe('/servers/<peer id> ', function() {
     var app = null;
     var url = null;
