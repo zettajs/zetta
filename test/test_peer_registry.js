@@ -159,6 +159,18 @@ describe('Peer Registry', function() {
       });
     });
 
+    // issue 308: https://github.com/zettajs/zetta/issues/308
+    it('should get a peer added with an ID greater than Number.MAX_VALUE', function(done) {
+      var reg = new PeerRegistry(opts);
+      var peer = { id: '1e309'};
+      reg.add(peer, function() {
+        reg.get('1e309', function(err, peer) {
+          console.log(err);
+          assert(peer);
+          done();
+        });
+      });
+    });
 
 
   });
