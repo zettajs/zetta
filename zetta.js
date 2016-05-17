@@ -450,7 +450,7 @@ Zetta.prototype._runPeer = function(peer) {
       self.peerRegistry.save(result);
 
       // peer-event
-      self.pubsub.publish('_peer/disconnect', { peer: peerClient });
+      self.pubsub.publish('_peer/disconnect', { peer: peerClient, error: error });
     });
   });
 
