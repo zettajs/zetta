@@ -3,6 +3,7 @@ var util = require('util');
 var fs = require('fs');
 var https = require('https');
 var zetta = require('../zetta');
+var WebSocket = require('ws');
 var MemRegistry = require('./fixture/mem_registry');
 var MemPeerRegistry = require('./fixture/mem_peer_registry');
 
@@ -428,6 +429,151 @@ describe('Zetta', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('test');
     z.properties({ someKey: 123 });
     assert.deepEqual(z.getProperties(), { name: 'test', someKey: 123 });
+  });
+
+
+  describe('HTTP Server Websocket connect hooks', function() {
+    it('peer connect hook will fire when peer connects', function(done) {
+      var fired = false;
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.onPeerConnect(function(request, socket, head, next) {
+          fired = true;
+          next();
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+          .silent()
+          .use(function(server) {
+            server.pubsub.subscribe('_peer/connect', function(topic, data) {
+              assert.equal(fired, true);
+              done();
+            })
+          })
+          .link('http://localhost:' + port)
+          .listen(0);
+      })
+    })
+
+    it('websocket connect hook will fire when clients connects', function(done) {
+      var fired = false;
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
+          fired = true;
+          next();
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        var ws = new WebSocket('ws://localhost:' + port + '/events');
+        ws.once('open', function() {
+          assert.equal(fired, true);
+          done();
+        })
+      });
+    })
+
+    it('multiple hooks will fire in order for peer connects', function(done) {
+      var fired = [];
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.onPeerConnect(function(request, socket, head, next) {
+          fired.push(1);
+          next();
+        })
+        server.httpServer.onPeerConnect(function(request, socket, head, next) {
+          fired.push(2);
+          next();
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+          .silent()
+          .use(function(server) {
+            server.pubsub.subscribe('_peer/connect', function(topic, data) {
+              assert.deepEqual(fired, [1, 2]);
+              done();
+            })
+          })
+          .link('http://localhost:' + port)
+          .listen(0);
+      })
+    })
+
+    it('multiple hooks will fire in order for websocket connects', function(done) {
+      var fired = [];
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
+          fired.push(1);
+          next();
+        })
+        server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
+          fired.push(2);
+          next();
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        var ws = new WebSocket('ws://localhost:' + port + '/events');
+        ws.once('open', function() {
+          assert.deepEqual(fired, [1, 2]);
+          done();
+        })
+      });
+    })
+
+    it('returning an error from hook will result in a 500 on peer connect', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.onPeerConnect(function(request, socket, head, next) {
+          next(new Error('Error 123'));
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+          .silent()
+          .use(function(server) {
+            server.onPeerResponse(function(req) {
+              return req.map(function(env) {
+                assert.equal(env.response.statusCode, 500);
+                done();
+                return env;
+              });
+            });
+          })
+          .link('http://localhost:' + port)
+          .listen(0);
+      })
+    })
+
+    it('returning an error from hook will result in a 500 on websocket connect', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
+          next(new Error('test error'));
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        var ws = new WebSocket('ws://localhost:' + port + '/events');
+        ws.once('error', function(err) {
+          assert.equal(err.message, 'unexpected server response (500)');
+          done();
+        })
+      });
+    })
   });
 
 });
