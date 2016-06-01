@@ -496,6 +496,19 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('subentities should have rel ["item"]', function(done) {
+      peerRegistry.save({ id: '0' }, function() {
+        request(getHttpServer(app))
+          .get('/peer-management')
+          .expect(getBody(function(err, body) {
+            body.entities.forEach(function(entity) {
+              assert(entity.rel.indexOf('item') >= 0)
+            })
+          }))
+          .end(done);
+      });
+    });
+
     it('should list saved peers', function(done) {
       peerRegistry.save({ id: '0' }, function() {
         request(getHttpServer(app))
