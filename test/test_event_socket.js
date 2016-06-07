@@ -73,6 +73,12 @@ describe('EventSocket', function() {
     assert(client._parser)
   })
 
+  it('should pass filterMultiple flag to EventSocket', function() {
+    var ws = new Ws();
+    var client = new EventSocket(ws, 'some-topic', { filterMultiple: true });
+    assert(client.filterMultiple, true);
+  })
+
   it('should emit subscribe event when subscribe message is parsed', function(done) {
     var ws = new Ws();
     var client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
