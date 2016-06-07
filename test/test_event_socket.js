@@ -69,13 +69,13 @@ describe('EventSocket', function() {
 
   it('should init parser if passed streaming flag', function() {
     var ws = new Ws();
-    var client = new EventSocket(ws, 'some-topic', true);
+    var client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
     assert(client._parser)
   })
 
   it('should emit subscribe event when subscribe message is parsed', function(done) {
     var ws = new Ws();
-    var client = new EventSocket(ws, 'some-topic', true);
+    var client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
     client.on('subscribe', function(subscription) {
       assert(subscription.subscriptionId);
       assert(subscription.topic);
