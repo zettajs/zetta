@@ -1492,13 +1492,49 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('subscribing to a query will return all devices', function(idx, done) {
+      
+    itBoth('subscribing to a query with hub for hub will return all devices', function(idx, done) {
       var endpoint = urls[idx];
       var ws = new WebSocket('ws://' + endpoint + baseUrl);
       var subscriptionId = null;
       var topic = 'hub/query/where type is not missing';
       var count = 0;
       var expected = (idx === 1) ? 2 : 2;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+            if (count === expected) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+
+    itBoth('subscribing to a query with * for hub will return all devices', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '*/query/where type is not missing';
+      var count = 0;
+      var expected = (idx === 1) ? 2 : 4; // cloud will have 4 devices
       ws.on('open', function() {
         var msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
