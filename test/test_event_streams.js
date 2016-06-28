@@ -1492,6 +1492,40 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
+    itBoth('subscribing to a query will return all devices', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = 'hub/query/where type is not missing';
+      var count = 0;
+      var expected = (idx === 1) ? 2 : 2;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+            if (count === expected) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+    
     describe('Protocol Errors', function() {
 
       var makeTopicStringErrorsTest = function(topic) {
