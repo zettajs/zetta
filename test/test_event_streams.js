@@ -1561,6 +1561,40 @@ describe('Event Streams', function() {
       });
       ws.on('error', done);
     });
+
+    itBoth('when data is 0 value it should be formatted correctly', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = 'hub/testdriver/' + devices[0].id + '/bar';
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].bar = -1;
+              devices[0].incrementStreamValue();
+            }, 50);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert.equal(json.data, 0);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+    });
     
     describe('Protocol Errors', function() {
 
