@@ -1374,6 +1374,228 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
+    itBoth('Passing filterMultiple options to ws only one data event will be sent', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl + '?filterMultiple=true');
+      var topic = validTopics[0];
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        var msg2 = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
+        ws.send(JSON.stringify(msg));
+        ws.send(JSON.stringify(msg2));
+        var subscriptions = [];
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.subscriptionId);
+            subscriptions.push(json.subscriptionId);
+            if (subscriptions.length === 2) {
+              setTimeout(function() {
+                devices[0].call('change');
+              }, 50);
+            }
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId.length, subscriptions.length);
+            subscriptions.forEach(function(id) {
+              assert(json.subscriptionId.indexOf(id) >= -1);
+            });
+            assert(json.data);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+    itBoth('Passing filterMultiple options to ws will apply limits for both topics', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl + '?filterMultiple=true');
+      var topic = validTopics[0];
+      var topic2 = 'hub/testdriver/*/state';
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic, limit: 2 };
+        var msg2 = { type: 'subscribe', topic: topic2, limit: 3 };
+        ws.send(JSON.stringify(msg));
+        ws.send(JSON.stringify(msg2));
+        var subscriptions = {};
+        
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.subscriptionId);
+            subscriptions[json.subscriptionId] = 0;
+            if (Object.keys(subscriptions).length === 2) {
+              setTimeout(function() {
+                devices[0].call('change');
+                devices[0].call('prepare');
+                devices[0].call('change');
+              }, 50);
+            }
+          } else if (json.type === 'event') {
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.data);
+
+            json.subscriptionId.forEach(function(id) {
+              subscriptions[id]++;
+            });
+
+            if (subscriptions[1] === 2 && subscriptions[2] === 3) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+    itBoth('Passing filterMultiple options to ws will have no effect on topics with caql query', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl + '?filterMultiple=true');
+      var topic = validTopics[0] + '?select *';
+      var topic2 = 'hub/testdriver/*/state';
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        var msg2 = { type: 'subscribe', topic: topic2 };
+        ws.send(JSON.stringify(msg));
+        ws.send(JSON.stringify(msg2));
+        var received = 0;
+        
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert(json.subscriptionId);
+            setTimeout(function() {
+              devices[0].call('change');
+            }, 50);
+          } else if (json.type === 'event') {
+            assert(json.timestamp);
+            assert(json.data);
+            assert.equal(json.subscriptionId.length, 1);
+            received++;
+
+            if (received === 2) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+      
+    itBoth('subscribing to a query with hub for hub will return all devices', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = 'hub/query/where type is not missing';
+      var count = 0;
+      var expected = (idx === 1) ? 2 : 2;
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+            if (count === expected) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+
+    itBoth('subscribing to a query with * for hub will return all devices', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = '*/query/where type is not missing';
+      var count = 0;
+      var expected = (idx === 1) ? 2 : 4; // cloud will have 4 devices
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert(json.data);
+            count++;
+            if (count === expected) {
+              done();
+            }
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+
+    itBoth('when data is 0 value it should be formatted correctly', function(idx, done) {
+      var endpoint = urls[idx];
+      var ws = new WebSocket('ws://' + endpoint + baseUrl);
+      var subscriptionId = null;
+      var topic = 'hub/testdriver/' + devices[0].id + '/bar';
+      ws.on('open', function() {
+        var msg = { type: 'subscribe', topic: topic };
+        ws.send(JSON.stringify(msg));
+        ws.on('message', function(buffer) {
+          var json = JSON.parse(buffer);
+          if(json.type === 'subscribe-ack') {
+            assert.equal(json.type, 'subscribe-ack');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert(json.subscriptionId);
+            subscriptionId = json.subscriptionId;
+
+            setTimeout(function() {
+              devices[0].bar = -1;
+              devices[0].incrementStreamValue();
+            }, 50);
+          } else {
+            assert.equal(json.type, 'event');
+            assert(json.timestamp);
+            assert.equal(json.topic, topic);
+            assert.equal(json.subscriptionId, subscriptionId);
+            assert.equal(json.data, 0);
+            done();
+          }
+        });
+      });
+      ws.on('error', done);
+    });
+    
     describe('Protocol Errors', function() {
 
       var makeTopicStringErrorsTest = function(topic) {
