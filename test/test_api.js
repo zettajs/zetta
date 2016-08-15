@@ -102,7 +102,7 @@ describe('Zetta Api', function() {
         });
   })
 
-  it('updates href root path using x-forwarded-root header', function(done) {
+  it('updates href path using x-forwarded-path header', function(done) {
     var app = zetta({ registry: reg, peerRegistry: peerRegistry  })
         .silent()
         .name('local')
@@ -113,7 +113,7 @@ describe('Zetta Api', function() {
           var rootPath = '/api/v1';
           request(getHttpServer(app))
             .get('/')
-            .set('x-forwarded-root', rootPath)
+            .set('x-forwarded-path', rootPath)
             .expect(getBody(function(res, body) {
               var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
               var resultPath = require('url').parse(self.href).pathname;
@@ -143,8 +143,8 @@ describe('Zetta Api', function() {
         });
   })
 
-  it('allow for x-forwarded-root header to be disabled', function(done) {
-    var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedRootHeader: false  })
+  it('allow for x-forwarded-path header to be disabled', function(done) {
+    var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedPathHeader: false  })
         .silent()
         .name('local')
         ._run(function(err) {
@@ -156,7 +156,7 @@ describe('Zetta Api', function() {
 
           request(getHttpServer(app))
             .get('/')
-            .set('x-forwarded-root', rootPath)
+            .set('x-forwarded-path', rootPath)
             .expect(getBody(function(res, body) {
               var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
               var resultPath = require('url').parse(self.href).pathname;
@@ -609,11 +609,11 @@ describe('Zetta Api', function() {
           .end(done);
       });
 
-      it('should return Location header whose value honors forwarded root path', function(done) {
+      it('should return Location header whose value honors forwarded path', function(done) {
         var rootPath = '/ipa/1v';
         request(getHttpServer(app))
           .post('/peer-management')
-          .set('x-forwarded-root', rootPath)
+          .set('x-forwarded-path', rootPath)
           .send('url=http://testurl')
           .expect('Location', /^http.+/)
           .expect(function(res){
@@ -696,11 +696,11 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should inject root url in all device links using forwared root path', function(done) {
+    it('should inject path in all device links using forwared root path', function(done) {
       var rootPath = '/alpha/v1';
       request(getHttpServer(app))
         .get('/devices')
-        .set('x-forwarded-root', rootPath)
+        .set('x-forwarded-path', rootPath)
         .expect(getBody(function(res, body) {
           body.links.forEach(function(link){
             var linkPath = require('url').parse(link.href).pathname;
