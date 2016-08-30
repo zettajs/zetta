@@ -7,7 +7,6 @@ var Query = require('calypso').Query;
 var rels = require('zetta-rels');
 var Scout = require('./fixture/example_scout');
 var Driver = require('./fixture/example_driver');
-var HttpDriver = require('./fixture/example_http_driver');
 var Registry = require('./fixture/mem_registry');
 var PeerRegistry = require('./fixture/mem_peer_registry');
 var zettacluster = require('zetta-cluster');
