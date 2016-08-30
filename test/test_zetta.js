@@ -8,7 +8,6 @@ var MemRegistry = require('./fixture/mem_registry');
 var MemPeerRegistry = require('./fixture/mem_peer_registry');
 
 var Device = require('zetta-device');
-var HttpDevice = require('zetta-http-device');
 var Scout = require('zetta-scout');
 var ExampleDevice = require('./fixture/example_driver');
 var Query = require('calypso').Query;
