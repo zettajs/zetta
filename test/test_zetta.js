@@ -169,20 +169,6 @@ describe('Zetta', function() {
     assert.equal(s.server, z.runtime);
   });
 
-  it('will load an HTTP driver with the use() function', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
-    function TestDriver() {
-      HttpDevice.call(this);
-    }
-    util.inherits(TestDriver, HttpDevice);
-
-    TestDriver.prototype.init = function() {};
-
-    z.use(TestDriver);
-    var s = z._scouts[0];
-    assert.equal(s.server, z.runtime);
-  });
-
   it('will load a scout with the use() function', function() {
     var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     function TestScout() {
