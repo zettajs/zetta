@@ -37,7 +37,7 @@ function checkDeviceOnRootUri(entity) {
   assert(entity.class.indexOf('device') >= 0);
   assert(entity.class.indexOf(entity.properties.type) >= 0);
   assert.deepEqual(entity.rel, ["http://rels.zettajs.io/device"]);
-  
+
   assert(entity.properties.name);
   assert(entity.properties.type);
   assert(entity.properties.state);
@@ -102,6 +102,27 @@ describe('Zetta Api', function() {
         });
   })
 
+  it('updates href path using x-forwarded-path header', function(done) {
+    var app = zetta({ registry: reg, peerRegistry: peerRegistry  })
+        .silent()
+        .name('local')
+        ._run(function(err) {
+          if (err) {
+            return done(err);
+          }
+          var rootPath = '/api/v1';
+          request(getHttpServer(app))
+            .get('/')
+            .set('x-forwarded-path', rootPath)
+            .expect(getBody(function(res, body) {
+              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
+              var resultPath = require('url').parse(self.href).pathname;
+              assert.equal(resultPath.substr(0, rootPath.length), rootPath);
+            }))
+            .end(done);
+        });
+  })
+
   it('allow for x-forwarded-host header to be disabled', function(done) {
     var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedHostHeader: false  })
         .silent()
@@ -117,6 +138,31 @@ describe('Zetta Api', function() {
             .expect(getBody(function(res, body) {
               var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
               assert.notEqual(self.href, 'http://google.com/');
+            }))
+            .end(done);
+        });
+  })
+
+  it('allow for x-forwarded-path header to be disabled', function(done) {
+    var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedPathHeader: false  })
+        .silent()
+        .name('local')
+        ._run(function(err) {
+          if (err) {
+            return done(err);
+          }
+
+          var rootPath = '/api/v1';
+
+          request(getHttpServer(app))
+            .get('/')
+            .set('x-forwarded-path', rootPath)
+            .expect(getBody(function(res, body) {
+              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
+              var resultPath = require('url').parse(self.href).pathname;
+              var resultPathSub = resultPath.substr(0,rootPath.length);
+              assert.notEqual(resultPathSub, rootPath);
+              assert.equal(resultPathSub, '/');
             }))
             .end(done);
         });
@@ -203,7 +249,7 @@ describe('Zetta Api', function() {
     it('should have monitor log link formatted correctly for HTTP requests', function(done) {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {          
+        .expect(getBody(function(res, body) {
           var link = body.links.filter(function(l) {
             return l.rel.indexOf('monitor') > -1;
           })[0];
@@ -298,7 +344,7 @@ describe('Zetta Api', function() {
 
         response.on('end', done);
       }).end();
-    });  
+    });
 
     it('should have valid entities', function(done) {
       request(getHttpServer(app))
@@ -359,7 +405,7 @@ describe('Zetta Api', function() {
             reg.find(query, function(err, machines) {
               assert.equal(machines.length, 1);
               assert.equal(machines[0].type, 'testdriver');
-              assert.equal(machines[0].id, '12345');            
+              assert.equal(machines[0].id, '12345');
               done();
             });
           })(res);
@@ -527,10 +573,10 @@ describe('Zetta Api', function() {
           .expect(getBody(function(err, body) {
             assert.equal(body.entities.length, 1);
             var entity = body.entities[0];
-            assert.equal(entity.properties.id, '1');  
+            assert.equal(entity.properties.id, '1');
           }))
-          .end(done);  
-      });  
+          .end(done);
+      });
     });
 
     describe('#link', function() {
@@ -546,6 +592,35 @@ describe('Zetta Api', function() {
           .post('/peer-management')
           .send('url=http://testurl')
           .expect('Location', /^http.+/)
+          .end(done);
+      });
+
+      it('should return Location header whose value honors forwarded host', function(done) {
+        request(getHttpServer(app))
+          .post('/peer-management')
+          .set('x-forwarded-host', 'google.com')
+          .send('url=http://testurl')
+          .expect('Location', /^http.+/)
+          .expect(function(res){
+            var loc = res.headers['location'];
+            var locHost = require('url').parse(loc).hostname;
+            assert.equal(locHost, 'google.com');
+          })
+          .end(done);
+      });
+
+      it('should return Location header whose value honors forwarded path', function(done) {
+        var rootPath = '/ipa/1v';
+        request(getHttpServer(app))
+          .post('/peer-management')
+          .set('x-forwarded-path', rootPath)
+          .send('url=http://testurl')
+          .expect('Location', /^http.+/)
+          .expect(function(res){
+            var loc = res.headers['location'];
+            var locPath = require('url').parse(loc).pathname;
+            assert.equal(locPath.substr(0,rootPath.length), rootPath);
+          })
           .end(done);
       });
     });
@@ -603,6 +678,34 @@ describe('Zetta Api', function() {
           assert.equal(body.entities.length, 1);
           checkDeviceOnRootUri(body.entities[0]);
           hasLinkRel(body.links, 'self');
+        }))
+        .end(done);
+    });
+
+    it('should replace url host in all device links using forwarded host', function(done) {
+      var rootPath = '/alpha/v1';
+      request(getHttpServer(app))
+        .get('/devices')
+        .set('x-forwarded-host', 'google.ca')
+        .expect(getBody(function(res, body) {
+          body.links.forEach(function(link){
+            var linkHost = require('url').parse(link.href).hostname;
+            assert.equal(linkHost, 'google.ca');
+          });
+        }))
+        .end(done);
+    });
+
+    it('should inject path in all device links using forwared root path', function(done) {
+      var rootPath = '/alpha/v1';
+      request(getHttpServer(app))
+        .get('/devices')
+        .set('x-forwarded-path', rootPath)
+        .expect(getBody(function(res, body) {
+          body.links.forEach(function(link){
+            var linkPath = require('url').parse(link.href).pathname;
+            assert.equal(linkPath.substr(0,rootPath.length), rootPath);
+          });
         }))
         .end(done);
     });
@@ -730,7 +833,7 @@ describe('Zetta Api', function() {
     it('disabling a stream should remove it from the API.', function(done) {
       Object.keys(app.runtime._jsDevices).forEach(function(name) {
         var device = app.runtime._jsDevices[name];
-        device.disableStream('foo');  
+        device.disableStream('foo');
       });
 
       request(getHttpServer(app))
@@ -749,7 +852,7 @@ describe('Zetta Api', function() {
       var device = null;
       Object.keys(app.runtime._jsDevices).forEach(function(name) {
         device = app.runtime._jsDevices[name];
-        device.disableStream('foo');  
+        device.disableStream('foo');
         device.enableStream('foo');
       });
 
@@ -872,13 +975,13 @@ describe('Zetta Api', function() {
     var createTransitionArgTest = function(action, testType, input) {
       it('api should decode transition args to ' + testType + ' for ' + action, function(done) {
         var device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
-        
+
         var orig = device._transitions[action].handler;
         device._transitions[action].handler = function(x) {
           assert.equal(typeof x, testType);
           orig.apply(device, arguments);
         };
-        
+
         request(getHttpServer(app))
           .post(url)
           .type('form')
@@ -887,7 +990,7 @@ describe('Zetta Api', function() {
           .end(done);
       });
     };
-    
+
     createTransitionArgTest('test-number', 'number', 123)
     createTransitionArgTest('test-text', 'string', 'Hello');
     createTransitionArgTest('test-none', 'string', 'Anything');
@@ -970,7 +1073,7 @@ describe('Zetta Api', function() {
       var device = app.runtime._jsDevices[deviceKey];
 
       var remoteDestroy = function(cb) {
-        cb(null, false);  
+        cb(null, false);
       }
 
       device._remoteDestroy = remoteDestroy.bind(device);
@@ -990,7 +1093,7 @@ describe('Zetta Api', function() {
       var device = app.runtime._jsDevices[deviceKey];
 
       var remoteDestroy = function(cb) {
-        cb(new Error('Oof! Ouch!'));  
+        cb(new Error('Oof! Ouch!'));
       }
 
       device._remoteDestroy = remoteDestroy.bind(device);
@@ -1010,7 +1113,7 @@ describe('Zetta Api', function() {
       var device = app.runtime._jsDevices[deviceKey];
 
       var remoteDestroy = function(cb) {
-        cb(null, true);  
+        cb(null, true);
       }
 
       device._remoteDestroy = remoteDestroy.bind(device);
@@ -1034,7 +1137,7 @@ describe('Zetta Api', function() {
           assert.equal(res.statusCode, 200);
           assert.equal(body.properties.foo, 0);
         }))
-        .end(done); 
+        .end(done);
      });
 
     it('should return a 404 when updating a non-existent device', function(done) {
