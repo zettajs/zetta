@@ -767,6 +767,25 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+
+    it('should not show _underscore transition in API but it should be available in JS', function(done) {
+      // assert that change and _ignore-me are available in current state
+      assert(device.available('_ignore-me'));
+      assert(device.available('change'));
+      request(getHttpServer(app))
+        .get(url)
+        .expect(getBody(function(res, body) {
+          assert(body.actions, 7);
+          // but while change is in the API
+          assert.equal(body.actions[0].name, 'change');
+          for (i = 0; i < body.actions.length; i++) {
+            // _ignore-me is not in the API
+            assert.notEqual(body.actions[i].name, '_ignore-me');
+          }
+        }))
+        .end(done);
+    });
+
     it('device should have action change', function(done) {
       request(getHttpServer(app))
         .get(url)
