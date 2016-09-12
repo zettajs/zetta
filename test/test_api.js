@@ -1044,6 +1044,23 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
+    it('should return custom error information when a error is passed in a callback of device driver', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .send({action: 'test-custom-error'})
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 401);
+          assert(body.class.indexOf('action-error') >= 0);
+
+          assert(body.properties.message);
+          assert.equal('custom error message', body.properties.message);
+
+          hasLinkRel(body.links, rels.self);
+        }))
+        .end(done);
+    });
+
     it('should support device updates using PUT', function(done) {
       request(getHttpServer(app))
         .put(url)
