@@ -771,7 +771,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 7);
+          assert.equal(body.actions.length, 8);
           var action = body.actions[0];
           assert.equal(action.name, 'change');
           assert.equal(action.method, 'POST');
@@ -785,7 +785,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 7);
+          assert.equal(body.actions.length, 8);
           body.actions.forEach(function(action) {
             assert(action.class.indexOf('transition') >= 0);
           })
@@ -1044,7 +1044,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it.only('should return custom error information when a error is passed in a callback of device driver', function(done) {
+    it('should return custom error information when a error is passed in a callback of device driver', function(done) {
       request(getHttpServer(app))
         .post(url)
         .type('form')
