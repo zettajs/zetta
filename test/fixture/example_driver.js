@@ -40,8 +40,7 @@ TestDriver.prototype.init = function(config) {
 };
 
 TestDriver.prototype.customError = function(cb) {
-
-  cb({statusCode: 401, properties: {message: 'custom error message'}});
+  cb(new Device.ActionError(401, {message: 'custom error message'}))
 }
 
 TestDriver.prototype.test = function(value, cb) {

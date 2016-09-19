@@ -1044,7 +1044,7 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should return custom error information when a error is passed in a callback of device driver', function(done) {
+    it.only('should return custom error information when a error is passed in a callback of device driver', function(done) {
       request(getHttpServer(app))
         .post(url)
         .type('form')
