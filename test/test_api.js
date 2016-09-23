@@ -1037,9 +1037,14 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .post(url)
         .type('form')
-        .send({ action: 'error', value: 'some error' })
+        .send({ action: 'error', error: 'some error' })
         .expect(getBody(function(res, body) {
           assert.equal(res.statusCode, 500);
+          assert(body.class.indexOf('action-error') >= 0);
+          assert(body.properties.message);
+          assert.equal(body.properties.message, 'some error');
+
+          hasLinkRel(body.links, rels.self);
         }))
         .end(done);
     });
