@@ -771,7 +771,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 7);
+          assert.equal(body.actions.length, 8);
           var action = body.actions[0];
           assert.equal(action.name, 'change');
           assert.equal(action.method, 'POST');
@@ -785,7 +785,7 @@ describe('Zetta Api', function() {
       request(getHttpServer(app))
         .get(url)
         .expect(getBody(function(res, body) {
-          assert.equal(body.actions.length, 7);
+          assert.equal(body.actions.length, 8);
           body.actions.forEach(function(action) {
             assert(action.class.indexOf('transition') >= 0);
           })
@@ -1040,6 +1040,23 @@ describe('Zetta Api', function() {
         .send({ action: 'error', value: 'some error' })
         .expect(getBody(function(res, body) {
           assert.equal(res.statusCode, 500);
+        }))
+        .end(done);
+    });
+
+    it('should return custom error information when a error is passed in a callback of device driver', function(done) {
+      request(getHttpServer(app))
+        .post(url)
+        .type('form')
+        .send({action: 'test-custom-error'})
+        .expect(getBody(function(res, body) {
+          assert.equal(res.statusCode, 401);
+          assert(body.class.indexOf('action-error') >= 0);
+
+          assert(body.properties.message);
+          assert.equal('custom error message', body.properties.message);
+
+          hasLinkRel(body.links, rels.self);
         }))
         .end(done);
     });

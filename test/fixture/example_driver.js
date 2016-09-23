@@ -18,7 +18,7 @@ TestDriver.prototype.init = function(config) {
     .state('ready')
     .type('testdriver')
     .name('Matt\'s Test Device')
-    .when('ready', { allow: ['change', 'test', 'error', 'test-number', 'test-text', 'test-none', 'test-date'] })
+    .when('ready', { allow: ['change', 'test', 'error', 'test-number', 'test-text', 'test-none', 'test-date', 'test-custom-error'] })
     .when('changed', { allow: ['prepare', 'test', 'error'] })
     .map('change', this.change)
     .map('prepare', this.prepare)
@@ -36,7 +36,12 @@ TestDriver.prototype.init = function(config) {
     .map('test-text', function(x, cb) { this.message = x; cb(); }, [{ name: 'value', type: 'text'}])
     .map('test-none', function(x, cb) { cb(); }, [{ name: 'value'}])
     .map('test-date', function(x, cb) { cb(); }, [{ name: 'value', type: 'date'}])
+    .map('test-custom-error', this.customError);
 };
+
+TestDriver.prototype.customError = function(cb) {
+  cb(new Device.ActionError(401, {message: 'custom error message'}))
+}
 
 TestDriver.prototype.test = function(value, cb) {
   this.value = value;
@@ -54,7 +59,7 @@ TestDriver.prototype.prepare = function(cb) {
 };
 
 TestDriver.prototype.streamObject = function(stream) {
-  this._streamObject = stream;  
+  this._streamObject = stream;
 };
 
 TestDriver.prototype.returnError = function(error, cb) {
@@ -70,8 +75,8 @@ TestDriver.prototype.incrementStreamValue = function() {
 
 TestDriver.prototype.publishStreamObject = function(obj) {
   if(this._streamObject) {
-    this._streamObject.write(obj);  
-  } 
+    this._streamObject.write(obj);
+  }
 };
 
 TestDriver.prototype.streamBar = function(stream) {
