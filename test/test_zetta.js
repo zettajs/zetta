@@ -373,6 +373,29 @@ describe('Zetta', function() {
       });
     });
 
+    it('peerOptions in httpServer should update options in PeerSockets', function(done) {
+      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      z.silent();
+      z.use(function(server) {
+        server.httpServer.peerOptions = {
+          pingTimeout: 4321,
+          confirmationTimeout: 1234
+        };
+        server.pubsub.subscribe('_peer/connect', function(topic, data) {
+          assert.equal(data.peer._pingTimeout, 4321);
+          assert.equal(data.peer._confirmationTimeout, 1234);
+          done();
+        })
+      })
+      z.listen(0, function() {
+        var port = z.httpServer.server.address().port;
+        zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
+          .silent()
+          .link('http://localhost:' + port)
+          .listen(0);
+      })
+    })
+
     it('.link should not add to peers', function(done){
 
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err){
