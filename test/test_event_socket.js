@@ -93,4 +93,25 @@ describe('EventSocket', function() {
     ws.emit('message', new Buffer(JSON.stringify(msg)));
   })
 
+  it('should not fail when sending null object with streamEnabled=true', function(done) {
+    var ws = new Ws();
+    var client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
+    ws.on('onsend', function(data, options, cb) {
+      assert.equal(data, '{"data":null}');
+      done();
+    });
+    client.send('some/topic', { data: null });
+  })
+
+  it('should not fail when sending null object with streamEnabled=false', function(done) {
+    var ws = new Ws();
+    var client = new EventSocket(ws, 'some-topic', { streamEnabled: false });
+    ws.on('onsend', function(data, options, cb) {
+      assert.equal(data, '{"data":null}');
+      done();
+    });
+    client.send('some/topic', { data: null });
+  })
+
+
 });
