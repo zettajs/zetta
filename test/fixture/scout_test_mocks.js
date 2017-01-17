@@ -1,5 +1,5 @@
 var util = require('util');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var zetta = require('../../zetta_runtime');
 
 //Mock device single transition. Also takes constructor params optionally.
