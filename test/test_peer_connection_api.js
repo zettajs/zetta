@@ -297,6 +297,7 @@ describe('Peer Connection API', function() {
   describe('/peer-management update API', function() {
     var cloud = null;
     var localOne = null;
+    var localPort = null;
     var cloudPort = null;
     var localOnePort = null;
     var connectionId = null;

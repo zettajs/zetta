@@ -218,7 +218,7 @@ describe('Event Streams', function() {
       .server('hub', [Driver, Driver], ['cloud'])
       .server('hub2', [Driver, Driver], ['cloud'])
       .on('ready', function() {
-        app = cluster.servers['cloud'];
+        var app = cluster.servers['cloud'];
         urls.push('localhost:' + cluster.servers['cloud']._testPort);
         urls.push('localhost:' + cluster.servers['hub']._testPort);
         

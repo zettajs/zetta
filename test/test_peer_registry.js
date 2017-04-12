@@ -55,8 +55,8 @@ describe('Peer Registry', function() {
 
   it('should get peers by id', function(done) {
     var reg = new PeerRegistry(opts);
-    reg.save({ id: 012345 }, function() {
-      reg.get(012345, function(err, peer) {
+    reg.save({ id: 12345 }, function() {
+      reg.get(12345, function(err, peer) {
         assert(peer);
         done();
       });
@@ -65,7 +65,7 @@ describe('Peer Registry', function() {
 
   it('should delete peers', function(done) {
     var reg = new PeerRegistry(opts);
-    var peer = { id: 0123456 };
+    var peer = { id: 123456 };
     reg.save(peer, function() {
       reg.remove(peer, function(err, peer) {
         assert.ifError(err);
@@ -105,7 +105,7 @@ describe('Peer Registry', function() {
 
     it('should update existing peers', function(done) {
       var reg = new PeerRegistry(opts);
-      var peer = { id: 012345 };
+      var peer = { id: 12345 };
       
       reg.save(peer, function() {
         reg.add(peer, function(err, result) {
