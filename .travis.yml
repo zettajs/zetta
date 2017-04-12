@@ -4,4 +4,9 @@ node_js:
   - "0.12"
   - "4.1.2"
   - "5"
-sudo: false
+  - "6"
+
+script:
+  - npm run build
+  - cd dist
+  - npm test
