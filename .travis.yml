@@ -9,5 +9,5 @@ node_js:
 script:
   - npm run build
   - cd dist
-  - ln -s node_modules dist/node_modules
+  - ln -s ../node_modules node_modules
   - npm test
