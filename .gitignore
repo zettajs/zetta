@@ -2,6 +2,7 @@
 *.swp
 .DS_Store
 node_modules
+dist
 .tern-port
 argo-HEAD
 argo-jscoverage
