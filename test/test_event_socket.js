@@ -97,7 +97,7 @@ describe('EventSocket', function() {
     var ws = new Ws();
     var client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
     ws.on('onsend', function(data, options, cb) {
-      assert.deepStrictEqual(JSON.parse(data), { data: null });
+      assert.equal(data, '{"data":null}');
       done();
     });
     client.send('some/topic', { data: null });
@@ -107,7 +107,7 @@ describe('EventSocket', function() {
     var ws = new Ws();
     var client = new EventSocket(ws, 'some-topic', { streamEnabled: false });
     ws.on('onsend', function(data, options, cb) {
-      assert.deepStrictEqual(JSON.parse(data), { data: null });
+      assert.equal(data, '{"data":null}');
       done();
     });
     client.send('some/topic', { data: null });
