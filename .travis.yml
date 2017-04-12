@@ -9,4 +9,5 @@ node_js:
 script:
   - npm run build
   - cd dist
+  - npm install
   - npm test
