@@ -332,8 +332,10 @@ describe('Zetta Query Api', function() {
   });
 
   describe('Non provisioned devices', function() {
+    var app = null;
+
     beforeEach(function(done) {
-      machine = Scientist.create(TestDriver);
+      var machine = Scientist.create(TestDriver);
       Scientist.init(machine);
       reg.save(machine, function(err) {
         assert.ok(!err);

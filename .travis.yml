@@ -4,4 +4,18 @@ node_js:
   - "0.12"
   - "4.1.2"
   - "5"
-sudo: false
+  - "6"
+env:
+  global:
+    - TARGET_NODE_VERSION="6"
+
+script:
+  - npm install
+  - npm run build
+  - |
+    if [[ "${TRAVIS_NODE_VERSION}" == "${TARGET_NODE_VERSION}" ]]; then
+      npm test
+    fi
+  - cd dist
+  - ln -s ../node_modules node_modules
+  - npm test

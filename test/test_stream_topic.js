@@ -150,10 +150,10 @@ describe('Stream Topic', function() {
 
   describe('.match()', function() {
 
-    function matchTest(query, topic, eval) {
-      it('should return ' + eval + ' for query ' + query + ' on topic ' + topic, function() {
+    function matchTest(query, topic, eval_) {
+      it('should return ' + eval_ + ' for query ' + query + ' on topic ' + topic, function() {
         var t = StreamTopic.parse(query);
-        assert.equal(t.match(topic), eval);
+        assert.equal(t.match(topic), eval_);
       })
     }
 

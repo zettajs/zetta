@@ -83,7 +83,7 @@ MockPeerRegistry.prototype.add = function(peer, cb) {
 MockPeerRegistry.prototype.get = function(id, cb) {
   this.peers.forEach(function(peer) {
     if (peer.id === id) {
-      cb(null, JSON.stringify(peer));
+      cb(null, peer);
     }
   });
 };
