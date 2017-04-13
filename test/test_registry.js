@@ -41,8 +41,8 @@ describe('DeviceRegistry', () => {
 
   it('should call the callback on close', done => {
     const reg = new DeviceRegistry(opts);
-    reg.close(function() {
-      assert.equal(arguments.length, 0);
+    reg.close(function(...args) {
+      assert.equal(args.length, 0);
       done();
     });
   });

@@ -88,8 +88,8 @@ describe('Runtime', () => {
       const filter2 = runtime.filter(d => d.type == 'test2');
 
       runtime
-        .filter(d => d.type == 'test').zip(filter2, function(){
-          return arguments;
+        .filter(d => d.type == 'test').zip(filter2, function(...args) {
+          return args;
         })
         .subscribe(x => {
           assert.equal(x[0].type, 'test');
@@ -270,8 +270,8 @@ describe('Runtime', () => {
     it('will respond the same way using the extended reactive syntax.', done => {
       runtime
         .filter(d => d.type === 'test1')
-        .zip(runtime.filter(d => d.type === 'test2'), function() {
-          return Array.prototype.slice.call(arguments);
+        .zip(runtime.filter(d => d.type === 'test2'), function(...args) {
+          return Array.prototype.slice.call(args);
         })
         .subscribe(x => {
           const devOne = x[0];
@@ -295,8 +295,8 @@ describe('Runtime', () => {
       let fired = 0;
       runtime
         .filter(d => d.type === 'test1')
-        .zip(runtime.filter(d => d.type === 'test2'), function() {
-          return Array.prototype.slice.call(arguments);
+        .zip(runtime.filter(d => d.type === 'test2'), function(...args) {
+          return Array.prototype.slice.call(args);
         })
         .take(1)
         .subscribe(x => {
