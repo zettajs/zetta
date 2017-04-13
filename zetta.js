@@ -130,7 +130,7 @@ Zetta.prototype.use = function() {
 
   function walk(proto) {
     if (!proto || !proto.__proto__) {
-      self.load.apply(self, args);
+      self.load(...args);
     } else if (proto.__proto__.constructor.name === 'HttpDevice') {
       const config = init().config;
       self.httpScout.driverFunctions[config._type] = constructor;
@@ -244,7 +244,7 @@ Zetta.prototype.listen = function() {
       args[args.length - 1] = cb;
     }
 
-    self.httpServer.listen.apply(self.httpServer, args);
+    self.httpServer.listen(...args);
   });
 
   return this;
