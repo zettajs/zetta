@@ -1,10 +1,10 @@
-var assert = require('assert');
-var PubSub = require('../lib/pubsub_service');
-var ConsumerStream = require('zetta-streams').ConsumerStream;
+const assert = require('assert');
+const PubSub = require('../lib/pubsub_service');
+const ConsumerStream = require('zetta-streams').ConsumerStream;
 
 describe('ConsumerStream', function() {
-  var stream = null;
-  var pubsub = null;
+  let stream = null;
+  let pubsub = null;
 
   beforeEach(function(){
     pubsub = new PubSub();
@@ -17,7 +17,7 @@ describe('ConsumerStream', function() {
   });
 
   it('it pass pubsub data to stream', function(done) {
-    var received = 0;
+    let received = 0;
     stream.on('data', function(msg){
       assert.deepEqual(msg, {date: 0, data: 1});
       received++;

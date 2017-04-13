@@ -1,34 +1,34 @@
-var assert = require('assert');
-var util = require('util');
-var net = require('net');
-var EventEmitter = require('events').EventEmitter;
-var zetta = require('../');
-var EventSocket = require('../lib/event_socket');
-var EventBroker = require('../lib/event_broker');
-var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
-var PeerSocket = require('../lib/peer_socket');
-var Registry = require('./fixture/scout_test_mocks').MockRegistry;
+const assert = require('assert');
+const util = require('util');
+const net = require('net');
+const EventEmitter = require('events').EventEmitter;
+const zetta = require('../');
+const EventSocket = require('../lib/event_socket');
+const EventBroker = require('../lib/event_broker');
+const PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
+const PeerSocket = require('../lib/peer_socket');
+const Registry = require('./fixture/scout_test_mocks').MockRegistry;
 
-var Ws = function() {
+const Ws = function() {
   EventEmitter.call(this)
   this._socket = new net.Socket();
   this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
 };
 util.inherits(Ws, EventEmitter);
 Ws.prototype.send = function(data, options, cb) {
-  var r = this.emit('onsend', data, options, cb);
+  const r = this.emit('onsend', data, options, cb);
 };
 Ws.prototype.close = function() {};
 
 
 describe('EventBroker', function() {
-  var msg = JSON.stringify({topic: '_peer/connect', data: {somedata: 1}, timestamp: new Date().getTime()});
-  var query = null;
-  var app = null;
-  var broker = null;
-  var peerRegistry = null;
+  const msg = JSON.stringify({topic: '_peer/connect', data: {somedata: 1}, timestamp: new Date().getTime()});
+  let query = null;
+  let app = null;
+  let broker = null;
+  let peerRegistry = null;
   beforeEach(function() {
-    var reg = new Registry();
+    const reg = new Registry();
     peerRegistry = new PeerRegistry();
     app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     query = { topic: '_peer/connect', name: app.id };
@@ -37,20 +37,20 @@ describe('EventBroker', function() {
 
 
   it('it should add peer by server name', function() {
-    var ws = new Ws();
-    var peer = new PeerSocket(ws, 'some-peer', peerRegistry);
+    const ws = new Ws();
+    const peer = new PeerSocket(ws, 'some-peer', peerRegistry);
     peer.name = 'some-peer2';
     broker.peer(peer);
     assert.equal(peer, broker.peers['some-peer2']);
   });
 
   it('it should pass data from local pubsub to clients', function(done) {
-    var ws = new Ws();
-    var client = new EventSocket(ws, query);
+    const ws = new Ws();
+    const client = new EventSocket(ws, query);
     broker.client(client);
 
     ws.on('onsend', function(buf) {
-      var msg = JSON.parse(buf);
+      const msg = JSON.parse(buf);
       assert.equal(msg.topic, '_peer/connect');
       assert(msg.timestamp);
       assert.deepEqual(msg.data, { somedata: 1 });
@@ -61,13 +61,13 @@ describe('EventBroker', function() {
   });
 
   it('should keep local pubsub subscription open when more than one client is active', function(done) {
-    var clientA = new EventSocket(new Ws(), query);
-    var clientB = new EventSocket(new Ws(), query);
+    const clientA = new EventSocket(new Ws(), query);
+    const clientB = new EventSocket(new Ws(), query);
     broker.client(clientA);
     broker.client(clientB);
 
-    var recievedA = 0;
-    var recievedB = 0;
+    let recievedA = 0;
+    let recievedB = 0;
     clientA.ws.on('onsend', function(buf) {
       recievedA++;
     });

@@ -1,17 +1,17 @@
-var os = require('os');
-var AutoScout = require('zetta-auto-scout');
-var async = require('async');
-var HttpScout = require('./lib/http_scout');
-var HttpServer = require('./lib/http_server');
-var Logger = require('./lib/logger');
-var PeerClient = require('./lib/peer_client');
-var PeerRegistry = require('./lib/peer_registry');
-var PubSub = require('./lib/pubsub_service');
-var Runtime = require('./lib/runtime');
-var scientist = require('zetta-scientist');
-var Query = require('calypso').Query;
+const os = require('os');
+const AutoScout = require('zetta-auto-scout');
+const async = require('async');
+const HttpScout = require('./lib/http_scout');
+const HttpServer = require('./lib/http_server');
+const Logger = require('./lib/logger');
+const PeerClient = require('./lib/peer_client');
+const PeerRegistry = require('./lib/peer_registry');
+const PubSub = require('./lib/pubsub_service');
+const Runtime = require('./lib/runtime');
+const scientist = require('zetta-scientist');
+const Query = require('calypso').Query;
 
-var Zetta = module.exports = function(opts) {
+const Zetta = module.exports = function(opts) {
   if (!(this instanceof Zetta)) {
     return new Zetta(opts);
   }
@@ -35,7 +35,7 @@ var Zetta = module.exports = function(opts) {
   this.log.init();
   this._silent = false;
 
-  var httpOptions = {};
+  const httpOptions = {};
   if(typeof opts.useXForwardedHostHeader !== 'undefined') {
     httpOptions.useXForwardedHostHeader = opts.useXForwardedHostHeader;
   }
@@ -50,7 +50,7 @@ var Zetta = module.exports = function(opts) {
   }
   this.httpServer = new HttpServer(this, httpOptions);
 
-  var runtimeOptions = {
+  const runtimeOptions = {
     pubsub: this.pubsub,
     log: this.log,
     httpServer: this.httpServer
@@ -61,7 +61,7 @@ var Zetta = module.exports = function(opts) {
   }
   this.runtime = new Runtime(runtimeOptions);
 
-  var httpScout = scientist.create.apply(null, [HttpScout]);
+  const httpScout = scientist.create.apply(null, [HttpScout]);
   httpScout.server = this.runtime;
   this.httpScout = httpScout;
   this._scouts.push(httpScout);
@@ -90,7 +90,7 @@ Zetta.prototype.name = function(name) {
 };
 
 Zetta.prototype.properties = function(props) {
-  var self = this;
+  const self = this;
   if (typeof props === 'object') {
     delete props.name; // cannot overide name
     this._properties = props;
@@ -99,8 +99,8 @@ Zetta.prototype.properties = function(props) {
 };
 
 Zetta.prototype.getProperties = function() {
-  var self = this;
-  var ret = { name: this._name };
+  const self = this;
+  const ret = { name: this._name };
   Object.keys(this._properties).forEach(function(k) {
     ret[k] = self._properties[k];
   });
@@ -108,23 +108,23 @@ Zetta.prototype.getProperties = function() {
 };
 
 Zetta.prototype.use = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var constructor = args[0];
+  const args = Array.prototype.slice.call(arguments);
+  const constructor = args[0];
 
-  var self = this;
+  const self = this;
   function addScout(scout) {
     scout.server = self.runtime;
     self._scouts.push(scout);
   }
 
   function init() {
-    var machine = Object.create(constructor.prototype);
+    const machine = Object.create(constructor.prototype);
     constructor.apply(machine, args.slice(1));
     machine._pubsub = self.pubsub;
     machine._log = self.log;
     machine._registry = self.runtime.registry;
 
-    var config = scientist.config(machine);
+    const config = scientist.config(machine);
     return { config: config, instance: machine };
   }
 
@@ -132,10 +132,10 @@ Zetta.prototype.use = function() {
     if (!proto || !proto.__proto__) {
       self.load.apply(self, args);
     } else if (proto.__proto__.constructor.name === 'HttpDevice') {
-      var config = init().config;
+      const config = init().config;
       self.httpScout.driverFunctions[config._type] = constructor;
     } else if (proto.__proto__.constructor.name === 'Device') {
-      var build = init();
+      const build = init();
       args.unshift(build.config._type);
       var scout = Object.create(AutoScout.prototype);
       scout._deviceInstance = build; // pass both machine and config to autoscout need to _generate device
@@ -161,9 +161,9 @@ Zetta.prototype.expose = function(query) {
 };
 
 Zetta.prototype.load = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var appArgs = args.slice(1, args.length);
-  var app = {
+  const args = Array.prototype.slice.call(arguments);
+  const appArgs = args.slice(1, args.length);
+  const app = {
     app: args[0],
     args: appArgs
   };
@@ -172,7 +172,7 @@ Zetta.prototype.load = function() {
 };
 
 Zetta.prototype.link = function(peers) {
-  var self = this;
+  const self = this;
   if(!Array.isArray(peers)) {
     peers = [peers];
   }
@@ -187,13 +187,13 @@ Zetta.prototype.link = function(peers) {
 
 
 Zetta.prototype.listen = function() {
-  var self = this;
+  const self = this;
 
-  var args = Array.prototype.slice.call(arguments);
+  const args = Array.prototype.slice.call(arguments);
 
-  var last = args[args.length - 1];
+  const last = args[args.length - 1];
 
-  var callback;
+  let callback;
   if (typeof last === 'function') {
     callback = last;
   }
@@ -207,7 +207,7 @@ Zetta.prototype.listen = function() {
       }
     }
 
-    var cb = function(err) {
+    const cb = function(err) {
       if (err) {
         if (callback) {
           callback(err);
@@ -216,7 +216,7 @@ Zetta.prototype.listen = function() {
         }
       }
 
-      var host;
+      let host;
       if (typeof args[0] === 'string') {
         host = args[0]; // UNIX socket
       } else if (typeof args[0] === 'number') {
@@ -252,7 +252,7 @@ Zetta.prototype.listen = function() {
 
 // run scouts/apps init server but do not listening on http port
 Zetta.prototype._run = function(callback) {
-  var self = this;
+  const self = this;
 
   if(!callback) {
     callback = function(){};
@@ -307,9 +307,9 @@ Zetta.prototype._initScouts = function(callback) {
 };
 
 Zetta.prototype._initApps = function(callback) {
-  var self = this;
+  const self = this;
   this._apps.forEach(function(app) {
-    var args = app.args;
+    const args = app.args;
     args.unshift(self.runtime);
     app.app.apply(null, args);
   });
@@ -328,7 +328,7 @@ Zetta.prototype._initHttpServer = function(callback) {
 
 // set all peers to disconnected
 Zetta.prototype._cleanupPeers = function(callback) {
-  var self = this;
+  const self = this;
   this.peerRegistry.find(Query.of('peers'), function(err, results) {
     if(err) {
       callback(err);
@@ -343,9 +343,9 @@ Zetta.prototype._cleanupPeers = function(callback) {
 };
 
 Zetta.prototype._initPeers = function(peers, callback) {
-  var self = this;
-  var existingUrls = [];
-  var allPeers = [];
+  const self = this;
+  const existingUrls = [];
+  let allPeers = [];
 
   if (!Array.isArray(peers)) {
     peers = [peers];
@@ -372,7 +372,7 @@ Zetta.prototype._initPeers = function(peers, callback) {
     }));
 
     allPeers.forEach(function(obj) {
-      var existing = (typeof obj === 'object');
+      const existing = (typeof obj === 'object');
       if (existing) {
         if(!obj.fromLink || peers.indexOf(obj.url) > -1) {
           self.peerRegistry.save(obj, function() {
@@ -387,7 +387,7 @@ Zetta.prototype._initPeers = function(peers, callback) {
           });
         }
       } else {
-        var peerData = {
+        const peerData = {
           url: obj,
           direction: 'initiator',
           fromLink:true
@@ -416,8 +416,8 @@ Zetta.prototype._extendPeerResponse = function(client) {
 };
 
 Zetta.prototype._runPeer = function(peer) {
-  var self = this;
-  var peerClient = new PeerClient(peer.url, self);
+  const self = this;
+  const peerClient = new PeerClient(peer.url, self);
   this._extendPeerRequest(peerClient);
   this._extendPeerResponse(peerClient);
 

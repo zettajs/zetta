@@ -1,18 +1,18 @@
-var assert = require('assert');
-var http = require('http');
-var urlParse = require('url').parse;
-var WebSocket = require('ws');
-var WebSocketServer = WebSocket.Server;
-var request = require('supertest');
-var util = require('util');
-var Scout = require('../zetta_runtime').Scout;
-var zetta = require('../zetta');
-var mocks = require('./fixture/scout_test_mocks');
-var MockRegistry = require('./fixture/mem_registry');
-var PeerRegistry = require('./fixture/mem_peer_registry');
-var GoodDevice = require('./fixture/example_driver');
+const assert = require('assert');
+const http = require('http');
+const urlParse = require('url').parse;
+const WebSocket = require('ws');
+const WebSocketServer = WebSocket.Server;
+const request = require('supertest');
+const util = require('util');
+const Scout = require('../zetta_runtime').Scout;
+const zetta = require('../zetta');
+const mocks = require('./fixture/scout_test_mocks');
+const MockRegistry = require('./fixture/mem_registry');
+const PeerRegistry = require('./fixture/mem_peer_registry');
+const GoodDevice = require('./fixture/example_driver');
 
-var GoodScout = module.exports = function() {
+const GoodScout = module.exports = function() {
   this.count = 0;
   this.interval = 5000;
   Scout.call(this);
@@ -20,8 +20,8 @@ var GoodScout = module.exports = function() {
 util.inherits(GoodScout, Scout);
 
 GoodScout.prototype.init = function(cb){
-  var query = this.server.where({type:'test', vendorId:'1234567'});
-  var self = this;
+  const query = this.server.where({type:'test', vendorId:'1234567'});
+  const self = this;
   this.server.find(query, function(err, results){
     if(!err) {
       if(results.length) {
@@ -33,13 +33,13 @@ GoodScout.prototype.init = function(cb){
 };
 
 describe('Event Websocket', function() {
-  var peerRegistry = null;
-  var registry = null;
-  var app = null;
-  var deviceUrl = null;
-  var deviceUrlHttp = null;
-  var device = null;
-  var port = null;
+  let peerRegistry = null;
+  let registry = null;
+  let app = null;
+  let deviceUrl = null;
+  let deviceUrlHttp = null;
+  let device = null;
+  let port = null;
 
   beforeEach(function(done) {
     peerRegistry = new PeerRegistry();
@@ -79,8 +79,8 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should connect', function(done) {
-      var url = 'ws://' + deviceUrl + '/bar';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + deviceUrl + '/bar';
+      const socket = new WebSocket(url);
 
       socket.on('open', function(err) {
         socket.close();
@@ -90,8 +90,8 @@ describe('Event Websocket', function() {
     });
 
     it('will return a 404 on non ws urls', function(done) {
-      var url = 'ws://localhost:' + port + '/not-a-endpoint';
-      var socket = new WebSocket(url);
+      const url = 'ws://localhost:' + port + '/not-a-endpoint';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
       });
@@ -102,8 +102,8 @@ describe('Event Websocket', function() {
     });
 
     it('will return a 404 on non ws urls for /events123123', function(done) {
-      var url = 'ws://localhost:' + port + '/events123123';
-      var socket = new WebSocket(url);
+      const url = 'ws://localhost:' + port + '/events123123';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
       });
@@ -118,13 +118,13 @@ describe('Event Websocket', function() {
 
   describe('Embedding a websocket server', function() {
     this.timeout(6000);
-    var app = null;
-    var port = null;
-    var wss = null;
+    let app = null;
+    let port = null;
+    let wss = null;
     
     beforeEach(function(done) {
-      var peerRegistry = new PeerRegistry();
-      var registry = new MockRegistry();
+      const peerRegistry = new PeerRegistry();
+      const registry = new MockRegistry();
       app = zetta({registry: registry, peerRegistry: peerRegistry});
       app.silent();
       app.use(function(server) {
@@ -138,14 +138,14 @@ describe('Event Websocket', function() {
     });
 
     it('can connect to the custom server', function(done) {
-      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
       ws.on('open', function open() {
         done();  
       });
     });
 
     it('will fire the connection event on the server', function(done) {
-      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
       ws.on('open', function open() {
       });
       wss.on('connection', function(ws) {
@@ -154,7 +154,7 @@ describe('Event Websocket', function() {
     });
     
     it('can send data down the server websocket', function(done) {
-      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
       ws.on('open', function open() {
       });
 
@@ -167,7 +167,7 @@ describe('Event Websocket', function() {
     });
 
     it('can send data up the server websocket', function(done) {
-      var ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
       wss.on('connection', function(ws) {
         ws.on('message', function() {
           done();  
@@ -180,8 +180,8 @@ describe('Event Websocket', function() {
     });
 
     it('will return a 404 on non ws urls', function(done) {
-      var url = 'ws://localhost:' + port + '/not-a-endpoint';
-      var socket = new WebSocket(url);
+      const url = 'ws://localhost:' + port + '/not-a-endpoint';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
       });
@@ -200,10 +200,10 @@ describe('Event Websocket', function() {
   describe('Receive json messages', function() {
 
     it('websocket should recv only one set of messages when reconnecting', function(done) {
-      var url = 'ws://' + deviceUrl + '/bar';
+      const url = 'ws://' + deviceUrl + '/bar';
 
       function openAndClose(cb) {
-        var s1 = new WebSocket(url);
+        const s1 = new WebSocket(url);
         s1.on('open', function(err) {
           s1.close();
           s1.on('close', function(){
@@ -212,7 +212,7 @@ describe('Event Websocket', function() {
         });
       }
       openAndClose(function(){
-        var s2 = new WebSocket(url);
+        const s2 = new WebSocket(url);
         s2.on('open', function(err) {
           s2.on('message', function(buf, flags) {
             done();
@@ -229,13 +229,13 @@ describe('Event Websocket', function() {
 
 
     it('websocket should connect and recv data in json form', function(done) {
-      var url = 'ws://' + deviceUrl + '/bar';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + deviceUrl + '/bar';
+      const socket = new WebSocket(url);
 
       socket.on('open', function(err) {
-        var recv = 0;
+        let recv = 0;
         socket.on('message', function(buf, flags) {
-          var msg = JSON.parse(buf);
+          const msg = JSON.parse(buf);
           recv++;
           assert(msg.timestamp);
           assert(msg.topic);
@@ -254,12 +254,12 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should connect and recv device log events from property API updates', function(done) {
-      var url = 'ws://' + deviceUrl + '/logs';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + deviceUrl + '/logs';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
         deviceUrlHttp = 'http://' + deviceUrlHttp; 
-        var parsed = urlParse(deviceUrlHttp); 
-        var reqOpts = {
+        const parsed = urlParse(deviceUrlHttp); 
+        const reqOpts = {
           hostname: 'localhost',
           port: parseInt(parsed.port),
           method: 'PUT',
@@ -267,14 +267,14 @@ describe('Event Websocket', function() {
           headers: {
             'Content-Type': 'application/json'  
           }  
-        }
+        };
 
-        var req = http.request(reqOpts);
+        const req = http.request(reqOpts);
         req.write(JSON.stringify({ fu: 'bar' }));
         req.end();
-        var recv = 0;
+        let recv = 0;
         socket.on('message', function(buf, flags) {
-          var msg = JSON.parse(buf);
+          const msg = JSON.parse(buf);
           recv++;
           assert(msg.timestamp);
           assert(msg.topic);
@@ -292,13 +292,13 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should connect and recv device log events', function(done) {
-      var url = 'ws://' + deviceUrl + '/logs';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + deviceUrl + '/logs';
+      const socket = new WebSocket(url);
 
       socket.on('open', function(err) {
-        var recv = 0;
+        let recv = 0;
         socket.on('message', function(buf, flags) {
-          var msg = JSON.parse(buf);
+          const msg = JSON.parse(buf);
           recv++;
 
           assert(msg.timestamp);
@@ -320,13 +320,13 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should recv connect and disconnect message for /peer-management', function(done) {
-      var url = 'ws://localhost:' + port + '/peer-management';
-      var socket = new WebSocket(url);
-      var peer = null;
+      const url = 'ws://localhost:' + port + '/peer-management';
+      const socket = new WebSocket(url);
+      let peer = null;
       
       socket.on('open', function(err) {
         socket.once('message', function(buf, flags) {
-          var msg = JSON.parse(buf);
+          const msg = JSON.parse(buf);
           assert.equal(msg.topic, '_peer/connect');
           assert(msg.timestamp);
           assert.equal(msg.data.id, 'some-peer');
@@ -334,7 +334,7 @@ describe('Event Websocket', function() {
           assert.equal(Object.keys(msg).length, 3);
 
           socket.once('message', function(buf, flags) {
-            var msg = JSON.parse(buf);
+            const msg = JSON.parse(buf);
             assert.equal(msg.topic, '_peer/disconnect');
             assert(msg.timestamp);
             assert.equal(msg.data.id, 'some-peer');
@@ -364,10 +364,10 @@ describe('Event Websocket', function() {
   describe('Receive binary messages', function() {
 
     it('websocket should connect and recv data in binary form', function(done) {
-      var url = 'ws://' + deviceUrl + '/foobar';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + deviceUrl + '/foobar';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
-        var recv = 0;
+        let recv = 0;
         socket.on('message', function(buf, flags) {
           assert(Buffer.isBuffer(buf));
           assert(flags.binary);

@@ -1,19 +1,19 @@
-var assert = require('assert');
-var os = require('os');
-var util = require('util');
-var request = require('supertest');
-var zetta = require('../');
-var Query = require('calypso').Query;
-var rels = require('zetta-rels');
-var Scout = require('./fixture/example_scout');
-var Driver = require('./fixture/example_driver');
-var HttpDriver = require('./fixture/example_http_driver');
-var Registry = require('./fixture/mem_registry');
-var PeerRegistry = require('./fixture/mem_peer_registry');
-var zettacluster = require('zetta-cluster');
-var Scientist = require('zetta-scientist');
-var Runtime = require('../zetta_runtime');
-var Device = Runtime.Device;
+const assert = require('assert');
+const os = require('os');
+const util = require('util');
+const request = require('supertest');
+const zetta = require('../');
+const Query = require('calypso').Query;
+const rels = require('zetta-rels');
+const Scout = require('./fixture/example_scout');
+const Driver = require('./fixture/example_driver');
+const HttpDriver = require('./fixture/example_http_driver');
+const Registry = require('./fixture/mem_registry');
+const PeerRegistry = require('./fixture/mem_peer_registry');
+const zettacluster = require('zetta-cluster');
+const Scientist = require('zetta-scientist');
+const Runtime = require('../zetta_runtime');
+const Device = Runtime.Device;
 
 function TestDriver() {
   Device.call(this);
@@ -66,7 +66,7 @@ function checkDeviceOnRootUri(entity) {
 }
 
 function hasLinkRel(links, rel, title, href) {
-  var found = false;
+  let found = false;
 
   links.forEach(function(link) {
     if(link.rel.indexOf(rel) != -1) {
@@ -89,8 +89,8 @@ function hasLinkRel(links, rel, title, href) {
 
 
 describe('Zetta Query Api', function() {
-  var reg = null;
-  var peerRegistry = null;
+  let reg = null;
+  let peerRegistry = null;
 
   beforeEach(function() {
     reg = new Registry();
@@ -98,7 +98,7 @@ describe('Zetta Query Api', function() {
   });
 
   describe('invalid query', function() {
-    var app = null;
+    let app = null;
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
@@ -138,7 +138,7 @@ describe('Zetta Query Api', function() {
   });
 
   describe('queries on / with just a ql parameter', function() {
-    var app = null;
+    let app = null;
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
@@ -191,7 +191,7 @@ describe('Zetta Query Api', function() {
   });
 
   describe('queries on / with a ql parameter and a server parameter', function() {
-    var app = null;
+    let app = null;
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
@@ -243,8 +243,8 @@ describe('Zetta Query Api', function() {
   });
   
   describe('queries on / with a ql parameter and a server parameter that is proxied to', function() {
-    var app = null;
-    var cluster = null;
+    let app = null;
+    let cluster = null;
 
     beforeEach(function(done) {
       cluster = zettacluster({ zetta: zetta })
@@ -301,8 +301,8 @@ describe('Zetta Query Api', function() {
   });
 
   describe('queries on / for all peers', function() {
-    var app = null;
-    var cluster = null;
+    let app = null;
+    let cluster = null;
 
     beforeEach(function(done) {
       cluster = zettacluster({ zetta: zetta })
@@ -332,10 +332,10 @@ describe('Zetta Query Api', function() {
   });
 
   describe('Non provisioned devices', function() {
-    var app = null;
+    let app = null;
 
     beforeEach(function(done) {
-      var machine = Scientist.create(TestDriver);
+      const machine = Scientist.create(TestDriver);
       Scientist.init(machine);
       reg.save(machine, function(err) {
         assert.ok(!err);
@@ -399,7 +399,7 @@ describe('Zetta Query Api', function() {
   })
  
   describe('queries on /servers/<id>', function() {
-    var app = null;
+    let app = null;
 
     beforeEach(function() {
       app = zetta({ registry: reg, peerRegistry: peerRegistry })
@@ -452,7 +452,7 @@ describe('Zetta Query Api', function() {
 
 
     it('should return empty list if no devices are provisioned on server', function(done) {
-      var app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      const app = zetta({ registry: reg, peerRegistry: peerRegistry })
         .silent()
         .name('local')
         ._run();
@@ -468,8 +468,8 @@ describe('Zetta Query Api', function() {
   });
 
   describe('proxied queries on /servers/<id>', function() {
-    var app = null;
-    var cluster = null;
+    let app = null;
+    let cluster = null;
 
     beforeEach(function(done) {
       cluster = zettacluster({ zetta: zetta })

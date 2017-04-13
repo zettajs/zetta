@@ -1,10 +1,10 @@
-var portscanner = require('portscanner');
-var async = require('async');
+const portscanner = require('portscanner');
+const async = require('async');
 
 module.exports = find;
 function find(obj, cb) {
-  var startPort = obj.startingPort || 3000;
-  var ports = [];
+  let startPort = obj.startingPort || 3000;
+  const ports = [];
   async.until(function(){
     return ports.length > obj.count;
   }, function(next) {

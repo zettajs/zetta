@@ -1,11 +1,11 @@
-var assert = require('assert');
-var request = require('supertest');
-var zetta = require('../');
-var rels = require('zetta-rels');
-var Scout = require('./fixture/example_scout');
-var Driver = require('./fixture/example_driver');
-var Registry = require('./fixture/mem_registry');
-var PeerRegistry = require('./fixture/mem_peer_registry');
+const assert = require('assert');
+const request = require('supertest');
+const zetta = require('../');
+const rels = require('zetta-rels');
+const Scout = require('./fixture/example_scout');
+const Driver = require('./fixture/example_driver');
+const Registry = require('./fixture/mem_registry');
+const PeerRegistry = require('./fixture/mem_peer_registry');
 
 function getHttpServer(app) {
   return app.httpServer.server;
@@ -28,11 +28,11 @@ function getBody(fn) {
 }
 
 describe('Metadata API', function() {
-  var reg = null;
-  var peerRegistry = null;
-  var app = null;
-  var url = null;
-  var device = null;
+  let reg = null;
+  let peerRegistry = null;
+  let app = null;
+  let url = null;
+  let device = null;
 
   beforeEach(function(done) {
     reg = new Registry();

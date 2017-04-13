@@ -1,13 +1,13 @@
-var assert = require('assert');
-var http = require('http');
-var WebSocket = require('ws');
-var zetta = require('../');
-var zettacluster = require('zetta-cluster');
-var Scout = require('./fixture/example_scout');
+const assert = require('assert');
+const http = require('http');
+const WebSocket = require('ws');
+const zetta = require('../');
+const zettacluster = require('zetta-cluster');
+const Scout = require('./fixture/example_scout');
 
 describe('Peer Connection Events in Pubsub', function() {
-  var cluster = null;
-  var device = null;
+  let cluster = null;
+  const device = null;
   beforeEach(function(done) {
     cluster = zettacluster({ zetta: zetta })
       .server('cloud')
@@ -23,7 +23,7 @@ describe('Peer Connection Events in Pubsub', function() {
   describe('Initiator Events', function() {
     it('should recieve a _peer/connect event', function(done) {
       
-      var recv = 0;
+      let recv = 0;
       cluster.servers['detroit1'].pubsub.subscribe('_peer/connect',function() {
         recv++;
       });
@@ -45,7 +45,7 @@ describe('Peer Connection Events in Pubsub', function() {
   describe('Acceptor Events', function() {
     it('should recieve a _peer/connect event', function(done) {
       
-      var recv = 0;
+      let recv = 0;
       cluster.servers['cloud'].pubsub.subscribe('_peer/connect',function() {
         recv++;
       });

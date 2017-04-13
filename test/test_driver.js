@@ -1,19 +1,19 @@
-var util = require('util');
-var PubSub = require('../lib/pubsub_service');
-var Logger = require('../lib/logger');
-var Runtime = require('../zetta_runtime');
-var Device = Runtime.Device;
-var Scientist = require('zetta-scientist');
-var assert = require('assert');
-var SensorDriver = require('./fixture/sensor_driver');
-var TestDriver = require('./fixture/example_driver');
-var MemRegistry = require('./fixture/mem_registry');
+const util = require('util');
+const PubSub = require('../lib/pubsub_service');
+const Logger = require('../lib/logger');
+const Runtime = require('../zetta_runtime');
+const Device = Runtime.Device;
+const Scientist = require('zetta-scientist');
+const assert = require('assert');
+const SensorDriver = require('./fixture/sensor_driver');
+const TestDriver = require('./fixture/example_driver');
+const MemRegistry = require('./fixture/mem_registry');
 
 describe('Driver', function() {
-  var machine = null;
-  var pubsub = null;
-  var log = null;
-  var reg = null;
+  let machine = null;
+  let pubsub = null;
+  let log = null;
+  let reg = null;
 
   beforeEach(function(){
     reg = new MemRegistry();
@@ -60,7 +60,7 @@ describe('Driver', function() {
 
     it('properties function should return filtered property list', function() {
       machine._foo = 123;
-      var p = machine.properties();
+      const p = machine.properties();
       assert.equal(p._foo, undefined);
     });
 
@@ -154,9 +154,9 @@ describe('Driver', function() {
     });
 
     it('should publish transitions to pubsub', function(done) {
-      var topic = machine.type + '/' + machine.id + '/logs';
+      const topic = machine.type + '/' + machine.id + '/logs';
       
-      var recv = 0;
+      let recv = 0;
       pubsub.subscribe(topic, function(topic, msg) {
         assert.ok(msg.timestamp);
         assert.ok(msg.topic);
@@ -174,7 +174,7 @@ describe('Driver', function() {
     });
 
     it('should publish transitions to logs', function(done) {
-      var recv = 0;
+      let recv = 0;
       pubsub.subscribe('logs', function(topic, msg) {
         assert.ok(msg.timestamp);
         assert.ok(msg.topic);
@@ -254,7 +254,7 @@ describe('Driver', function() {
     });
 
     it('createReadStream should return values from stream', function(done){
-      var s = machine.createReadStream('foo');
+      const s = machine.createReadStream('foo');
       s.on('data', function() {
         done();
       });
@@ -262,8 +262,8 @@ describe('Driver', function() {
     });
 
     it('createReadStream stream when paused shoud not recieve any updates', function(done){
-      var s = machine.createReadStream('foo');
-      var recv = 0;
+      const s = machine.createReadStream('foo');
+      let recv = 0;
       s.on('data', function() {
         recv++;
         if (recv === 1) {
@@ -288,7 +288,7 @@ describe('Driver', function() {
     });
 
     it('should not create a state stream when no transitions are present', function() {
-      var machine = Scientist.init(Scientist.create(SensorDriver));
+      const machine = Scientist.init(Scientist.create(SensorDriver));
       assert(!machine.streams.state);
     });
   });
@@ -325,8 +325,8 @@ describe('Driver', function() {
   describe('Remote Update and Fetch Hooks', function() {
 
     it('can pass config a remoteFetch function to be called when .properties() is called', function() {
-      var Device = Runtime.Device;
-      var SomeDevice = function() {
+      const Device = Runtime.Device;
+      const SomeDevice = function() {
         this.hidden = 'hidden prop';
         Device.call(this);
       };
@@ -341,7 +341,7 @@ describe('Driver', function() {
           })
       };
 
-      var machine = Scientist.init(Scientist.create(SomeDevice));
+      const machine = Scientist.init(Scientist.create(SomeDevice));
       assert.deepEqual(machine.properties(), { 
         name: 'device-1',
         prop: 123,
@@ -351,8 +351,8 @@ describe('Driver', function() {
     })
 
     it('handle remote update method, will update non reserved properties and remove old properties', function(done) {
-      var Device = Runtime.Device;
-      var SomeDevice = function() {
+      const Device = Runtime.Device;
+      const SomeDevice = function() {
         this.ip = '1.2.3.4';
         this.mutable = 'abc';
         this.deleted = 'gone after update';
@@ -365,7 +365,7 @@ describe('Driver', function() {
           .name('device-1');
       };
 
-      var machine = Scientist.init(Scientist.create(SomeDevice));
+      const machine = Scientist.init(Scientist.create(SomeDevice));
       machine._registry = reg;
       machine._pubsub = pubsub;
       machine._log = log;
@@ -380,8 +380,8 @@ describe('Driver', function() {
 
 
     it('can pass config a remoteUpdate function to be called when remoteUpdates are called', function(done) {
-      var Device = Runtime.Device;
-      var SomeDevice = function() {
+      const Device = Runtime.Device;
+      const SomeDevice = function() {
         this.ip = '1.2.3.4';
         this.mutable = 'abc';
         this.deleted = 'gone after update';
@@ -393,7 +393,7 @@ describe('Driver', function() {
           .type('some-device')
           .name('device-1')
           .remoteUpdate(function(properties, cb) {
-            var self = this;
+            const self = this;
             // make sure ip cant be updated
             delete properties.ip;
 
@@ -405,7 +405,7 @@ describe('Driver', function() {
           })
       };
 
-      var machine = Scientist.init(Scientist.create(SomeDevice));
+      const machine = Scientist.init(Scientist.create(SomeDevice));
       machine._registry = reg;
       machine._pubsub = pubsub;
       machine._log = log;
@@ -432,8 +432,8 @@ describe('Driver', function() {
     });
 
     it('handle remote destroy method, will return true by default', function(done) {
-      var Device = Runtime.Device;
-      var SomeDevice = function() {
+      const Device = Runtime.Device;
+      const SomeDevice = function() {
         this.ip = '1.2.3.4';
         this.mutable = 'abc';
         this.deleted = 'gone after update';
@@ -446,7 +446,7 @@ describe('Driver', function() {
           .name('device-1');
       };
 
-      var machine = Scientist.init(Scientist.create(SomeDevice));
+      const machine = Scientist.init(Scientist.create(SomeDevice));
       machine._registry = reg;
       machine._pubsub = pubsub;
       machine._log = log;

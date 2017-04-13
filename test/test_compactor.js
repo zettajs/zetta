@@ -1,15 +1,15 @@
-var assert = require('assert');
-var path = require('path');
-var Registry = require('../lib/registry');
-var Query = require('calypso').Query;
-var memdown = require('memdown');
-var levelup = require('levelup');
+const assert = require('assert');
+const path = require('path');
+const Registry = require('../lib/registry');
+const Query = require('calypso').Query;
+const memdown = require('memdown');
+const levelup = require('levelup');
 
-var dbPath = path.join(__dirname, './.peers');
+const dbPath = path.join(__dirname, './.peers');
 
 describe('Registry Compaction', function() {
   describe('custom database', function() {
-    var db, opts;
+    let db, opts;
     
     beforeEach(function(done) {
       db = levelup(dbPath, { db: memdown });
@@ -24,15 +24,15 @@ describe('Registry Compaction', function() {
     });
 
     it('should not have a compactor property with a custom db.', function() {
-      var reg = new Registry(opts);
+      const reg = new Registry(opts);
       assert.ok(!reg.compactor); 
     });  
     
   });
   
   describe('standard medea database', function() {
-    var reg;
-    var opts = {
+    let reg;
+    const opts = {
       collection: 'peer',
       path: './.peers'
     };
@@ -55,7 +55,7 @@ describe('Registry Compaction', function() {
     });
 
     it('should call open before compact.', function(done) {
-      var compactor = {};
+      const compactor = {};
 
       compactor.open = function(path, cb) {
         assert.ok(path);
@@ -70,7 +70,7 @@ describe('Registry Compaction', function() {
     });
 
     it('should call compact.', function(done) { 
-      var compactor = {};
+      const compactor = {};
 
       compactor.open = function(path, cb) {
         assert.ok(path);
@@ -90,7 +90,7 @@ describe('Registry Compaction', function() {
     });  
 
     it('should call close.', function(done) {
-      var compactor = {};
+      const compactor = {};
 
       compactor.open = function(path, cb) {
         assert.ok(path);

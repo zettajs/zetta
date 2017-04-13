@@ -1,8 +1,8 @@
-var Runtime = require('../../zetta_runtime');
-var Device = Runtime.Device;
-var util = require('util');
+const Runtime = require('../../zetta_runtime');
+const Device = Runtime.Device;
+const util = require('util');
 
-var TestDriver = module.exports = function(x, y){
+const TestDriver = module.exports = function(x, y){
   Device.call(this);
   this.foo = 0;
   this.bar = 0;
@@ -85,7 +85,7 @@ TestDriver.prototype.streamBar = function(stream) {
 
 TestDriver.prototype.incrementFooBar = function(stream) {
   this._fooBar++;
-  var buf = new Buffer([this._fooBar]);
+  const buf = new Buffer([this._fooBar]);
   this._streamFooBar.write(buf);
 }
 

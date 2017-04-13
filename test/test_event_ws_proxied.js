@@ -1,23 +1,23 @@
-var zetta = require('../');
-var assert = require('assert');
-var http = require('http');
-var WebSocket = require('ws');
-var Scout = require('./fixture/example_scout');
-var zettacluster = require('zetta-cluster');
+const zetta = require('../');
+const assert = require('assert');
+const http = require('http');
+const WebSocket = require('ws');
+const Scout = require('./fixture/example_scout');
+const zettacluster = require('zetta-cluster');
 
 describe('Event Websocket Proxied Through Peer', function() {
-  var base = null;
-  var cluster = null;
-  var device = null;
+  let base = null;
+  let cluster = null;
+  let device = null;
 
   beforeEach(function(done) {
     cluster = zettacluster({ zetta: zetta })
       .server('cloud deploy')
       .server('detroit 1', [Scout], ['cloud deploy'])
       .on('ready', function(){
-        var id = cluster.servers['detroit 1'].id;
+        const id = cluster.servers['detroit 1'].id;
         base = 'localhost:' + cluster.servers['cloud deploy']._testPort + '/servers/' + cluster.servers['cloud deploy'].locatePeer(id);
-        var did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
+        const did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit 1'].runtime._jsDevices[did];
         setTimeout(done, 300);
       })
@@ -43,8 +43,8 @@ describe('Event Websocket Proxied Through Peer', function() {
     });
 
     it('websocket should connect', function(done) {
-      var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
+      const socket = new WebSocket(url);
       socket.on('open', done);
     });
   });
@@ -54,12 +54,12 @@ describe('Event Websocket Proxied Through Peer', function() {
   describe('Receive json messages', function() {
 
     it('websocket should connect and recv data in json form', function(done) {
-      var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
-        var recv = 0;
+        let recv = 0;
         socket.on('message', function(buf, flags) {
-          var msg = JSON.parse(buf);
+          const msg = JSON.parse(buf);
           recv++;
           assert(msg.timestamp);
           assert(msg.topic);
@@ -78,10 +78,10 @@ describe('Event Websocket Proxied Through Peer', function() {
     });
 
     it('websocket should recv only one set of messages when reconnecting', function(done) {
-      var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
+      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
 
       function openAndClose(cb) {
-        var s1 = new WebSocket(url);
+        const s1 = new WebSocket(url);
         s1.on('open', function(err) {
           s1.close();
           s1.on('close', function(){
@@ -90,9 +90,9 @@ describe('Event Websocket Proxied Through Peer', function() {
         });
       }
       openAndClose(function(){
-        var s2 = new WebSocket(url);
+        const s2 = new WebSocket(url);
         s2.on('open', function(err) {
-          var count = 0;
+          let count = 0;
           s2.on('message', function(buf, flags) {
             count++;
           });
@@ -113,11 +113,11 @@ describe('Event Websocket Proxied Through Peer', function() {
 
 
     it('websocket should connect and recv device log events', function(done) {
-      var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/logs';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/logs';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
         socket.on('message', function(buf, flags) {
-          var msg = JSON.parse(buf);
+          const msg = JSON.parse(buf);
           assert(msg.timestamp);
           assert(msg.topic);
           assert(msg.actions.filter(function(action) {
@@ -144,10 +144,10 @@ describe('Event Websocket Proxied Through Peer', function() {
   describe('Receive binary messages', function() {
 
     it('websocket should connect and recv data in binary form', function(done) {
-      var url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/foobar';
-      var socket = new WebSocket(url);
+      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/foobar';
+      const socket = new WebSocket(url);
       socket.on('open', function(err) {
-        var recv = 0;
+        let recv = 0;
         socket.on('message', function(buf, flags) {
           assert(Buffer.isBuffer(buf));
           assert(flags.binary);

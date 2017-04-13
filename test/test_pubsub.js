@@ -1,16 +1,16 @@
-var assert = require('assert');
-var PubSub = require('../lib/pubsub_service');
+const assert = require('assert');
+const PubSub = require('../lib/pubsub_service');
 
 
 function makeFakeRequest(fd) {
   return { connection: { socket: { _handle: { fd: (fd || 1) }} }};
 }
-var Response = function(cb) {
+const Response = function(cb) {
   this.cb = cb;
 };
 Response.prototype.push = function(topic, options) {
-  var r = this;
-  var Stream = function() {
+  const r = this;
+  const Stream = function() {
     this.topic = topic;
     this.options = options;
   };
@@ -24,30 +24,30 @@ Response.prototype.push = function(topic, options) {
 
 describe('Pubsub Service', function() {
   it('exposes subscribe / publish', function() {
-    var ps = new PubSub();
+    const ps = new PubSub();
     assert.equal(typeof ps.publish, 'function');
     assert.equal(typeof ps.subscribe, 'function');
   });
 
   it('subscribe takes a callback and topic', function() {
-    var ps = new PubSub();
+    const ps = new PubSub();
     ps.subscribe('some-topic', function(topic, name){});
   });
 
   it('subscribe takes a spdy response object', function() {
-    var ps = new PubSub();
-    var r = new Response(function() {});
+    const ps = new PubSub();
+    const r = new Response(function() {});
     ps.subscribe('some-topic', {request: makeFakeRequest(1), response: r});
   });
 
   it('publish does not fail when there are no listeners', function() {
-    var ps = new PubSub();
+    const ps = new PubSub();
     ps.publish('some-topic', 123);
   });
 
   it('publish passes to callback', function(done) {
-    var ps = new PubSub();
-    var received = 0;
+    const ps = new PubSub();
+    let received = 0;
     ps.subscribe('some-topic', function() {
       received++;
     });
@@ -60,9 +60,9 @@ describe('Pubsub Service', function() {
   });
 
   it('publish passes to response', function(done) {
-    var ps = new PubSub();
-    var received = 0;
-    var r = new Response(function() {
+    const ps = new PubSub();
+    let received = 0;
+    const r = new Response(function() {
       received++;
     });
 
@@ -77,10 +77,10 @@ describe('Pubsub Service', function() {
 
 
   it('publish passes to response and callback on same topic', function(done) {
-    var ps = new PubSub();
-    var receivedA = 0;
-    var receivedB = 0;
-    var r = new Response(function() {
+    const ps = new PubSub();
+    let receivedA = 0;
+    let receivedB = 0;
+    const r = new Response(function() {
       receivedA++;
     });
 
@@ -97,9 +97,9 @@ describe('Pubsub Service', function() {
 
 
   it('unsubscribe should remove listener', function(done) {
-    var ps = new PubSub();
-    var receivedA = 0;
-    var listener = function() {receivedA++;};
+    const ps = new PubSub();
+    let receivedA = 0;
+    const listener = function() {receivedA++;};
 
     ps.subscribe('some-topic', listener);
     ps.publish('some-topic', 123);
@@ -117,15 +117,15 @@ describe('Pubsub Service', function() {
   });
 
   it('one http subscription and one callback that match the same event will emit one event on both', function(done) {
-    var ps = new PubSub();
-    var receivedA = 0;
-    var receivedB = 0;
+    const ps = new PubSub();
+    let receivedA = 0;
+    let receivedB = 0;
 
-    var r1 = new Response(function() {
+    const r1 = new Response(function() {
       receivedA++;
     });
 
-    var listener = function() {receivedB++;};
+    const listener = function() {receivedB++;};
 
     ps.subscribe('led/123/state', {request:  makeFakeRequest(1), response: r1 });
     ps.subscribe('led/*/state', listener);
@@ -139,14 +139,14 @@ describe('Pubsub Service', function() {
   });
 
   it('two subscriptions with callback that match the same event will emit one event on both', function(done) {
-    var ps = new PubSub();
-    var receivedA = 0;
-    var receivedB = 0;
-    var receivedC = 0;
+    const ps = new PubSub();
+    let receivedA = 0;
+    let receivedB = 0;
+    let receivedC = 0;
 
-    var listener1 = function() {receivedA++;};
-    var listener2 = function() {receivedB++;};
-    var listener3 = function() {receivedC++;};
+    const listener1 = function() {receivedA++;};
+    const listener2 = function() {receivedB++;};
+    const listener3 = function() {receivedC++;};
 
     ps.subscribe('led/123/state', listener1);
     ps.subscribe('led/*/state', listener2);
@@ -161,15 +161,15 @@ describe('Pubsub Service', function() {
   });
 
   it('two http subscriptions that match the same event will only emit event on the first subscription', function(done) {
-    var ps = new PubSub();
-    var receivedA = 0;
-    var receivedB = 0;
+    const ps = new PubSub();
+    let receivedA = 0;
+    let receivedB = 0;
 
-    var r1 = new Response(function() {
+    const r1 = new Response(function() {
       receivedA++;
     });
 
-    var r2 = new Response(function() {
+    const r2 = new Response(function() {
       receivedB++;
     });
 

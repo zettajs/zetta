@@ -1,21 +1,21 @@
-var assert = require('assert');
-var util = require('util');
-var fs = require('fs');
-var https = require('https');
-var zetta = require('../zetta');
-var WebSocket = require('ws');
-var MemRegistry = require('./fixture/mem_registry');
-var MemPeerRegistry = require('./fixture/mem_peer_registry');
+const assert = require('assert');
+const util = require('util');
+const fs = require('fs');
+const https = require('https');
+const zetta = require('../zetta');
+const WebSocket = require('ws');
+const MemRegistry = require('./fixture/mem_registry');
+const MemPeerRegistry = require('./fixture/mem_peer_registry');
 
-var Device = require('zetta-device');
-var HttpDevice = require('zetta-http-device');
-var Scout = require('zetta-scout');
-var ExampleDevice = require('./fixture/example_driver');
-var Query = require('calypso').Query;
+const Device = require('zetta-device');
+const HttpDevice = require('zetta-http-device');
+const Scout = require('zetta-scout');
+const ExampleDevice = require('./fixture/example_driver');
+const Query = require('calypso').Query;
 
 describe('Zetta', function() {
-  var reg = null;
-  var peerRegistry = null;
+  let reg = null;
+  let peerRegistry = null;
 
   beforeEach(function() {
     reg = new MemRegistry();
@@ -27,22 +27,22 @@ describe('Zetta', function() {
   });
 
   it('has the name set using the name() function.', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
     assert.equal(z._name, 'local');
   });
 
   it('should throw error if setting name to *', function() {
     assert.throws(function() {
-      var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('*').silent();
+      const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('*').silent();
     }, Error);
   });
 
   it('has the silent() function to suppress logging.', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
   });
 
   it('errors thrown in zetta apps should propagate.', function(done) {
-    var d = require('domain').create();
+    const d = require('domain').create();
     d.on('error', function(err) {
       assert.equal(err.message, '123');
       d.dispose()
@@ -53,7 +53,7 @@ describe('Zetta', function() {
         .silent()
         .use(ExampleDevice)
         .use(function(server) {
-          var ledQuery = server.where({ type: 'testdriver' });
+          const ledQuery = server.where({ type: 'testdriver' });
           server.observe(ledQuery, function(led) {
             throw new Error('123');
           })
@@ -63,18 +63,18 @@ describe('Zetta', function() {
   });
 
   it('support tls options for https server', function(done) {
-    var options = {
+    const options = {
       key: fs.readFileSync(__dirname + '/fixture/keys/key.pem'),
       cert: fs.readFileSync(__dirname + '/fixture/keys/cert.pem')
     };
     
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry, tls: options })
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry, tls: options })
       .silent()
       .listen(0, function(err) {
         if (err) return done(err);
 
-        var port = z.httpServer.server.address().port;
-        var req = https.get({
+        const port = z.httpServer.server.address().port;
+        const req = https.get({
           host: 'localhost',
           port: port,
           path: '/',
@@ -88,7 +88,7 @@ describe('Zetta', function() {
   });
 
   it('has the logger() function to pass in custom logging.', function(done) {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry });
     z.logger(function(log) {
       log.on('message', function(level, event, msg, data) {
         assert.equal(level, 'info');
@@ -124,12 +124,12 @@ describe('Zetta', function() {
   });
 
   it('will load an app with the use() function and additional arguments', function(done) {
-    var app = function(server, opts) {
+    const app = function(server, opts) {
       assert.ok(server);
       assert.ok(opts);
       assert.equal(opts.foo, 1);
       done();  
-    }
+    };
     
     zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
@@ -141,12 +141,12 @@ describe('Zetta', function() {
   });
 
   it('will load an app with the use() function and additional arguments', function(done) {
-    var app = function(server, foo, bar) {
+    const app = function(server, foo, bar) {
       assert.ok(server);
       assert.equal(foo, 1);
       assert.equal(bar, 2);
       done();  
-    }
+    };
     
     zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
@@ -157,7 +157,7 @@ describe('Zetta', function() {
 
   });
   it('will load a driver with the use() function', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     function TestDriver() {
       Device.call(this);
     }
@@ -166,12 +166,12 @@ describe('Zetta', function() {
     TestDriver.prototype.init = function() {};
 
     z.use(TestDriver);
-    var s = z._scouts[0];
+    const s = z._scouts[0];
     assert.equal(s.server, z.runtime);
   });
 
   it('will load an HTTP driver with the use() function', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     function TestDriver() {
       HttpDevice.call(this);
     }
@@ -180,24 +180,24 @@ describe('Zetta', function() {
     TestDriver.prototype.init = function() {};
 
     z.use(TestDriver);
-    var s = z._scouts[0];
+    const s = z._scouts[0];
     assert.equal(s.server, z.runtime);
   });
 
   it('will load a scout with the use() function', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     function TestScout() {
       Scout.call(this);
     }
     util.inherits(TestScout, Scout);
     z.use(TestScout);
     assert.equal(z._scouts.length, 2);
-    var s = z._scouts[0];
+    const s = z._scouts[0];
     assert.equal(s.server, z.runtime);
   });
 
   it('will set the what query is used for expose()', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     z.expose('*');
 
     assert.ok(z._exposeQuery);
@@ -210,7 +210,7 @@ describe('Zetta', function() {
     };
     MockHttp.prototype.listen = function(port) {};
 
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0);
 
@@ -224,7 +224,7 @@ describe('Zetta', function() {
       done();
     };
 
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0);
 
@@ -238,7 +238,7 @@ describe('Zetta', function() {
       cb(null);
     };
 
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0, function(err) {
       assert.ok(!err);
@@ -247,7 +247,7 @@ describe('Zetta', function() {
   });
 
   it('should initialize device with proper properties set.', function(done) {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry })
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
       .use(ExampleDevice, 1, 'a')
       ._run(function(err) {
@@ -255,13 +255,13 @@ describe('Zetta', function() {
           return done(err);
         }
         
-        var device = z.runtime._jsDevices[Object.keys(z.runtime._jsDevices)[0]];
+        const device = z.runtime._jsDevices[Object.keys(z.runtime._jsDevices)[0]];
         device.call('change', done);
       });
   });
 
   it('should initialize 3 devices with correct params when using multiple use', function(done) {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry })
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
       .use(ExampleDevice, 1, 'a')
       .use(ExampleDevice, 2, 'b')
@@ -271,9 +271,9 @@ describe('Zetta', function() {
           return done(err);
         }
 
-        var find = function(x, y) {
+        const find = function(x, y) {
           return Object.keys(z.runtime._jsDevices).some(function(key){
-            var device = z.runtime._jsDevices[key];
+            const device = z.runtime._jsDevices[key];
             return device._x === x && device._y === y;
           });
         };
@@ -289,7 +289,7 @@ describe('Zetta', function() {
 
 
   it('should provision 3 devices already in registry with correct params when using multiple use', function(done) {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry })
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry })
       .silent()
       .use(ExampleDevice, 1, 'a')
       .use(ExampleDevice, 2, 'b')
@@ -299,10 +299,10 @@ describe('Zetta', function() {
           return done(err);
         }
 
-        var find = function(x, y) {
-          var id = null;
+        const find = function(x, y) {
+          let id = null;
           Object.keys(z.runtime._jsDevices).some(function(key){
-            var device = z.runtime._jsDevices[key];
+            const device = z.runtime._jsDevices[key];
             if (device._x === x && device._y === y) {
               id = device.id;
               return true;
@@ -316,7 +316,7 @@ describe('Zetta', function() {
         assert(find(2, 'b'));
         assert(find(3, 'c'));
 
-        var z2 = zetta({ registry: reg, peerRegistry: peerRegistry })
+        const z2 = zetta({ registry: reg, peerRegistry: peerRegistry })
           .silent()
           .use(ExampleDevice, 1, 'a')
           .use(ExampleDevice, 2, 'b')
@@ -326,9 +326,9 @@ describe('Zetta', function() {
               return done(err);
             }
 
-            var find2 = function(id, x, y) {
+            const find2 = function(id, x, y) {
               return Object.keys(z2.runtime._jsDevices).some(function(key){
-                var device = z2.runtime._jsDevices[key];
+                const device = z2.runtime._jsDevices[key];
                 return device.id === id && device._x === x && device._y === y;
               });
             };
@@ -342,14 +342,14 @@ describe('Zetta', function() {
   });
 
   it('should only call .init once on a device driver with .use(Device)', function(done) {
-    var called = 0;
-    var oldInit = ExampleDevice.prototype.init;
+    let called = 0;
+    const oldInit = ExampleDevice.prototype.init;
     ExampleDevice.prototype.init = function(config) {
       called++;
       return oldInit.call(this, config);
     };
 
-    var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+    const app = zetta({ peerRegistry: peerRegistry, registry: reg });
     app.silent();
     app.use(ExampleDevice);
     app.listen(0);
@@ -362,7 +362,7 @@ describe('Zetta', function() {
 
   describe('peering', function() {
     it('.link should add to peers', function(done){
-      var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+      const app = zetta({ peerRegistry: peerRegistry, registry: reg });
       app.silent();
       app.link('http://example.com/');
       app._initPeers(app._peers, function(err) {
@@ -374,7 +374,7 @@ describe('Zetta', function() {
     });
 
     it('peerOptions in httpServer should update options in PeerSockets', function(done) {
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.peerOptions = {
@@ -388,7 +388,7 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
+        const port = z.httpServer.server.address().port;
         zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
           .silent()
           .link('http://localhost:' + port)
@@ -399,7 +399,7 @@ describe('Zetta', function() {
     it('.link should not add to peers', function(done){
 
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err){
-        var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        const app = zetta({ peerRegistry: peerRegistry, registry: reg });
         app.silent();
         app._initPeers(app._peers, function(err) {
           setTimeout(function() {
@@ -412,7 +412,7 @@ describe('Zetta', function() {
 
     it('will delete fromLink peers in the registry', function(done) {
       peerRegistry.db.put('1234567', JSON.stringify({ id:'1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), function(err) {
-        var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        const app = zetta({ peerRegistry: peerRegistry, registry: reg });
         app._initPeers(app._peers, function(err) {
           setTimeout(function(){
            assert.equal(app._peerClients.length, 0);
@@ -429,7 +429,7 @@ describe('Zetta', function() {
   it('will init API peers.', function(done){
 
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/'}), function(err){
-        var app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        const app = zetta({ peerRegistry: peerRegistry, registry: reg });
         app.silent();
         app._initPeers(app._peers, function(err) {
           setTimeout(function() {
@@ -443,13 +443,13 @@ describe('Zetta', function() {
   });
 
   it('has the properties() function to add custom properties to the api.', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry });
     assert(typeof z.properties, 'function');
     z.properties({ test: 'abc' });
   });
 
   it('.getProperties() returns properties.', function() {
-    var z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('test');
+    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('test');
     z.properties({ someKey: 123 });
     assert.deepEqual(z.getProperties(), { name: 'test', someKey: 123 });
   });
@@ -457,8 +457,8 @@ describe('Zetta', function() {
 
   describe('HTTP Server Websocket connect hooks', function() {
     it('peer connect hook will fire when peer connects', function(done) {
-      var fired = false;
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      let fired = false;
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.onPeerConnect(function(request, socket, head, next) {
@@ -467,7 +467,7 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
+        const port = z.httpServer.server.address().port;
         zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
           .silent()
           .use(function(server) {
@@ -482,8 +482,8 @@ describe('Zetta', function() {
     })
 
     it('websocket connect hook will fire when clients connects', function(done) {
-      var fired = false;
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      let fired = false;
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
@@ -492,8 +492,8 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
-        var ws = new WebSocket('ws://localhost:' + port + '/events');
+        const port = z.httpServer.server.address().port;
+        const ws = new WebSocket('ws://localhost:' + port + '/events');
         ws.once('open', function() {
           assert.equal(fired, true);
           done();
@@ -502,8 +502,8 @@ describe('Zetta', function() {
     })
 
     it('multiple hooks will fire in order for peer connects', function(done) {
-      var fired = [];
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      const fired = [];
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.onPeerConnect(function(request, socket, head, next) {
@@ -516,7 +516,7 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
+        const port = z.httpServer.server.address().port;
         zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
           .silent()
           .use(function(server) {
@@ -531,8 +531,8 @@ describe('Zetta', function() {
     })
 
     it('multiple hooks will fire in order for websocket connects', function(done) {
-      var fired = [];
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      const fired = [];
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
@@ -545,8 +545,8 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
-        var ws = new WebSocket('ws://localhost:' + port + '/events');
+        const port = z.httpServer.server.address().port;
+        const ws = new WebSocket('ws://localhost:' + port + '/events');
         ws.once('open', function() {
           assert.deepEqual(fired, [1, 2]);
           done();
@@ -555,7 +555,7 @@ describe('Zetta', function() {
     })
 
     it('returning an error from hook will result in a 500 on peer connect', function(done) {
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.onPeerConnect(function(request, socket, head, next) {
@@ -563,7 +563,7 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
+        const port = z.httpServer.server.address().port;
         zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
           .silent()
           .use(function(server) {
@@ -581,7 +581,7 @@ describe('Zetta', function() {
     })
 
     it('returning an error from hook will result in a 500 on websocket connect', function(done) {
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.silent();
       z.use(function(server) {
         server.httpServer.onEventWebsocketConnect(function(request, socket, head, next) {
@@ -589,8 +589,8 @@ describe('Zetta', function() {
         })
       })
       z.listen(0, function() {
-        var port = z.httpServer.server.address().port;
-        var ws = new WebSocket('ws://localhost:' + port + '/events');
+        const port = z.httpServer.server.address().port;
+        const ws = new WebSocket('ws://localhost:' + port + '/events');
         ws.once('error', function(err) {
           assert.equal(err.message, 'unexpected server response (500)');
           done();

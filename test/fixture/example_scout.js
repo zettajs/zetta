@@ -1,8 +1,8 @@
-var util = require('util');
-var Scout = require('../../zetta_runtime').Scout;
-var Driver = require('./example_driver');
+const util = require('util');
+const Scout = require('../../zetta_runtime').Scout;
+const Driver = require('./example_driver');
 
-var HubScout = module.exports = function() {
+const HubScout = module.exports = function() {
   this.count = 0;
   this.interval = 5000;
   Scout.call(this);

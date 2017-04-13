@@ -1,13 +1,13 @@
-var assert = require('assert');
-var http = require('http');
-var WebSocket = require('ws');
-var zetta = require('../');
-var zettacluster = require('zetta-cluster');
-var Scout = require('./fixture/example_scout');
-var VirtualDevice = require('../lib/virtual_device');
-var LedJSON = require('./fixture/virtual_device.json');
+const assert = require('assert');
+const http = require('http');
+const WebSocket = require('ws');
+const zetta = require('../');
+const zettacluster = require('zetta-cluster');
+const Scout = require('./fixture/example_scout');
+const VirtualDevice = require('../lib/virtual_device');
+const LedJSON = require('./fixture/virtual_device.json');
 
-var mockSocket = {
+const mockSocket = {
   on: function(){},
   subscribe: function(topic, cb){
     if(cb) {
@@ -18,14 +18,14 @@ var mockSocket = {
 };
 
 describe('Virtual Device', function() {
-  var base = null;
-  var cluster = null;
-  var device = null;
-  var socket = null;
-  var deviceJson = null;
-  var vdevice = null;
+  let base = null;
+  let cluster = null;
+  let device = null;
+  let socket = null;
+  let deviceJson = null;
+  let vdevice = null;
 
-  var startPort = 2600;
+  const startPort = 2600;
 
   beforeEach(function(done) {
     cluster = zettacluster({ zetta: zetta })
@@ -37,23 +37,23 @@ describe('Virtual Device', function() {
           done(new Error('socket not found'));
         }
 
-        var did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
+        const did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit1'].runtime._jsDevices[did];
-        var id = cluster.servers['detroit1'].id;
+        const id = cluster.servers['detroit1'].id;
         base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer(id) + '/devices/' + did;
 
         http.get('http://' + base, function(res) {
-          var buffer = [];
-          var len = 0;
+          const buffer = [];
+          let len = 0;
           res.on('readable', function() {
-            var data;
+            let data;
             while (data = res.read()) {
               buffer.push(data);
               len += data.length;
             }
           });
           res.on('end', function() {
-            var buf = Buffer.concat(buffer, len);
+            const buf = Buffer.concat(buffer, len);
             deviceJson = JSON.parse(buf.toString());
             vdevice = new VirtualDevice(deviceJson, socket);
             vdevice.on('ready', function() {
@@ -81,7 +81,7 @@ describe('Virtual Device', function() {
 
     it('call should work without a callback function', function(done) {
       vdevice.call('change')
-      var timer = setTimeout(function() {
+      const timer = setTimeout(function() {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
@@ -92,8 +92,8 @@ describe('Virtual Device', function() {
     });
 
     it('_update should always be called with data.actions in proper format', function(done) {
-      var called = 0;
-      var orig = vdevice._update;
+      let called = 0;
+      const orig = vdevice._update;
       vdevice._update = function(data) {
         called++;
         assert(Array.isArray(data.actions));
@@ -120,7 +120,7 @@ describe('Virtual Device', function() {
       vdevice.call('change', function(err) {
         assert.equal(err, null);
       });
-      var timer = setTimeout(function() {
+      const timer = setTimeout(function() {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
@@ -134,7 +134,7 @@ describe('Virtual Device', function() {
       vdevice.call('test', 321, function(err) {
         assert.equal(err, null);
       });
-      var timer = setTimeout(function() {
+      const timer = setTimeout(function() {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
@@ -147,7 +147,7 @@ describe('Virtual Device', function() {
 
     it('call should work with arguments, after peer reconnects', function(done) {
 
-      var timer = setTimeout(function() {
+      const timer = setTimeout(function() {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 1500);
 
@@ -157,14 +157,14 @@ describe('Virtual Device', function() {
         clearTimeout(timer);
         assert.equal(device.value, 999);
 
-        var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
+        const socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
         socket.close();
 
         setTimeout(function() {
           vdevice.call('test', 222, function(err) {
             assert.equal(err, null);
           });
-          var timer = setTimeout(function() {
+          const timer = setTimeout(function() {
             done(new Error('Faied to recv transition call on detroit device'));
           }, 1500);
 
@@ -243,10 +243,10 @@ describe('Virtual Device', function() {
 
     it('should recv data event after a client ws disconnected on the same topic', function(done) {
       
-      var url = 'ws://localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1/events?topic=testdriver%2F' + device.id + '%2Fbar';
+      const url = 'ws://localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1/events?topic=testdriver%2F' + device.id + '%2Fbar';
 
-      var recv = 0;
-      var wsRecv = 0;
+      let recv = 0;
+      let wsRecv = 0;
       vdevice.streams.bar.on('data', function(data) {
         recv++;
       });
@@ -255,7 +255,7 @@ describe('Virtual Device', function() {
 
       setTimeout(function() {
         assert.equal(recv, 1);
-        var socket = new WebSocket(url);
+        const socket = new WebSocket(url);
         socket.on('message', function() {
           wsRecv++;
         });
@@ -284,7 +284,7 @@ describe('Virtual Device', function() {
   describe('Device binary streams', function() {
 
     it('should only subscribe to a binary stream if used', function(done) {    
-      var topic = device.type + '/' + device.id + '/foobar';
+      const topic = device.type + '/' + device.id + '/foobar';
       assert.equal(cluster.servers['detroit1'].pubsub._listeners[topic], undefined);
       vdevice.streams.foobar.on('data', function() {});
       setTimeout(function() {
@@ -294,7 +294,7 @@ describe('Virtual Device', function() {
     });
 
     it('should pass binary data from local device to virtual', function(done) {    
-      var recv = 0;
+      let recv = 0;
       vdevice.streams.foobar.on('data', function(data) {
         recv++;
         assert.deepEqual(data, new Buffer([recv]));
@@ -318,7 +318,7 @@ describe('Virtual Device', function() {
 
   describe('basic unit tests', function() {
 
-    var device = null;
+    let device = null;
     beforeEach(function() {
       device = new VirtualDevice(LedJSON , mockSocket);
     });
@@ -334,14 +334,14 @@ describe('Virtual Device', function() {
     });
 
     it('will return the proper action given a name', function() {
-      var action = device._getAction('turn-on');
+      const action = device._getAction('turn-on');
       assert.ok(action);
       assert.equal(action.name, 'turn-on');
       assert.equal(action.fields.length, 1);
     });
 
     it('will return link given a title', function() {
-      var link = device._getLinkWithTitle('state');
+      const link = device._getLinkWithTitle('state');
       assert.ok(link);
       assert.equal(link.title, 'state');
       assert.equal(link.rel[0], 'monitor');
@@ -349,21 +349,21 @@ describe('Virtual Device', function() {
     });
 
     it('will return an array of links if searched for by rel', function() {
-      var links = device._getLinksWithRel('http://rels.zettajs.io/object-stream');
+      const links = device._getLinksWithRel('http://rels.zettajs.io/object-stream');
       assert.ok(links);
       assert.equal(links.length, 2);
       assert.ok(Array.isArray(links));
     });
 
     it('will parse out a topic for a particular link', function() {
-      var link = device._getLinkWithTitle('state');
-      var topic = device._getTopic(link);
+      const link = device._getLinkWithTitle('state');
+      const topic = device._getTopic(link);
       assert.equal(topic, 'led/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2/state');
     });
 
     it('will encode transition arguments into an object', function() {
-      var action = device._getAction('turn-on');
-      var data = device._encodeData(action, {});
+      const action = device._getAction('turn-on');
+      const data = device._encodeData(action, {});
       assert.ok(data);
       assert.equal(Object.keys(data)[0], 'action');
       assert.equal(data.action, 'turn-on');

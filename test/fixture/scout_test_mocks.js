@@ -1,11 +1,11 @@
-var util = require('util');
-var uuid = require('uuid');
-var zetta = require('../../zetta_runtime');
+const util = require('util');
+const uuid = require('uuid');
+const zetta = require('../../zetta_runtime');
 
 //Mock device single transition. Also takes constructor params optionally.
-var GoodDevice = function() {
+const GoodDevice = function() {
   zetta.Device.call(this);
-  var args = Array.prototype.slice.call(arguments);
+  const args = Array.prototype.slice.call(arguments);
   if(args.length > 0) {
     this.foo = args[0];
     this.bar = args[1];
@@ -28,7 +28,7 @@ GoodDevice.prototype.transition = function(cb) {
 }
 
 //Mock scout.
-var GoodScout = function() {
+const GoodScout = function() {
   zetta.Scout.call(this);
 };
 util.inherits(GoodScout, zetta.Scout);
@@ -40,9 +40,9 @@ GoodScout.prototype.init = function(cb) {
 
 //A mock registry so we can easily instrospect that we're calling the save and find functions correctly.
 //This also gets around some leveldb locking issues I was running into.
-var MockRegistry = function() {
+const MockRegistry = function() {
   this.machines = [];
-}
+};
 
 MockRegistry.prototype.save = function(machine, cb){
   this.machines.push(machine.properties());
@@ -59,7 +59,7 @@ MockRegistry.prototype.find = function(query, cb) {
   cb(null, []);
 };
 
-var MockPeerRegistry = function() {
+const MockPeerRegistry = function() {
   this.peers = [];
 };
 
@@ -89,7 +89,7 @@ MockPeerRegistry.prototype.get = function(id, cb) {
 };
 
 MockPeerRegistry.prototype.find = function(query, cb) {
-  var results = this.peers.filter(function(peer) {
+  const results = this.peers.filter(function(peer) {
     return query.match(peer);
   });
 
