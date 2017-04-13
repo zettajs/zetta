@@ -14,12 +14,13 @@ const MemRegistry = require('./fixture/mem_registry');
 const MemPeerRegistry = require('./fixture/mem_peer_registry');
 
 
-function FakeScout() {
-  ZScout.call(this);
-};
-util.inherits(FakeScout, ZScout);
+class FakeScout extends ZScout {
+  constructor() {
+    super();
+  }
 
-FakeScout.prototype.init = cb => {cb();};
+  init(cb) {cb();}
+}
 
 
 const mockSocket = {

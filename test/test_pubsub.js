@@ -5,22 +5,31 @@ const PubSub = require('../lib/pubsub_service');
 function makeFakeRequest(fd) {
   return { connection: { socket: { _handle: { fd: (fd || 1) }} }};
 }
-const Response = function(cb) {
-  this.cb = cb;
-};
-Response.prototype.push = function(topic, options) {
-  const r = this;
-  const Stream = function() {
-    this.topic = topic;
-    this.options = options;
-  };
-  Stream.prototype.end = data => {
-    r.cb(data);
-  };
-  Stream.prototype.on = () => {};
 
-  return new Stream();
-};
+class Response {
+  constructor(cb) {
+    this.cb = cb;
+  }
+
+  push(topic, options) {
+    const r = this;
+
+    class Stream {
+      constructor() {
+        this.topic = topic;
+        this.options = options;
+      }
+
+      end(data) {
+        r.cb(data);
+      }
+
+      on() {}
+    }
+
+    return new Stream();
+  }
+}
 
 describe('Pubsub Service', () => {
   it('exposes subscribe / publish', () => {

@@ -118,8 +118,7 @@ Zetta.prototype.use = function() {
   }
 
   function init() {
-    const machine = Object.create(constructor.prototype);
-    constructor.apply(machine, args.slice(1));
+    const machine = scientist.create(constructor, ...args.slice(1));
     machine._pubsub = self.pubsub;
     machine._log = self.log;
     machine._registry = self.runtime.registry;

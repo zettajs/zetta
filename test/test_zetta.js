@@ -158,12 +158,14 @@ describe('Zetta', () => {
   });
   it('will load a driver with the use() function', () => {
     const z = zetta({ registry: reg, peerRegistry }).silent();
-    function TestDriver() {
-      Device.call(this);
-    }
-    util.inherits(TestDriver, Device);
 
-    TestDriver.prototype.init = () => {};
+    class TestDriver extends Device {
+      constructor() {
+        super();
+      }
+
+      init() {}
+    }
 
     z.use(TestDriver);
     const s = z._scouts[0];
@@ -172,12 +174,14 @@ describe('Zetta', () => {
 
   it('will load an HTTP driver with the use() function', () => {
     const z = zetta({ registry: reg, peerRegistry }).silent();
-    function TestDriver() {
-      HttpDevice.call(this);
-    }
-    util.inherits(TestDriver, HttpDevice);
 
-    TestDriver.prototype.init = () => {};
+    class TestDriver extends HttpDevice {
+      constructor() {
+        super();
+      }
+
+      init() {}
+    }
 
     z.use(TestDriver);
     const s = z._scouts[0];
@@ -186,10 +190,13 @@ describe('Zetta', () => {
 
   it('will load a scout with the use() function', () => {
     const z = zetta({ registry: reg, peerRegistry }).silent();
-    function TestScout() {
-      Scout.call(this);
+
+    class TestScout extends Scout {
+      constructor() {
+        super();
+      }
     }
-    util.inherits(TestScout, Scout);
+
     z.use(TestScout);
     assert.equal(z._scouts.length, 2);
     const s = z._scouts[0];
@@ -204,39 +211,43 @@ describe('Zetta', () => {
   });
 
   it('will call init on the server prototype to ensure everything is wired up correctly.', done => {
-    function MockHttp(){}
-    MockHttp.prototype.init = () => {
-      done();
-    };
-    MockHttp.prototype.listen = port => {};
+    class MockHttp {
+      init() {
+        done();
+      }
+
+      listen(port) {}
+    }
 
     const z = zetta({ registry: reg, peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0);
-
   });
 
   it('will apply arguments to httpServer when listen() is called', done => {
-    function MockHttp(){}
-    MockHttp.prototype.init = () => {};
-    MockHttp.prototype.listen = port => {
-      assert.equal(port, 0);
-      done();
-    };
+    class MockHttp {
+      init() {}
+
+      listen(port) {
+        assert.equal(port, 0);
+        done();
+      }
+    }
 
     const z = zetta({ registry: reg, peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0);
-
   });
 
   it('will correctly apply the callback to httpServer when listen() is called', done => {
-    function MockHttp(){}
-    MockHttp.prototype.init = () => {};
-    MockHttp.prototype.listen = (port, cb) => {
-      assert.equal(port, 0);
-      cb(null);
-    };
+    class MockHttp {
+      init() {}
+
+      listen(port, cb) {
+        assert.equal(port, 0);
+        cb(null);
+      }
+    }
 
     const z = zetta({ registry: reg, peerRegistry }).silent();
     z.httpServer = new MockHttp();

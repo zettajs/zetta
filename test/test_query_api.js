@@ -15,20 +15,21 @@ const Scientist = require('zetta-scientist');
 const Runtime = require('../zetta_runtime');
 const Device = Runtime.Device;
 
-function TestDriver() {
-  Device.call(this);
-  this.foo = 'fooData';
-  this.bar = 'barData';
-  this.id = '123456789';
-}
-util.inherits(TestDriver, Device);
+class TestDriver extends Device {
+  constructor() {
+    super();
+    this.foo = 'fooData';
+    this.bar = 'barData';
+    this.id = '123456789';
+  }
 
-TestDriver.prototype.init = config => {
-  config
-    .name('Test')
-    .type('testdriver')
-    .state('ready');
-};
+  init(config) {
+    config
+      .name('Test')
+      .type('testdriver')
+      .state('ready');
+  }
+}
 
 
 function getHttpServer(app) {

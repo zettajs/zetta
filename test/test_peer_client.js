@@ -7,12 +7,14 @@ const assert = require('assert');
 const MockServer = { _name: '1234', httpServer: { spdyServer: {}}, log: {
   emit() {}
 }};
-const MockSocket = function() {
-  EventEmitter.call(this);
-  this.setAddress = () => {};
-  this.start = () => {};
-};
-util.inherits(MockSocket, EventEmitter);
+
+class MockSocket extends EventEmitter {
+  constructor() {
+    super();
+    this.setAddress = () => {};
+    this.start = () => {};
+  }
+}
 
 const urlEndingWithSlash = 'http://cloud.zettajs.io/';
 const urlEndingWithNoSlash = 'http://cloud.zettajs.io';

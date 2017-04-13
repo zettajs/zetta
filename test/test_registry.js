@@ -9,20 +9,21 @@ const Device = Runtime.Device;
 const DeviceRegistry = require('../lib/device_registry');
 const Query = require('calypso').Query;
 
-function TestDriver() {
-  Device.call(this);
-  this.foo = 'fooData';
-  this.bar = 'barData';
-  this.id = '123456789';
-}
-util.inherits(TestDriver, Device);
+class TestDriver extends Device {
+  constructor() {
+    super();
+    this.foo = 'fooData';
+    this.bar = 'barData';
+    this.id = '123456789';
+  }
 
-TestDriver.prototype.init = config => {
-  config
-    .name('Test')
-    .type('test')
-    .state('ready');
-};
+  init(config) {
+    config
+      .name('Test')
+      .type('test')
+      .state('ready');
+  }
+}
 
 const dbPath = path.join(__dirname, './.registry');
 

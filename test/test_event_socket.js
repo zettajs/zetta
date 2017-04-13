@@ -4,13 +4,15 @@ const EventEmitter = require('events').EventEmitter;
 
 const EventSocket = require('../lib/event_socket');
 
-const Ws = function() {
-  EventEmitter.call(this)
-};
-util.inherits(Ws, EventEmitter);
-Ws.prototype.send = function(data, options, cb) {
-  this.emit('onsend', data, options, cb);
-};
+class Ws extends EventEmitter {
+  constructor() {
+    super()
+  }
+
+  send(data, options, cb) {
+    this.emit('onsend', data, options, cb);
+  }
+}
 
 
 

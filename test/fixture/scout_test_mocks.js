@@ -3,96 +3,102 @@ const uuid = require('uuid');
 const zetta = require('../../zetta_runtime');
 
 //Mock device single transition. Also takes constructor params optionally.
-const GoodDevice = function() {
-  zetta.Device.call(this);
-  const args = Array.prototype.slice.call(arguments);
-  if(args.length > 0) {
-    this.foo = args[0];
-    this.bar = args[1];
+class GoodDevice extends zetta.Device {
+  constructor() {
+    super();
+    const args = Array.prototype.slice.call(arguments);
+    if(args.length > 0) {
+      this.foo = args[0];
+      this.bar = args[1];
+    }
+    this.vendorId = '1234567';
   }
-  this.vendorId = '1234567';
-};
-util.inherits(GoodDevice, zetta.Device);
 
-GoodDevice.prototype.init = function(config){
-  config
-    .name(`Good Device:${this.foo}`)
-    .type('test')
-    .state('ready')
-    .when('ready', {allow: ['transition']})
-    .map('transition', this.transition);
-}
+  init(config) {
+    config
+      .name(`Good Device:${this.foo}`)
+      .type('test')
+      .state('ready')
+      .when('ready', {allow: ['transition']})
+      .map('transition', this.transition);
+  }
 
-GoodDevice.prototype.transition = cb => {
-  cb();
+  transition(cb) {
+    cb();
+  }
 }
 
 //Mock scout.
-const GoodScout = function() {
-  zetta.Scout.call(this);
-};
-util.inherits(GoodScout, zetta.Scout);
+class GoodScout extends zetta.Scout {
+  constructor() {
+    super();
+  }
 
-GoodScout.prototype.init = function(cb) {
-  this.discover(GoodDevice, 'foo', 'bar');
-  return cb();
-};
+  init(cb) {
+    this.discover(GoodDevice, 'foo', 'bar');
+    return cb();
+  }
+}
 
 //A mock registry so we can easily instrospect that we're calling the save and find functions correctly.
 //This also gets around some leveldb locking issues I was running into.
-const MockRegistry = function() {
-  this.machines = [];
-};
-
-MockRegistry.prototype.save = function(machine, cb){
-  this.machines.push(machine.properties());
-  cb(null, this.machines);
-};
-
-MockRegistry.prototype.find = function(query, cb) {
-  this.machines.forEach(machine => {
-    if(query.match(machine)) {
-      cb(null, [machine]);
-    }
-  });
-
-  cb(null, []);
-};
-
-const MockPeerRegistry = function() {
-  this.peers = [];
-};
-
-MockPeerRegistry.prototype.save = function(peer, cb) {
-  if (!cb) {
-    cb = () => {};
-  }
-  this.peers.push(peer);
-  cb(null);
-};
-
-MockPeerRegistry.prototype.add = function(peer, cb) {
-  if (!peer.id) {
-    peer.id = uuid.v4();
+class MockRegistry {
+  constructor() {
+    this.machines = [];
   }
 
-  this.peers.push(peer);
-  cb(null, peer);
-};
+  save(machine, cb) {
+    this.machines.push(machine.properties());
+    cb(null, this.machines);
+  }
 
-MockPeerRegistry.prototype.get = function(id, cb) {
-  this.peers.forEach(peer => {
-    if (peer.id === id) {
-      cb(null, peer);
+  find(query, cb) {
+    this.machines.forEach(machine => {
+      if(query.match(machine)) {
+        cb(null, [machine]);
+      }
+    });
+
+    cb(null, []);
+  }
+}
+
+class MockPeerRegistry {
+  constructor() {
+    this.peers = [];
+  }
+
+  save(peer, cb) {
+    if (!cb) {
+      cb = () => {};
     }
-  });
-};
+    this.peers.push(peer);
+    cb(null);
+  }
 
-MockPeerRegistry.prototype.find = function(query, cb) {
-  const results = this.peers.filter(peer => query.match(peer));
+  add(peer, cb) {
+    if (!peer.id) {
+      peer.id = uuid.v4();
+    }
 
-  cb(null, results);
-};
+    this.peers.push(peer);
+    cb(null, peer);
+  }
+
+  get(id, cb) {
+    this.peers.forEach(peer => {
+      if (peer.id === id) {
+        cb(null, peer);
+      }
+    });
+  }
+
+  find(query, cb) {
+    const results = this.peers.filter(peer => query.match(peer));
+
+    cb(null, results);
+  }
+}
 
 exports.MockRegistry = MockRegistry;
 exports.MockPeerRegistry = MockPeerRegistry;

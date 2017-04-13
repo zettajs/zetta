@@ -352,18 +352,21 @@ describe('Driver', () => {
 
     it('handle remote update method, will update non reserved properties and remove old properties', done => {
       const Device = Runtime.Device;
-      const SomeDevice = function() {
-        this.ip = '1.2.3.4';
-        this.mutable = 'abc';
-        this.deleted = 'gone after update';
-        Device.call(this);
-      };
-      util.inherits(SomeDevice, Device);
-      SomeDevice.prototype.init = config => {
-        config
-          .type('some-device')
-          .name('device-1');
-      };
+
+      class SomeDevice extends Device {
+        constructor() {
+          this.ip = '1.2.3.4';
+          this.mutable = 'abc';
+          this.deleted = 'gone after update';
+          super();
+        }
+
+        init(config) {
+          config
+            .type('some-device')
+            .name('device-1');
+        }
+      }
 
       const machine = Scientist.init(Scientist.create(SomeDevice));
       machine._registry = reg;
@@ -381,29 +384,32 @@ describe('Driver', () => {
 
     it('can pass config a remoteUpdate function to be called when remoteUpdates are called', done => {
       const Device = Runtime.Device;
-      const SomeDevice = function() {
-        this.ip = '1.2.3.4';
-        this.mutable = 'abc';
-        this.deleted = 'gone after update';
-        Device.call(this);
-      };
-      util.inherits(SomeDevice, Device);
-      SomeDevice.prototype.init = config => {
-        config
-          .type('some-device')
-          .name('device-1')
-          .remoteUpdate(function(properties, cb) {
-            const self = this;
-            // make sure ip cant be updated
-            delete properties.ip;
 
-            Object.keys(properties).forEach(key => {
-              self[key] = properties[key];
-            });
+      class SomeDevice extends Device {
+        constructor() {
+          this.ip = '1.2.3.4';
+          this.mutable = 'abc';
+          this.deleted = 'gone after update';
+          super();
+        }
 
-            this.save(cb);
-          })
-      };
+        init(config) {
+          config
+            .type('some-device')
+            .name('device-1')
+            .remoteUpdate(function(properties, cb) {
+              const self = this;
+              // make sure ip cant be updated
+              delete properties.ip;
+
+              Object.keys(properties).forEach(key => {
+                self[key] = properties[key];
+              });
+
+              this.save(cb);
+            })
+        }
+      }
 
       const machine = Scientist.init(Scientist.create(SomeDevice));
       machine._registry = reg;
@@ -433,18 +439,21 @@ describe('Driver', () => {
 
     it('handle remote destroy method, will return true by default', done => {
       const Device = Runtime.Device;
-      const SomeDevice = function() {
-        this.ip = '1.2.3.4';
-        this.mutable = 'abc';
-        this.deleted = 'gone after update';
-        Device.call(this);
-      };
-      util.inherits(SomeDevice, Device);
-      SomeDevice.prototype.init = config => {
-        config
-          .type('some-device')
-          .name('device-1');
-      };
+
+      class SomeDevice extends Device {
+        constructor() {
+          super();
+          this.ip = '1.2.3.4';
+          this.mutable = 'abc';
+          this.deleted = 'gone after update';
+        }
+
+        init(config) {
+          config
+            .type('some-device')
+            .name('device-1');
+        }
+      }
 
       const machine = Scientist.init(Scientist.create(SomeDevice));
       machine._registry = reg;

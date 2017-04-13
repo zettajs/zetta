@@ -9,16 +9,19 @@ const PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 const PeerSocket = require('../lib/peer_socket');
 const Registry = require('./fixture/scout_test_mocks').MockRegistry;
 
-const Ws = function() {
-  EventEmitter.call(this)
-  this._socket = new net.Socket();
-  this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
-};
-util.inherits(Ws, EventEmitter);
-Ws.prototype.send = function(data, options, cb) {
-  const r = this.emit('onsend', data, options, cb);
-};
-Ws.prototype.close = () => {};
+class Ws extends EventEmitter {
+  constructor() {
+    super()
+    this._socket = new net.Socket();
+    this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
+  }
+
+  send(data, options, cb) {
+    const r = this.emit('onsend', data, options, cb);
+  }
+
+  close() {}
+}
 
 
 describe('EventBroker', () => {

@@ -3,9 +3,11 @@ const levelup = require('levelup');
 const memdown = require('memdown');
 const PeerRegistry = require('../../lib/peer_registry');
 
-const MemPeerRegistry = module.exports = function() {
-  const db = levelup({ db: memdown });
-  PeerRegistry.call(this, { db, collection: 'peers' });
-};
-util.inherits(MemPeerRegistry, PeerRegistry);
+class MemPeerRegistry extends PeerRegistry {
+  constructor() {
+    const db = levelup({ db: memdown });
+    super({ db, collection: 'peers' });
+  }
+}
 
+module.exports = MemPeerRegistry;
