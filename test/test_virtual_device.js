@@ -8,13 +8,13 @@ const VirtualDevice = require('../lib/virtual_device');
 const LedJSON = require('./fixture/virtual_device.json');
 
 const mockSocket = {
-  on: function(){},
-  subscribe: function(topic, cb){
+  on() {},
+  subscribe(topic, cb) {
     if(cb) {
       cb();
     }
   },
-  unsubscribe: function(){}
+  unsubscribe() {}
 };
 
 describe('Virtual Device', () => {

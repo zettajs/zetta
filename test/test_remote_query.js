@@ -23,13 +23,13 @@ FakeScout.prototype.init = cb => {cb();};
 
 
 const mockSocket = {
-  on: function(){},
-  subscribe: function(topic, cb){
+  on() {},
+  subscribe(topic, cb) {
     if(cb) {
       cb();
     }
   },
-  unsubscribe: function(){}
+  unsubscribe() {}
 };
 
 describe('Remote queries', () => {
@@ -169,8 +169,8 @@ describe('Remote queries', () => {
       });
 
       const sock = {
-        subscribe: function(){},
-        on: function(ev, data){
+        subscribe() {},
+        on(ev, data) {
           if(ev.indexOf('query:') === 0) {
             done();
           }
