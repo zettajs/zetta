@@ -6,15 +6,15 @@ const Driver = require('./fixture/example_driver');
 const MemRegistry = require('./fixture/mem_registry');
 const MemPeerRegistry = require('./fixture/mem_peer_registry');
 
-describe('Peering Event Streams', function() {
+describe('Peering Event Streams', () => {
   let cloud = null;
   let cloudUrl = null;
   const baseUrl = '/events';
   
-  beforeEach(function(done) {
+  beforeEach(done => {
     cloud = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     cloud.silent();
-    cloud.listen(0, function(err) {
+    cloud.listen(0, err => {
       if(err) {
         return done(err);  
       } 
@@ -23,25 +23,25 @@ describe('Peering Event Streams', function() {
     });
   });
   
-  afterEach(function(done) {
+  afterEach(done => {
     cloud.httpServer.server.close();
     done();
   });
   
-  it('will receive a _peer/connect event when subscribed', function(done) {
+  it('will receive a _peer/connect event when subscribed', done => {
     const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
-    z.listen(0, function(err) {
+    z.listen(0, err => {
       if(err) {
         return done(err);  
       }  
       const zPort = z.httpServer.server.address().port;
       const endpoint = `localhost:${zPort}`;
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: '_peer/connect' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -59,20 +59,20 @@ describe('Peering Event Streams', function() {
     });
   });
 
-  it('will receive a _peer/connect event when subscribed to **', function(done) {
+  it('will receive a _peer/connect event when subscribed to **', done => {
     const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
-    z.listen(0, function(err) {
+    z.listen(0, err => {
       if(err) {
         return done(err);  
       }
       const zPort = z.httpServer.server.address().port;
       const endpoint = `localhost:${zPort}`;
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: '**' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -91,24 +91,24 @@ describe('Peering Event Streams', function() {
   });
 
 
-  it('will receive a _peer/disconnect event when subscribed', function(done) {
+  it('will receive a _peer/disconnect event when subscribed', done => {
     const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
-    z.pubsub.subscribe('_peer/connect', function(topic, data) {
+    z.pubsub.subscribe('_peer/connect', (topic, data) => {
        const peer = data.peer; 
        peer.close();
     });
-    z.listen(0, function(err) {
+    z.listen(0, err => {
       if(err) {
         return done(err);  
       }  
       const zPort = z.httpServer.server.address().port;
       const endpoint = `localhost:${zPort}`;
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: '_peer/disconnect' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -126,23 +126,23 @@ describe('Peering Event Streams', function() {
     });
   });  
 
-  it('will receive a _peer/connect event when subscribed with wildcards', function(done) {
+  it('will receive a _peer/connect event when subscribed with wildcards', done => {
     const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
-    z.pubsub.subscribe('_peer/connect', function(topic, data) {
+    z.pubsub.subscribe('_peer/connect', (topic, data) => {
        const peer = data.peer; 
     });
-    z.listen(0, function(err) {
+    z.listen(0, err => {
       if(err) {
         return done(err);  
       }  
       const zPort = z.httpServer.server.address().port;
       const endpoint = `localhost:${zPort}`;
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: '_peer/*' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -159,25 +159,25 @@ describe('Peering Event Streams', function() {
       z.link(cloudUrl);
     });
   }); 
-  it('will receive a _peer/connect and _peer/disconnect event when subscribed with wildcards', function(done) {
+  it('will receive a _peer/connect and _peer/disconnect event when subscribed with wildcards', done => {
     const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     z.silent();
-    z.pubsub.subscribe('_peer/connect', function(topic, data) {
+    z.pubsub.subscribe('_peer/connect', (topic, data) => {
        const peer = data.peer; 
        peer.close();
     });
     let recv = 0;
-    z.listen(0, function(err) {
+    z.listen(0, err => {
       if(err) {
         return done(err);  
       }  
       const zPort = z.httpServer.server.address().port;
       const endpoint = `localhost:${zPort}`;
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: '_peer/*' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -202,14 +202,14 @@ describe('Peering Event Streams', function() {
   });
 });
 
-describe('Event Streams', function() {
+describe('Event Streams', () => {
   let cluster = null;
   let urls = [];
   const baseUrl = '/events';
   let devices = [];
   let validTopics = [];
   
-  beforeEach(function(done) {
+  beforeEach(done => {
     urls = [];
     devices = [];
     validTopics = [];
@@ -217,13 +217,13 @@ describe('Event Streams', function() {
       .server('cloud')
       .server('hub', [Driver, Driver], ['cloud'])
       .server('hub2', [Driver, Driver], ['cloud'])
-      .on('ready', function() {
+      .on('ready', () => {
         const app = cluster.servers['cloud'];
         urls.push(`localhost:${cluster.servers['cloud']._testPort}`);
         urls.push(`localhost:${cluster.servers['hub']._testPort}`);
         
-        ['hub', 'hub2'].forEach(function(hubname) {
-          Object.keys(cluster.servers[hubname].runtime._jsDevices).forEach(function(id) {
+        ['hub', 'hub2'].forEach(hubname => {
+          Object.keys(cluster.servers[hubname].runtime._jsDevices).forEach(id => {
             const device = cluster.servers[hubname].runtime._jsDevices[id];
             devices.push(device);
             validTopics.push(`${hubname}/${device.type}/${device.id}/state`);
@@ -231,30 +231,30 @@ describe('Event Streams', function() {
         })
         done();
       })
-      .run(function(err){
+      .run(err => {
         if (err) {
           return done(err);
         }
       });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     cluster.stop();
   });
 
-  describe('Websocket API', function() {
-    const itBoth = function(testMsg, test) {
+  describe('Websocket API', () => {
+    const itBoth = (testMsg, test) => {
       it(`for cloud, ${testMsg}`, test.bind(null, 0));
       it(`for hub, ${testMsg}`, test.bind(null, 1));
     };
 
-    itBoth('subscribing to a topic receives a subscription-ack', function(idx, done) {
+    itBoth('subscribing to a topic receives a subscription-ack', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: 'hub/led/1234/state' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           assert.equal(json.type, 'subscribe-ack');
           assert(json.timestamp);
@@ -266,13 +266,13 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('sending ping request will return a pong response without data field', function(idx, done) {
+    itBoth('sending ping request will return a pong response without data field', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'ping'};
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           assert.equal(json.type, 'pong');
           assert(json.timestamp);
@@ -283,13 +283,13 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('sending ping request will return a pong response with data field', function(idx, done) {
+    itBoth('sending ping request will return a pong response with data field', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'ping', data: 'Application data'};
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           assert.equal(json.type, 'pong');
           assert(json.timestamp);
@@ -300,17 +300,17 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('unsubscribing to a topic receives a unsubscription-ack', function(idx, done) {
+    itBoth('unsubscribing to a topic receives a unsubscription-ack', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: 'hub/led/1234/state' };
         ws.send(JSON.stringify(msg));
-        ws.once('message', function(buffer) {
+        ws.once('message', buffer => {
           const json = JSON.parse(buffer);
           const msg = { type: 'unsubscribe', subscriptionId: json.subscriptionId };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json2 = JSON.parse(buffer);  
             assert.equal(json2.type, 'unsubscribe-ack');
             assert(json2.timestamp);
@@ -322,17 +322,17 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('verify error message format', function(){});
+    itBoth('verify error message format', () => {});
 
-    itBoth('specific topic subscription only receives messages with that topic', function(idx, done) {
+    itBoth('specific topic subscription only receives messages with that topic', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = validTopics[0];
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -341,7 +341,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[1].call('change');
               devices[0].call('change');
             }, 50);
@@ -358,7 +358,7 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('multiple clients specific topic subscription only receives messages with that topic', function(idx, done) {
+    itBoth('multiple clients specific topic subscription only receives messages with that topic', (idx, done) => {
       const endpoint = urls[idx];
       const topic = validTopics[0];
       
@@ -366,17 +366,17 @@ describe('Event Streams', function() {
       let recv = 0;
 
       const ws1 = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws1.on('open', function() {
+      ws1.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws1.send(JSON.stringify(msg));
         let subscriptionId = null;
-        ws1.on('message', function(buffer) {
+        ws1.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             connected++;
             subscriptionId = json.subscriptionId;
             if (connected === 2) {
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[1].call('change');
                 devices[0].call('change');
               }, 50);
@@ -394,17 +394,17 @@ describe('Event Streams', function() {
       ws1.on('error', done);
 
       const ws2 = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws2.on('open', function() {
+      ws2.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws2.send(JSON.stringify(msg));
         let subscriptionId = null;
-        ws2.on('message', function(buffer) {
+        ws2.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             subscriptionId = json.subscriptionId;
             connected++;
             if (connected === 2) {
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
               }, 50);
             }
@@ -421,7 +421,7 @@ describe('Event Streams', function() {
       ws2.on('error', done);
     });
 
-    itBoth('multiple clients using different topic subscriptions only receive one message per event', function(idx, done) {
+    itBoth('multiple clients using different topic subscriptions only receive one message per event', (idx, done) => {
       const endpoint = urls[idx];
       const topic = validTopics[0];
       
@@ -429,17 +429,17 @@ describe('Event Streams', function() {
       let recv1 = 0;
 
       const ws1 = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws1.on('open', function() {
+      ws1.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws1.send(JSON.stringify(msg));
         let subscriptionId = null;
-        ws1.on('message', function(buffer) {
+        ws1.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             connected++;
             subscriptionId = json.subscriptionId;
             if (connected === 2) {
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
               }, 50);
             }
@@ -454,17 +454,17 @@ describe('Event Streams', function() {
 
       let recv2 = 0;
       const ws2 = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws2.on('open', function() {
+      ws2.on('open', () => {
         const msg = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
         ws2.send(JSON.stringify(msg));
         let subscriptionId = null;
-        ws2.on('message', function(buffer) {
+        ws2.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             subscriptionId = json.subscriptionId;
             connected++;
             if (connected === 2) {
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
               }, 50);
             }
@@ -477,23 +477,23 @@ describe('Event Streams', function() {
       });
       ws2.on('error', done);
 
-      setTimeout(function() {
+      setTimeout(() => {
         assert.equal(recv1, 1);
         assert.equal(recv2, 1);
         done();
       }, 250);
     });
 
-    itBoth('wildcard server topic subscription only receives messages with that topic', function(idx, done) {
+    itBoth('wildcard server topic subscription only receives messages with that topic', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       let topic = validTopics[0];
       topic = topic.replace('hub', '*');
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -502,7 +502,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[1].call('change');
               devices[0].call('change');
             }, 50);
@@ -519,23 +519,23 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('wildcard topic and static topic subscription will receive messages for both subscriptions', function(idx, done) {
+    itBoth('wildcard topic and static topic subscription will receive messages for both subscriptions', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let lastSubscriptionId = null;
       let count = 0;
-      ws.on('open', function() {
+      ws.on('open', () => {
         let msg = { type: 'subscribe', topic: validTopics[0] };
         ws.send(JSON.stringify(msg));
         msg = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
             assert(json.timestamp);
             assert(json.subscriptionId);
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
             }, 50);
           } else {
@@ -555,19 +555,19 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('wildcard device id topic subscription and cloud app query both will recieve data', function(idx, done) {
+    itBoth('wildcard device id topic subscription and cloud app query both will recieve data', (idx, done) => {
       const endpoint = urls[idx];
       let subscriptionId = null;
       const topic = 'hub/testdriver/*/state';
 
       const runtime = cluster.servers['cloud'].runtime;
       const query = runtime.from('hub').where({ type: 'testdriver', id: devices[0].id });
-      runtime.observe(query, function(device) {
+      runtime.observe(query, device => {
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'subscribe', topic: topic };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             if(json.type === 'subscribe-ack') {
               assert.equal(json.type, 'subscribe-ack');
@@ -576,7 +576,7 @@ describe('Event Streams', function() {
               assert(json.subscriptionId);
               subscriptionId = json.subscriptionId;
 
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
               }, 50);
             } else {
@@ -593,19 +593,19 @@ describe('Event Streams', function() {
       });
     });
 
-    itBoth('wildcard device id topic subscription and hub app query both will recieve data', function(idx, done) {
+    itBoth('wildcard device id topic subscription and hub app query both will recieve data', (idx, done) => {
       const endpoint = urls[idx];
       let subscriptionId = null;
       const topic = 'hub/testdriver/*/state';
 
       const runtime = cluster.servers['hub'].runtime;
       const query = runtime.where({ type: 'testdriver', id: devices[0].id });
-      runtime.observe(query, function(device) {
+      runtime.observe(query, device => {
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'subscribe', topic: topic };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             if(json.type === 'subscribe-ack') {
               assert.equal(json.type, 'subscribe-ack');
@@ -614,7 +614,7 @@ describe('Event Streams', function() {
               assert(json.subscriptionId);
               subscriptionId = json.subscriptionId;
 
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
               }, 50);
             } else {
@@ -631,16 +631,16 @@ describe('Event Streams', function() {
       });
     });
 
-    it('wildcard server topic subscription receives messages from both hubs', function(done) {
+    it('wildcard server topic subscription receives messages from both hubs', done => {
       const endpoint = urls[0];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = '*/testdriver/*/state';
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
         let recv = 0;
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -649,7 +649,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
               devices[2].call('change');
             }, 50);
@@ -669,23 +669,23 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
     
-    it('wildcard topic ** will subscribe to all topics for both hubs', function(done) {
+    it('wildcard topic ** will subscribe to all topics for both hubs', done => {
       const endpoint = urls[0]; // cloud
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = '**';
 
       const neededTopics = [];
-      devices.forEach(function(device, idx) {
+      devices.forEach((device, idx) => {
         const server = (idx < 2) ? 'hub' : 'hub2';
         neededTopics.push(`${server}/${device.type}/${device.id}/state`);
         neededTopics.push(`${server}/${device.type}/${device.id}/logs`);
       });
 
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -694,7 +694,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
               devices[1].call('change');
               devices[2].call('change');
@@ -718,7 +718,7 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    it('wildcard topic ** will subscribe to all topics for single hub', function(done) {
+    it('wildcard topic ** will subscribe to all topics for single hub', done => {
       const endpoint = urls[1]; // hub
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
@@ -731,10 +731,10 @@ describe('Event Streams', function() {
         neededTopics.push(`hub/${device.type}/${device.id}/logs`);
       }
 
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -743,7 +743,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
               devices[1].call('change');
               devices[2].call('change');
@@ -767,17 +767,17 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('wildcard topic for single peer receives all messages for all topics', function(idx, done) {
+    itBoth('wildcard topic for single peer receives all messages for all topics', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       let count = 0;
       const topic = 'hub/testdriver/*/state';
       let lastTopic = null;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -786,7 +786,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
               devices[1].call('change');
             }, 50);
@@ -808,17 +808,17 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
     
-    itBoth('wildcard topic for device id and stream types receives all messages for all topics', function(idx, done) {
+    itBoth('wildcard topic for device id and stream types receives all messages for all topics', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       let count = 0;
       const topic = 'hub/testdriver/**';
       let lastTopic = null;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -827,7 +827,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
               devices[1].call('change');
             }, 50);
@@ -849,15 +849,15 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('**/led/<device_id>/state will match valid topic', function(idx, done) {
+    itBoth('**/led/<device_id>/state will match valid topic', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = validTopics[0].replace('hub/', '**/');
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -866,7 +866,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[1].call('change');
               devices[0].call('change');
             }, 50);
@@ -883,15 +883,15 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('**/<device_id>/state will match valid topic from device', function(idx, done) {
+    itBoth('**/<device_id>/state will match valid topic from device', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = validTopics[0].replace('hub/', '**/');
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -900,7 +900,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[1].call('change');
               devices[0].call('change');
             }, 50);
@@ -917,15 +917,15 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('**/state will match valid topic from device', function(idx, done) {
+    itBoth('**/state will match valid topic from device', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = validTopics[0].replace('hub/', '**/');
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -934,7 +934,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
             }, 50);
           } else {
@@ -951,16 +951,16 @@ describe('Event Streams', function() {
     });
 
 
-    itBoth('subscribing to logs topic on device will get properly formated response', function(idx, done) {
+    itBoth('subscribing to logs topic on device will get properly formated response', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = 'hub/testdriver/*/logs';
       let lastTopic = null;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -968,7 +968,7 @@ describe('Event Streams', function() {
             assert.equal(json.topic, topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
             }, 50);
           } else {
@@ -992,14 +992,14 @@ describe('Event Streams', function() {
     });
 
 
-    itBoth('topic that doesnt exist still opens stream', function(idx, done) {
+    itBoth('topic that doesnt exist still opens stream', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       const topic = 'blah/foo/1/blah';
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           assert.equal(json.type, 'subscribe-ack');
           assert(json.timestamp);
@@ -1011,14 +1011,14 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    it('subscription cloud will get _peer/connect events from hub', function(done) {
+    it('subscription cloud will get _peer/connect events from hub', done => {
       const endpoint = urls[0];
       const topic = 'hub/**';
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-      ws.on('open', function() {
+      ws.on('open', () => {
         ws.send(JSON.stringify({ type: 'subscribe', topic: topic }));
         
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if (json.type === 'subscribe-ack') {
             const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
@@ -1036,24 +1036,24 @@ describe('Event Streams', function() {
       });
     });
 
-    itBoth('subscription to non existent hub does not return data for that subscriptionId', function(idx, done) {
+    itBoth('subscription to non existent hub does not return data for that subscriptionId', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);   
       const validTopic = validTopics[0];
       const invalidTopic = validTopic.replace('hub/', 'notahub/');
       let invalidSubscriptionId = null;
 
-      ws.on('open', function() {
+      ws.on('open', () => {
         ws.send(JSON.stringify({ type: 'subscribe', topic: invalidTopic }));
         ws.send(JSON.stringify({ type: 'subscribe', topic: validTopic }));
 
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if (json.type === 'subscribe-ack') {
             if (json.topic === invalidTopic) {
               invalidSubscriptionId = json.subscriptionId;
             }
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
             }, 50)
           } else {
@@ -1065,7 +1065,7 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('wildcard and specific topic will each publish a message on a subscription', function(idx, done) {
+    itBoth('wildcard and specific topic will each publish a message on a subscription', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
@@ -1073,12 +1073,12 @@ describe('Event Streams', function() {
       let ackCount = 0;
       const topicOne = validTopics[0];
       const topicTwo = 'hub/testdriver/*/state';
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msgOne = { type: 'subscribe', topic: topicOne };
         const msgTwo = { type: 'subscribe', topic: topicTwo };
         ws.send(JSON.stringify(msgOne));
         ws.send(JSON.stringify(msgTwo));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1087,7 +1087,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
             ackCount++;
-            setTimeout(function() {
+            setTimeout(() => {
               for(let i=0; i<11; i++) {
                 devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
               }
@@ -1108,17 +1108,17 @@ describe('Event Streams', function() {
       ws.on('error', done);     
     });
 
-    itBoth('adding limit to subscription should limit number of messages received', function(idx, done){
+    itBoth('adding limit to subscription should limit number of messages received', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       let count = 0;
       const topic = validTopics[0];
       const data = null;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic, limit: 10 };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1127,7 +1127,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               for(let i=0; i<15; i++) {
                 devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
               }
@@ -1141,7 +1141,7 @@ describe('Event Streams', function() {
 
             count++;
             if(count === 10) {
-              setTimeout(function() {
+              setTimeout(() => {
                 assert.equal(count, 10);
                 done();
               }, 200)
@@ -1152,17 +1152,17 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('when limit is reached a unsubscribe-ack should be received', function(idx, done){
+    itBoth('when limit is reached a unsubscribe-ack should be received', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       let count = 0;
       const topic = validTopics[0];
       const data = null;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic, limit: 10 };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1170,7 +1170,7 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-            setTimeout(function() {
+            setTimeout(() => {
               for(let i=0; i<11; i++) {
                 devices[0].call((i % 2 === 0) ? 'change' : 'prepare');
               }
@@ -1194,17 +1194,17 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('when limit is reached with a query selector a unsubscribe-ack should be received', function(idx, done){
+    itBoth('when limit is reached with a query selector a unsubscribe-ack should be received', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       let count = 0;
       const topic = `hub/testdriver/${devices[0].id}/bar?select data where data >= 5`;
       const data = null;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic, limit: 10 };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1212,7 +1212,7 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-            setTimeout(function() {
+            setTimeout(() => {
               for(let i=0; i<16; i++) {
                 devices[0].incrementStreamValue();
               }
@@ -1236,16 +1236,16 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('query field selector should only return properties in selection', function(idx, done){
+    itBoth('query field selector should only return properties in selection', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const count = 0;
       const topic = `hub/testdriver/${devices[0].id}/bar?select data where data >= 1`;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1253,7 +1253,7 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].incrementStreamValue();
             }, 50);
           } else if(json.type === 'event') {
@@ -1269,17 +1269,17 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('query field selector * should all properties in selection', function(idx, done){
+    itBoth('query field selector * should all properties in selection', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const count = 0;
       const topic = `hub/testdriver/${devices[0].id}/fooobject?select * where data.val >= 2`;
       const data = { foo: 'bar', val: 2 };
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1287,7 +1287,7 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].publishStreamObject(data);
             }, 50);
           } else if(json.type === 'event') {
@@ -1304,17 +1304,17 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('query field selector should return only selected properties', function(idx, done){
+    itBoth('query field selector should return only selected properties', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const count = 0;
       const topic = `hub/testdriver/${devices[0].id}/fooobject?select data.val`;
       const data = { foo: 'bar', val: 2 };
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1322,7 +1322,7 @@ describe('Event Streams', function() {
             assert(json.topic);
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].publishStreamObject(data);
             }, 50);
           } else if(json.type === 'event') {
@@ -1339,14 +1339,14 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('subscribing to all ** and then unsubscribing followed by a peer connecting wont crash zetta', function(idx, done){
+    itBoth('subscribing to all ** and then unsubscribing followed by a peer connecting wont crash zetta', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       const topic = '**';
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1360,9 +1360,9 @@ describe('Event Streams', function() {
             z.silent();
             z.name('some-new-peer')
             z.link(`http://${urls[0]}`);
-            z.use(function(server) {
-              server.pubsub.subscribe('_peer/connect', function(topic, data) {
-                setTimeout(function() {
+            z.use(server => {
+              server.pubsub.subscribe('_peer/connect', (topic, data) => {
+                setTimeout(() => {
                   done();
                 }, 400);
               });
@@ -1374,17 +1374,17 @@ describe('Event Streams', function() {
       ws.on('error', done);  
     });
 
-    itBoth('Passing filterMultiple options to ws only one data event will be sent', function(idx, done) {
+    itBoth('Passing filterMultiple options to ws only one data event will be sent', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}?filterMultiple=true`);
       const topic = validTopics[0];
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         const msg2 = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
         ws.send(JSON.stringify(msg));
         ws.send(JSON.stringify(msg2));
         const subscriptions = [];
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1392,7 +1392,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptions.push(json.subscriptionId);
             if (subscriptions.length === 2) {
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
               }, 50);
             }
@@ -1401,7 +1401,7 @@ describe('Event Streams', function() {
             assert(json.timestamp);
             assert.equal(json.topic, topic);
             assert.equal(json.subscriptionId.length, subscriptions.length);
-            subscriptions.forEach(function(id) {
+            subscriptions.forEach(id => {
               assert(json.subscriptionId.indexOf(id) >= -1);
             });
             assert(json.data);
@@ -1412,19 +1412,19 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('Passing filterMultiple options to ws will apply limits for both topics', function(idx, done) {
+    itBoth('Passing filterMultiple options to ws will apply limits for both topics', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}?filterMultiple=true`);
       const topic = validTopics[0];
       const topic2 = 'hub/testdriver/*/state';
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic, limit: 2 };
         const msg2 = { type: 'subscribe', topic: topic2, limit: 3 };
         ws.send(JSON.stringify(msg));
         ws.send(JSON.stringify(msg2));
         const subscriptions = {};
         
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1432,7 +1432,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptions[json.subscriptionId] = 0;
             if (Object.keys(subscriptions).length === 2) {
-              setTimeout(function() {
+              setTimeout(() => {
                 devices[0].call('change');
                 devices[0].call('prepare');
                 devices[0].call('change');
@@ -1443,7 +1443,7 @@ describe('Event Streams', function() {
             assert.equal(json.topic, topic);
             assert(json.data);
 
-            json.subscriptionId.forEach(function(id) {
+            json.subscriptionId.forEach(id => {
               subscriptions[id]++;
             });
 
@@ -1456,25 +1456,25 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('Passing filterMultiple options to ws will have no effect on topics with caql query', function(idx, done) {
+    itBoth('Passing filterMultiple options to ws will have no effect on topics with caql query', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}?filterMultiple=true`);
       const topic = `${validTopics[0]}?select *`;
       const topic2 = 'hub/testdriver/*/state';
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         const msg2 = { type: 'subscribe', topic: topic2 };
         ws.send(JSON.stringify(msg));
         ws.send(JSON.stringify(msg2));
         let received = 0;
         
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
             assert(json.timestamp);
             assert(json.subscriptionId);
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].call('change');
             }, 50);
           } else if (json.type === 'event') {
@@ -1493,17 +1493,17 @@ describe('Event Streams', function() {
     });
 
       
-    itBoth('subscribing to a query with hub for hub will return all devices', function(idx, done) {
+    itBoth('subscribing to a query with hub for hub will return all devices', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = 'hub/query/where type is not missing';
       let count = 0;
       const expected = (idx === 1) ? 2 : 2;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1528,17 +1528,17 @@ describe('Event Streams', function() {
     });
 
 
-    itBoth('subscribing to a query with * for hub will return all devices', function(idx, done) {
+    itBoth('subscribing to a query with * for hub will return all devices', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = '*/query/where type is not missing';
       let count = 0;
       const expected = (idx === 1) ? 2 : 4; // cloud will have 4 devices
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1562,15 +1562,15 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
 
-    itBoth('when data is 0 value it should be formatted correctly', function(idx, done) {
+    itBoth('when data is 0 value it should be formatted correctly', (idx, done) => {
       const endpoint = urls[idx];
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       let subscriptionId = null;
       const topic = `hub/testdriver/${devices[0].id}/bar`;
-      ws.on('open', function() {
+      ws.on('open', () => {
         const msg = { type: 'subscribe', topic: topic };
         ws.send(JSON.stringify(msg));
-        ws.on('message', function(buffer) {
+        ws.on('message', buffer => {
           const json = JSON.parse(buffer);
           if(json.type === 'subscribe-ack') {
             assert.equal(json.type, 'subscribe-ack');
@@ -1579,7 +1579,7 @@ describe('Event Streams', function() {
             assert(json.subscriptionId);
             subscriptionId = json.subscriptionId;
 
-            setTimeout(function() {
+            setTimeout(() => {
               devices[0].bar = -1;
               devices[0].incrementStreamValue();
             }, 50);
@@ -1596,16 +1596,16 @@ describe('Event Streams', function() {
       ws.on('error', done);
     });
     
-    describe('Protocol Errors', function() {
+    describe('Protocol Errors', () => {
 
-      const makeTopicStringErrorsTest = function(topic) {
-        itBoth(`invalid stream topic "${topic}" should result in a 400 error`, function(idx, done){
+      const makeTopicStringErrorsTest = topic => {
+        itBoth(`invalid stream topic "${topic}" should result in a 400 error`, (idx, done) => {
           const endpoint = urls[idx];
           const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
-          ws.on('open', function() {
+          ws.on('open', () => {
             const msg = { type: 'subscribe', topic: topic };
             ws.send(JSON.stringify(msg));
-            ws.on('message', function(buffer) {
+            ws.on('message', buffer => {
               const json = JSON.parse(buffer);
               assert(json.timestamp);
               assert.equal(json.topic, topic);
@@ -1626,17 +1626,17 @@ describe('Event Streams', function() {
       makeTopicStringErrorsTest('hub/');
       makeTopicStringErrorsTest('{hub.+}/');
 
-      itBoth('invalid stream query should result in a 400 error', function(idx, done){
+      itBoth('invalid stream query should result in a 400 error', (idx, done) => {
         const endpoint = urls[idx];
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         const subscriptionId = null;
         const count = 0;
         const topic = `hub/testdriver/${devices[0].id}/fooobject?invalid stream query`;
         const data = { foo: 'bar', val: 2 };
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'subscribe', topic: topic };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             assert(json.timestamp);
             assert.equal(json.topic, topic);
@@ -1648,16 +1648,16 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('invalid subscribe should result in a 400 error', function(idx, done){
+      itBoth('invalid subscribe should result in a 400 error', (idx, done) => {
         const endpoint = urls[idx];
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         const subscriptionId = null;
         const count = 0;
         const topic = `hub/testdriver/${devices[0].id}/fooobject`;
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'subscribe' };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             assert(json.timestamp);
             assert.equal(json.code, 400);
@@ -1668,15 +1668,15 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('unsubscribing from an invalid subscriptionId should result in a 405 error', function(idx, done){
+      itBoth('unsubscribing from an invalid subscriptionId should result in a 405 error', (idx, done) => {
         const endpoint = urls[idx];
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         const subscriptionId = null;
         const count = 0;
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'unsubscribe', subscriptionId: 123 };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             assert(json.timestamp);
             assert.equal(json.code, 405);
@@ -1687,15 +1687,15 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('invalid type should result in a 405 error', function(idx, done){
+      itBoth('invalid type should result in a 405 error', (idx, done) => {
         const endpoint = urls[idx];
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         const subscriptionId = null;
         const count = 0;
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'not-a-type', topic: '**' };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             assert(json.timestamp);
             assert.equal(json.code, 405);
@@ -1706,15 +1706,15 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('unsubscribing from a missing subscriptionId should result in a 400 error', function(idx, done){
+      itBoth('unsubscribing from a missing subscriptionId should result in a 400 error', (idx, done) => {
         const endpoint = urls[idx];
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         const subscriptionId = null;
         const count = 0;
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { type: 'unsubscribe' };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             assert(json.timestamp);
             assert.equal(json.code, 400);
@@ -1725,15 +1725,15 @@ describe('Event Streams', function() {
         ws.on('error', done);  
       });
 
-      itBoth('on invalid message should result in a 400 error', function(idx, done){
+      itBoth('on invalid message should result in a 400 error', (idx, done) => {
         const endpoint = urls[idx];
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         const subscriptionId = null;
         const count = 0;
-        ws.on('open', function() {
+        ws.on('open', () => {
           const msg = { test: 123 };
           ws.send(JSON.stringify(msg));
-          ws.on('message', function(buffer) {
+          ws.on('message', buffer => {
             const json = JSON.parse(buffer);
             assert(json.timestamp);
             assert.equal(json.code, 400);
@@ -1749,7 +1749,7 @@ describe('Event Streams', function() {
 
   });
 
-  describe('SPDY API', function() {
+  describe('SPDY API', () => {
   });
 
 });

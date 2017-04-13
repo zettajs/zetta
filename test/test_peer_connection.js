@@ -15,19 +15,19 @@ const Ws = function() {
   this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
 };
 util.inherits(Ws, EventEmitter);
-Ws.prototype.close = function() {};
+Ws.prototype.close = () => {};
 Ws.prototype.send = function(data, options, cb) {
   const r = this.emit('onsend', data, options, cb);
 };
 
 
-describe('Peer Connection Logic', function() {
+describe('Peer Connection Logic', () => {
   let cloud = null;
   let cloudUrl = null;
-  beforeEach(function(done) {
+  beforeEach(done => {
     cloud = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
     cloud.silent();
-    cloud.listen(0, function(err) {
+    cloud.listen(0, err => {
       if (err) {
         return done(err);
       }
@@ -37,19 +37,19 @@ describe('Peer Connection Logic', function() {
     })
   });
 
-  afterEach(function(done) {
+  afterEach(done => {
     cloud.httpServer.server.close();
     done();
   });
 
-  describe('#link', function() {
-    it('should work before .listen is ran', function(done) {
+  describe('#link', () => {
+    it('should work before .listen is ran', done => {
       const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
         .link(cloudUrl)
         .listen(0);
 
-      z.pubsub.subscribe('_peer/connect', function(topic, data) {
+      z.pubsub.subscribe('_peer/connect', (topic, data) => {
         if (data.peer.url.indexOf(cloudUrl) === 0) {
           done();
         } else {
@@ -58,14 +58,14 @@ describe('Peer Connection Logic', function() {
       })
     })
 
-    it('should work after .listen is ran', function(done) {
+    it('should work after .listen is ran', done => {
       const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
-        .listen(0, function() {
+        .listen(0, () => {
           z.link(cloudUrl);
         });
 
-      z.pubsub.subscribe('_peer/connect', function(topic, data) {
+      z.pubsub.subscribe('_peer/connect', (topic, data) => {
         if (data.peer.url.indexOf(cloudUrl) === 0) {
           done();
         } else {
@@ -74,24 +74,22 @@ describe('Peer Connection Logic', function() {
       })
     })
 
-    it('should wire up request extensions', function(done) {
+    it('should wire up request extensions', done => {
       let called = false;
       const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
-        .use(function(server) {
-          server.onPeerRequest(function(client) {
+        .use(server => {
+          server.onPeerRequest(client => {
             client
-              .use(function(handle) {
-                handle('request', function(pipeline) {
-                  return pipeline.map(function(env) {
-                    assert(env.request);
-                    if (!called) {
-                      called = true;
-                      done();
-                    }
-                    return env;
-                  });
-                });
+              .use(handle => {
+                handle('request', pipeline => pipeline.map(env => {
+                  assert(env.request);
+                  if (!called) {
+                    called = true;
+                    done();
+                  }
+                  return env;
+                }));
               });
           });
         })
@@ -99,31 +97,29 @@ describe('Peer Connection Logic', function() {
         .listen(0);
     });
 
-    it('should wire up response extensions', function(done) {
+    it('should wire up response extensions', done => {
       const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .silent()
-        .use(function(server) {
-          server.onPeerResponse(function(request) {
-            return request
-              .map(function(env) {
-                assert(env.request);
-                assert(env.response);
-                assert(env.upgrade);
-                done();
-                return env;
-              });
-          });
+        .use(server => {
+          server.onPeerResponse(request => request
+            .map(env => {
+              assert(env.request);
+              assert(env.response);
+              assert(env.upgrade);
+              done();
+              return env;
+            }));
         })
         .link(cloudUrl)
         .listen(0);
     });
   })
 
-  describe('Handle spdy agent errors', function() {
-    it('should catch error event', function(done) {
+  describe('Handle spdy agent errors', () => {
+    it('should catch error event', done => {
       const ws = new Ws();
       const socket = new PeerSocket(ws, 'some-peer', new MemPeerRegistry);
-      socket.on('error', function(err) {
+      socket.on('error', err => {
         if (err.message === 'spdy-error') {
           done();
         }
@@ -132,16 +128,16 @@ describe('Peer Connection Logic', function() {
     });
   })
 
-  describe('Peer_socket error events', function() {
+  describe('Peer_socket error events', () => {
 
-    it('http-server should handle multiple error events', function(done) {
+    it('http-server should handle multiple error events', done => {
       const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .name('test-peer')
         .silent()
         .link(cloudUrl)
         .listen(0);
 
-      const onConnect = function(topic, data) {
+      const onConnect = (topic, data) => {
         cloud.pubsub.unsubscribe('_peer/connect', onConnect);
         assert(cloud.httpServer.peers['test-peer']);
         cloud.pubsub.subscribe('_peer/disconnect', onDisconnect);
@@ -150,7 +146,7 @@ describe('Peer Connection Logic', function() {
         peer.emit('error', new Error('some error'));
       };
 
-      var onDisconnect = function(topic, data) {
+      var onDisconnect = (topic, data) => {
         assert.equal(data.peer.state, PeerSocket.DISCONNECTED);
         cloud.pubsub.unsubscribe('_peer/disconnect', onDisconnect);
         done();
@@ -160,14 +156,14 @@ describe('Peer Connection Logic', function() {
     });
 
 
-    it('http-server should handle multiple end events', function(done) {
+    it('http-server should handle multiple end events', done => {
       const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .name('test-peer')
         .silent()
         .link(cloudUrl)
         .listen(0);
       
-      const onConnect =  function(topic, data) {
+      const onConnect =  (topic, data) => {
         assert(cloud.httpServer.peers['test-peer']);
         cloud.pubsub.unsubscribe('_peer/connect', onConnect);
         cloud.pubsub.subscribe('_peer/disconnect', onDisconnect);
@@ -176,7 +172,7 @@ describe('Peer Connection Logic', function() {
         peer.emit('end');
       };
 
-      var onDisconnect = function(topic, data) {
+      var onDisconnect = (topic, data) => {
         assert.equal(data.peer.state, PeerSocket.DISCONNECTED);
         cloud.pubsub.unsubscribe('_peer/disconnect', onDisconnect);
         done();
@@ -187,24 +183,24 @@ describe('Peer Connection Logic', function() {
 
   });
 
-  describe('Handle timings with ws connects vs actual peer connects', function() {
+  describe('Handle timings with ws connects vs actual peer connects', () => {
     let hub = null;
-    beforeEach(function(done) {
+    beforeEach(done => {
       hub = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .name('peer-1')
         .silent()
         .listen(0, done);
     })
 
-    afterEach(function(done) {
+    afterEach(done => {
       hub.httpServer.server.close();
       done();
     })
 
-    it('peer connects should be the same peer object on the cloud', function(done) {
+    it('peer connects should be the same peer object on the cloud', done => {
       const client = new PeerClient(cloudUrl, hub);
 
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
         assert(data.peer === cloud.httpServer.peers['peer-1']);
         done();
       });
@@ -212,11 +208,11 @@ describe('Peer Connection Logic', function() {
       client.start();
     })
 
-    it('peer connects should be the same peer object on the cloud with reconnect', function(done) {
+    it('peer connects should be the same peer object on the cloud with reconnect', done => {
       const client = new PeerClient(cloudUrl, hub);
 
       let count = 0;
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
         count++;
         assert(data.peer === cloud.httpServer.peers['peer-1']);
         if (count === 2) {
@@ -233,17 +229,17 @@ describe('Peer Connection Logic', function() {
 
       let lastPeer = null;
       let count = 0;
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
         count++;
         assert(data.peer === cloud.httpServer.peers['peer-1']);
         if (count === 1) {
           lastPeer = data.peer;
           cloud.httpServer.peers['peer-1'].close();
 
-          client.once('connecting', function() {
+          client.once('connecting', () => {
             const origRequest = client.onRequest;
             client.server.removeListener('request', client.onRequest);
-            client.onRequest = function(req, res) {
+            client.onRequest = (req, res) => {
               client.ws.close();
             };
             client.server.once('request', client.onRequest.bind(client));

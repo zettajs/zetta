@@ -18,16 +18,16 @@ util.inherits(Ws, EventEmitter);
 Ws.prototype.send = function(data, options, cb) {
   const r = this.emit('onsend', data, options, cb);
 };
-Ws.prototype.close = function() {};
+Ws.prototype.close = () => {};
 
 
-describe('EventBroker', function() {
+describe('EventBroker', () => {
   const msg = JSON.stringify({topic: '_peer/connect', data: {somedata: 1}, timestamp: new Date().getTime()});
   let query = null;
   let app = null;
   let broker = null;
   let peerRegistry = null;
-  beforeEach(function() {
+  beforeEach(() => {
     const reg = new Registry();
     peerRegistry = new PeerRegistry();
     app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
@@ -36,7 +36,7 @@ describe('EventBroker', function() {
   });
 
 
-  it('it should add peer by server name', function() {
+  it('it should add peer by server name', () => {
     const ws = new Ws();
     const peer = new PeerSocket(ws, 'some-peer', peerRegistry);
     peer.name = 'some-peer2';
@@ -44,12 +44,12 @@ describe('EventBroker', function() {
     assert.equal(peer, broker.peers['some-peer2']);
   });
 
-  it('it should pass data from local pubsub to clients', function(done) {
+  it('it should pass data from local pubsub to clients', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, query);
     broker.client(client);
 
-    ws.on('onsend', function(buf) {
+    ws.on('onsend', buf => {
       const msg = JSON.parse(buf);
       assert.equal(msg.topic, '_peer/connect');
       assert(msg.timestamp);
@@ -60,7 +60,7 @@ describe('EventBroker', function() {
     app.pubsub.publish('_peer/connect', msg);
   });
 
-  it('should keep local pubsub subscription open when more than one client is active', function(done) {
+  it('should keep local pubsub subscription open when more than one client is active', done => {
     const clientA = new EventSocket(new Ws(), query);
     const clientB = new EventSocket(new Ws(), query);
     broker.client(clientA);
@@ -68,20 +68,20 @@ describe('EventBroker', function() {
 
     let recievedA = 0;
     let recievedB = 0;
-    clientA.ws.on('onsend', function(buf) {
+    clientA.ws.on('onsend', buf => {
       recievedA++;
     });
-    clientB.ws.on('onsend', function(buf) {
+    clientB.ws.on('onsend', buf => {
       recievedB++;
     });
 
-    setTimeout(function() {
+    setTimeout(() => {
       assert.equal(recievedA, 1);
       assert.equal(recievedB, 1);
 
       clientA.emit('close');
 
-      setTimeout(function() {
+      setTimeout(() => {
         assert.equal(recievedA, 1);
         assert.equal(recievedB, 2);
         done();

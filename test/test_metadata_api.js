@@ -12,7 +12,7 @@ function getHttpServer(app) {
 }
 
 function getBody(fn) {
-  return function(res) {
+  return res => {
     try {
       if(res.text) {
         var body = JSON.parse(res.text);
@@ -24,17 +24,17 @@ function getBody(fn) {
     }
 
     fn(res, body);
-  }
+  };
 }
 
-describe('Metadata API', function() {
+describe('Metadata API', () => {
   let reg = null;
   let peerRegistry = null;
   let app = null;
   let url = null;
   let device = null;
 
-  beforeEach(function(done) {
+  beforeEach(done => {
     reg = new Registry();
     peerRegistry = new PeerRegistry();
 
@@ -42,157 +42,157 @@ describe('Metadata API', function() {
       .silent()
       .use(Driver)
       .name('local')
-      ._run(function() {
+      ._run(() => {
         device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
         url = `/servers/${app._name}/devices/${device.id}`;
         done();
       });
   });
 
-  it('should contain a metadata class', function(done) {
+  it('should contain a metadata class', done => {
       request(getHttpServer(app))
         .get('/servers/local/meta')
-        .expect(getBody(function(res, body){
+        .expect(getBody((res, body) => {
           assert.deepEqual(body.class, ['metadata']);
         }))
         .end(done);
   });
 
-  it('should contain a self link', function(done) {
+  it('should contain a self link', done => {
       request(getHttpServer(app))
         .get('/servers/local/meta')
-        .expect(getBody(function(res, body){
+        .expect(getBody((res, body) => {
           assert.equal(body.links[0].rel[0], 'self');
         }))
         .end(done);
   });
 
-  it('should contain a server link', function(done) {
+  it('should contain a server link', done => {
       request(getHttpServer(app))
         .get('/servers/local/meta')
-        .expect(getBody(function(res, body){
+        .expect(getBody((res, body) => {
           assert.equal(body.links[1].rel[0], rels.server);
         }))
         .end(done);
   });
 
-  it('should contain a monitor link', function(done) {
+  it('should contain a monitor link', done => {
       request(getHttpServer(app))
         .get('/servers/local/meta')
-        .expect(getBody(function(res, body){
+        .expect(getBody((res, body) => {
           assert.equal(body.links[2].rel[0], 'monitor');
           assert.notEqual(body.links[2].href.indexOf('topic=meta'), -1);
         }))
         .end(done);
   });
 
-  describe('Type Sub-entity', function() {
-    it('should contain a type class', function(done) {
+  describe('Type Sub-entity', () => {
+    it('should contain a type class', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert.deepEqual(body.entities[0].class, ['type']);
           }))
           .end(done);
     });
 
-    it('should contain properties', function(done) {
+    it('should contain properties', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert(Object.keys(body.entities[0].properties.properties).length > 0);
           }))
           .end(done);
     });
 
-    it('should contain streams', function(done) {
+    it('should contain streams', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert(body.entities[0].properties.streams.length > 0);
           }))
           .end(done);
     });
 
-    it('should contain transitions', function(done) {
+    it('should contain transitions', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert(body.entities[0].properties.transitions.length > 0);
           }))
           .end(done);
     });
 
-    it('should contain a self link', function(done) {
+    it('should contain a self link', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert.equal(body.entities[0].links[0].rel[0], 'self');
           }))
           .end(done);
     });
   });
 
-  describe('Type Sub-resource', function() {
-    it('should contain a type class', function(done) {
+  describe('Type Sub-resource', () => {
+    it('should contain a type class', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert.deepEqual(body.class, ['type']);
           }))
           .end(done);
     });
 
-    it('should contain properties', function(done) {
+    it('should contain properties', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert(Object.keys(body.properties.properties).length > 0);
           }))
           .end(done);
     });
 
-    it('should contain streams', function(done) {
+    it('should contain streams', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert(body.properties.streams.length > 0);
           }))
           .end(done);
     });
 
-    it('should contain transitions', function(done) {
+    it('should contain transitions', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert(body.properties.transitions.length > 0);
           }))
           .end(done);
     });
 
-    it('should contain a self link', function(done) {
+    it('should contain a self link', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert.equal(body.links[0].rel[0], 'self');
           }))
           .end(done);
     });
 
-    it('should contain a collection link', function(done) {
+    it('should contain a collection link', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert.equal(body.links[1].rel[0], 'collection');
             assert.equal(body.links[1].rel[1], rels.metadata);
           }))
           .end(done);
     });
 
-    it('should contain an instances link', function(done) {
+    it('should contain an instances link', done => {
         request(getHttpServer(app))
           .get('/servers/local/meta/testdriver')
-          .expect(getBody(function(res, body){
+          .expect(getBody((res, body) => {
             assert.equal(body.links[2].rel[0], rels.instances);
             assert.equal(body.links[2].rel[1], 'describes');
           }))

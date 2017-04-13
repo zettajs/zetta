@@ -5,19 +5,19 @@ const fs = require('fs');
 const WebSocketServer = require('ws').Server;
 const Websocket = require('../lib/web_socket');
 
-describe('Peer Client Websocket', function() {
+describe('Peer Client Websocket', () => {
 
-  it('it should connect to ws:// server', function(done) {
+  it('it should connect to ws:// server', done => {
     const server = http.createServer();
     const wss = new WebSocketServer({ server: server });
-    server.listen(0, function(err) {
+    server.listen(0, err => {
       if (err) {
         return done(err);
       }
       const address = `ws://localhost:${server.address().port}`;
       const ws = new Websocket(address);
       ws.on('error', done);
-      ws.on('open', function() {
+      ws.on('open', () => {
         done();
       });
 
@@ -25,7 +25,7 @@ describe('Peer Client Websocket', function() {
     });
   });
 
-  it('it should connect to wss:// server', function(done) {
+  it('it should connect to wss:// server', done => {
     const opts = {
       key: fs.readFileSync('./test/fixture/server.key'),
       cert: fs.readFileSync('./test/fixture/server.crt')
@@ -33,7 +33,7 @@ describe('Peer Client Websocket', function() {
 
     const server = https.createServer(opts);
     const wss = new WebSocketServer({ server: server });
-    server.listen(0, function(err) {
+    server.listen(0, err => {
       if (err) {
         return done(err);
       }
@@ -41,7 +41,7 @@ describe('Peer Client Websocket', function() {
       const address = `wss://localhost:${server.address().port}`;
       const ws = new Websocket(address, { rejectUnauthorized: false});
       ws.on('error', done);
-      ws.on('open', function() {
+      ws.on('open', () => {
         done();
       });
 

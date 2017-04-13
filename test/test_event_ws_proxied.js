@@ -5,44 +5,44 @@ const WebSocket = require('ws');
 const Scout = require('./fixture/example_scout');
 const zettacluster = require('zetta-cluster');
 
-describe('Event Websocket Proxied Through Peer', function() {
+describe('Event Websocket Proxied Through Peer', () => {
   let base = null;
   let cluster = null;
   let device = null;
 
-  beforeEach(function(done) {
+  beforeEach(done => {
     cluster = zettacluster({ zetta: zetta })
       .server('cloud deploy')
       .server('detroit 1', [Scout], ['cloud deploy'])
-      .on('ready', function(){
+      .on('ready', () => {
         const id = cluster.servers['detroit 1'].id;
         base = `localhost:${cluster.servers['cloud deploy']._testPort}/servers/${cluster.servers['cloud deploy'].locatePeer(id)}`;
         const did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit 1'].runtime._jsDevices[did];
         setTimeout(done, 300);
       })
-      .run(function(err) {
+      .run(err => {
         if (err) {
           done(err);
         }
       });
   });
 
-  afterEach(function(done) {
+  afterEach(done => {
     cluster.stop();
     setTimeout(done, 10); // fix issues with server not being closed before a new one starts
   });
 
-  describe('Basic Connection', function() {
+  describe('Basic Connection', () => {
 
-    it('http resource should exist with statusCode 200', function(done) {
-      http.get(`http://${base}/devices/${device.id}`, function(res) {
+    it('http resource should exist with statusCode 200', done => {
+      http.get(`http://${base}/devices/${device.id}`, res => {
         assert.equal(res.statusCode, 200);
         done();
       }).on('error', done);
     });
 
-    it('websocket should connect', function(done) {
+    it('websocket should connect', done => {
       const url = `ws://${base}/events?topic=testdriver/${device.id}/bar`;
       const socket = new WebSocket(url);
       socket.on('open', done);
@@ -51,14 +51,14 @@ describe('Event Websocket Proxied Through Peer', function() {
 
 
 
-  describe('Receive json messages', function() {
+  describe('Receive json messages', () => {
 
-    it('websocket should connect and recv data in json form', function(done) {
+    it('websocket should connect and recv data in json form', done => {
       const url = `ws://${base}/events?topic=testdriver/${device.id}/bar`;
       const socket = new WebSocket(url);
-      socket.on('open', function(err) {
+      socket.on('open', err => {
         let recv = 0;
-        socket.on('message', function(buf, flags) {
+        socket.on('message', (buf, flags) => {
           const msg = JSON.parse(buf);
           recv++;
           assert(msg.timestamp);
@@ -69,7 +69,7 @@ describe('Event Websocket Proxied Through Peer', function() {
           }
         });
 
-        setTimeout(function() {
+        setTimeout(() => {
           device.incrementStreamValue();
           device.incrementStreamValue();
           device.incrementStreamValue();
@@ -77,30 +77,30 @@ describe('Event Websocket Proxied Through Peer', function() {
       });
     });
 
-    it('websocket should recv only one set of messages when reconnecting', function(done) {
+    it('websocket should recv only one set of messages when reconnecting', done => {
       const url = `ws://${base}/events?topic=testdriver/${device.id}/bar`;
 
       function openAndClose(cb) {
         const s1 = new WebSocket(url);
-        s1.on('open', function(err) {
+        s1.on('open', err => {
           s1.close();
-          s1.on('close', function(){
+          s1.on('close', () => {
             cb();
           });
         });
       }
-      openAndClose(function(){
+      openAndClose(() => {
         const s2 = new WebSocket(url);
-        s2.on('open', function(err) {
+        s2.on('open', err => {
           let count = 0;
-          s2.on('message', function(buf, flags) {
+          s2.on('message', (buf, flags) => {
             count++;
           });
 
-          setTimeout(function() {
+          setTimeout(() => {
             device.incrementStreamValue();
 
-            setTimeout(function() {
+            setTimeout(() => {
               assert.equal(count, 1, `Should have only received 1 message. Received: ${count}`);
               done();
             }, 500);
@@ -112,23 +112,21 @@ describe('Event Websocket Proxied Through Peer', function() {
     });
 
 
-    it('websocket should connect and recv device log events', function(done) {
+    it('websocket should connect and recv device log events', done => {
       const url = `ws://${base}/events?topic=testdriver/${device.id}/logs`;
       const socket = new WebSocket(url);
-      socket.on('open', function(err) {
-        socket.on('message', function(buf, flags) {
+      socket.on('open', err => {
+        socket.on('message', (buf, flags) => {
           const msg = JSON.parse(buf);
           assert(msg.timestamp);
           assert(msg.topic);
-          assert(msg.actions.filter(function(action) {
-            return action.name === 'prepare';
-          }).length > 0);
+          assert(msg.actions.filter(action => action.name === 'prepare').length > 0);
           
           assert.equal(msg.actions[0].href.replace('http://',''), `${base}/devices/${device.id}`)
           done();
         });
         
-        setTimeout(function() {
+        setTimeout(() => {
           device.call('change');
         }, 100);
       });        
@@ -141,14 +139,14 @@ describe('Event Websocket Proxied Through Peer', function() {
 
 
 
-  describe('Receive binary messages', function() {
+  describe('Receive binary messages', () => {
 
-    it('websocket should connect and recv data in binary form', function(done) {
+    it('websocket should connect and recv data in binary form', done => {
       const url = `ws://${base}/events?topic=testdriver/${device.id}/foobar`;
       const socket = new WebSocket(url);
-      socket.on('open', function(err) {
+      socket.on('open', err => {
         let recv = 0;
-        socket.on('message', function(buf, flags) {
+        socket.on('message', (buf, flags) => {
           assert(Buffer.isBuffer(buf));
           assert(flags.binary);
           recv++;
@@ -158,7 +156,7 @@ describe('Event Websocket Proxied Through Peer', function() {
           }
         });
 
-        setTimeout(function() {
+        setTimeout(() => {
           device.incrementFooBar();
           device.incrementFooBar();
           device.incrementFooBar();

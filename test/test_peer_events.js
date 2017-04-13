@@ -5,35 +5,35 @@ const zetta = require('../');
 const zettacluster = require('zetta-cluster');
 const Scout = require('./fixture/example_scout');
 
-describe('Peer Connection Events in Pubsub', function() {
+describe('Peer Connection Events in Pubsub', () => {
   let cluster = null;
   const device = null;
-  beforeEach(function(done) {
+  beforeEach(done => {
     cluster = zettacluster({ zetta: zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud']);
     done();
   });
 
-  afterEach(function(done) {
+  afterEach(done => {
     cluster.stop();
     setTimeout(done, 10); // fix issues with server not being closed before a new one starts
   });
 
-  describe('Initiator Events', function() {
-    it('should recieve a _peer/connect event', function(done) {
+  describe('Initiator Events', () => {
+    it('should recieve a _peer/connect event', done => {
       
       let recv = 0;
-      cluster.servers['detroit1'].pubsub.subscribe('_peer/connect',function() {
+      cluster.servers['detroit1'].pubsub.subscribe('_peer/connect',() => {
         recv++;
       });
 
-      cluster.on('ready', function(err) {
+      cluster.on('ready', err => {
         assert.equal(recv, 1);
         done();
       });
 
-      cluster.run(function(err) {
+      cluster.run(err => {
         if (err) {
           return done(err);
         }
@@ -42,20 +42,20 @@ describe('Peer Connection Events in Pubsub', function() {
     });
   });
 
-  describe('Acceptor Events', function() {
-    it('should recieve a _peer/connect event', function(done) {
+  describe('Acceptor Events', () => {
+    it('should recieve a _peer/connect event', done => {
       
       let recv = 0;
-      cluster.servers['cloud'].pubsub.subscribe('_peer/connect',function() {
+      cluster.servers['cloud'].pubsub.subscribe('_peer/connect',() => {
         recv++;
       });
 
-      cluster.on('ready', function(err) {
+      cluster.on('ready', err => {
         assert.equal(recv, 1);
         done();
       });
 
-      cluster.run(function(err) {
+      cluster.run(err => {
         if (err) {
           return done(err);
         }

@@ -14,81 +14,81 @@ Response.prototype.push = function(topic, options) {
     this.topic = topic;
     this.options = options;
   };
-  Stream.prototype.end = function (data){
+  Stream.prototype.end = data => {
     r.cb(data);
   };
-  Stream.prototype.on = function () {};
+  Stream.prototype.on = () => {};
 
   return new Stream();
 };
 
-describe('Pubsub Service', function() {
-  it('exposes subscribe / publish', function() {
+describe('Pubsub Service', () => {
+  it('exposes subscribe / publish', () => {
     const ps = new PubSub();
     assert.equal(typeof ps.publish, 'function');
     assert.equal(typeof ps.subscribe, 'function');
   });
 
-  it('subscribe takes a callback and topic', function() {
+  it('subscribe takes a callback and topic', () => {
     const ps = new PubSub();
-    ps.subscribe('some-topic', function(topic, name){});
+    ps.subscribe('some-topic', (topic, name) => {});
   });
 
-  it('subscribe takes a spdy response object', function() {
+  it('subscribe takes a spdy response object', () => {
     const ps = new PubSub();
-    const r = new Response(function() {});
+    const r = new Response(() => {});
     ps.subscribe('some-topic', {request: makeFakeRequest(1), response: r});
   });
 
-  it('publish does not fail when there are no listeners', function() {
+  it('publish does not fail when there are no listeners', () => {
     const ps = new PubSub();
     ps.publish('some-topic', 123);
   });
 
-  it('publish passes to callback', function(done) {
+  it('publish passes to callback', done => {
     const ps = new PubSub();
     let received = 0;
-    ps.subscribe('some-topic', function() {
+    ps.subscribe('some-topic', () => {
       received++;
     });
     ps.publish('some-topic', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(received, 1);
       done();
     }, 1);
   });
 
-  it('publish passes to response', function(done) {
+  it('publish passes to response', done => {
     const ps = new PubSub();
     let received = 0;
-    const r = new Response(function() {
+    const r = new Response(() => {
       received++;
     });
 
     ps.subscribe('some-topic', {request:  makeFakeRequest(1), response: r});
     ps.publish('some-topic', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(received, 1);
       done();
     }, 1);
   });
 
 
-  it('publish passes to response and callback on same topic', function(done) {
+  it('publish passes to response and callback on same topic', done => {
     const ps = new PubSub();
     let receivedA = 0;
     let receivedB = 0;
-    const r = new Response(function() {
+    const r = new Response(() => {
       receivedA++;
     });
 
     ps.subscribe('some-topic', {request:  makeFakeRequest(1), response: r});
-    ps.subscribe('some-topic', function() {receivedB++;});
+    ps.subscribe('some-topic', () => {receivedB++;});
     ps.publish('some-topic', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(receivedA, 1);
       assert.equal(receivedB, 1);
       done();
@@ -96,19 +96,19 @@ describe('Pubsub Service', function() {
   });
 
 
-  it('unsubscribe should remove listener', function(done) {
+  it('unsubscribe should remove listener', done => {
     const ps = new PubSub();
     let receivedA = 0;
-    const listener = function() {receivedA++;};
+    const listener = () => {receivedA++;};
 
     ps.subscribe('some-topic', listener);
     ps.publish('some-topic', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(receivedA, 1);
       ps.unsubscribe('some-topic', listener);
       ps.publish('some-topic', 123);
-      setTimeout(function(){
+      setTimeout(() => {
         assert.equal(receivedA, 1);
         ps.unsubscribe('some-topic', listener);
         done();
@@ -116,60 +116,60 @@ describe('Pubsub Service', function() {
     }, 1);
   });
 
-  it('one http subscription and one callback that match the same event will emit one event on both', function(done) {
+  it('one http subscription and one callback that match the same event will emit one event on both', done => {
     const ps = new PubSub();
     let receivedA = 0;
     let receivedB = 0;
 
-    const r1 = new Response(function() {
+    const r1 = new Response(() => {
       receivedA++;
     });
 
-    const listener = function() {receivedB++;};
+    const listener = () => {receivedB++;};
 
     ps.subscribe('led/123/state', {request:  makeFakeRequest(1), response: r1 });
     ps.subscribe('led/*/state', listener);
     ps.publish('led/123/state', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(receivedA, 1);
       assert.equal(receivedB, 1);
       done();
     }, 10);
   });
 
-  it('two subscriptions with callback that match the same event will emit one event on both', function(done) {
+  it('two subscriptions with callback that match the same event will emit one event on both', done => {
     const ps = new PubSub();
     let receivedA = 0;
     let receivedB = 0;
     let receivedC = 0;
 
-    const listener1 = function() {receivedA++;};
-    const listener2 = function() {receivedB++;};
-    const listener3 = function() {receivedC++;};
+    const listener1 = () => {receivedA++;};
+    const listener2 = () => {receivedB++;};
+    const listener3 = () => {receivedC++;};
 
     ps.subscribe('led/123/state', listener1);
     ps.subscribe('led/*/state', listener2);
     ps.subscribe('led/*/state', listener3);
     ps.publish('led/123/state', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(receivedA, 1);
       assert.equal(receivedB, 1);
       done();
     }, 1);
   });
 
-  it('two http subscriptions that match the same event will only emit event on the first subscription', function(done) {
+  it('two http subscriptions that match the same event will only emit event on the first subscription', done => {
     const ps = new PubSub();
     let receivedA = 0;
     let receivedB = 0;
 
-    const r1 = new Response(function() {
+    const r1 = new Response(() => {
       receivedA++;
     });
 
-    const r2 = new Response(function() {
+    const r2 = new Response(() => {
       receivedB++;
     });
 
@@ -177,7 +177,7 @@ describe('Pubsub Service', function() {
     ps.subscribe('led/*/state', {request:  makeFakeRequest(1), response: r2 });
     ps.publish('led/123/state', 123);
     
-    setTimeout(function(){
+    setTimeout(() => {
       assert.equal(receivedA, 1);
       assert.equal(receivedB, 0);
       done();

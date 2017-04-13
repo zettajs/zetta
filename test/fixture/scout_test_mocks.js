@@ -23,7 +23,7 @@ GoodDevice.prototype.init = function(config){
     .map('transition', this.transition);
 }
 
-GoodDevice.prototype.transition = function(cb) {
+GoodDevice.prototype.transition = cb => {
   cb();
 }
 
@@ -50,7 +50,7 @@ MockRegistry.prototype.save = function(machine, cb){
 };
 
 MockRegistry.prototype.find = function(query, cb) {
-  this.machines.forEach(function(machine) {
+  this.machines.forEach(machine => {
     if(query.match(machine)) {
       cb(null, [machine]);
     }
@@ -65,7 +65,7 @@ const MockPeerRegistry = function() {
 
 MockPeerRegistry.prototype.save = function(peer, cb) {
   if (!cb) {
-    cb = function(){};
+    cb = () => {};
   }
   this.peers.push(peer);
   cb(null);
@@ -81,7 +81,7 @@ MockPeerRegistry.prototype.add = function(peer, cb) {
 };
 
 MockPeerRegistry.prototype.get = function(id, cb) {
-  this.peers.forEach(function(peer) {
+  this.peers.forEach(peer => {
     if (peer.id === id) {
       cb(null, peer);
     }
@@ -89,9 +89,7 @@ MockPeerRegistry.prototype.get = function(id, cb) {
 };
 
 MockPeerRegistry.prototype.find = function(query, cb) {
-  const results = this.peers.filter(function(peer) {
-    return query.match(peer);
-  });
+  const results = this.peers.filter(peer => query.match(peer));
 
   cb(null, results);
 };

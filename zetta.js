@@ -44,7 +44,7 @@ const Zetta = module.exports = function(opts) {
   }
 
   if (typeof opts.tls === 'object') {
-    Object.keys(opts.tls).forEach(function(k) {
+    Object.keys(opts.tls).forEach(k => {
       httpOptions[k] = opts.tls[k];
     });
   }
@@ -101,7 +101,7 @@ Zetta.prototype.properties = function(props) {
 Zetta.prototype.getProperties = function() {
   const self = this;
   const ret = { name: this._name };
-  Object.keys(this._properties).forEach(function(k) {
+  Object.keys(this._properties).forEach(k => {
     ret[k] = self._properties[k];
   });
   return ret;
@@ -177,7 +177,7 @@ Zetta.prototype.link = function(peers) {
     peers = [peers];
   }
 
-  peers.forEach(function(peer) {
+  peers.forEach(peer => {
     //self._peers.push(new PeerClient(peer, self));
     self._peers.push(peer);
   });
@@ -198,7 +198,7 @@ Zetta.prototype.listen = function() {
     callback = last;
   }
 
-  this._run(function(err){
+  this._run(err => {
     if(err) {
       if (callback) {
         return callback(err);
@@ -207,7 +207,7 @@ Zetta.prototype.listen = function() {
       }
     }
 
-    const cb = function(err) {
+    const cb = err => {
       if (err) {
         if (callback) {
           callback(err);
@@ -255,7 +255,7 @@ Zetta.prototype._run = function(callback) {
   const self = this;
 
   if(!callback) {
-    callback = function(){};
+    callback = () => {};
   }
 
   if (!this._silent) {
@@ -263,32 +263,32 @@ Zetta.prototype._run = function(callback) {
   }
 
   async.series([
-    function(next) {
+    next => {
       self.runtime.registry._init(next);
     },
-    function(next) {
+    next => {
       self.peerRegistry._init(next);
     },
-    function(next) {
+    next => {
       self._initScouts(next);
     },
-    function(next) {
+    next => {
       self._initApps(next);
     },
-    function(next) {
+    next => {
       self._initHttpServer(next);
     },
-    function(next) {
+    next => {
       self._cleanupPeers(next);
     },
-    function(next) {
+    next => {
       self._initPeers(self._peers, next);
-      self.link = function(peers, cb) {
-        self._initPeers(peers, (cb || function() {}) );
+      self.link = (peers, cb) => {
+        self._initPeers(peers, (cb || (() => {})) );
       };
     }
-  ], function(err){
-    setImmediate(function() {
+  ], err => {
+    setImmediate(() => {
       callback(err);
     });
   });
@@ -297,9 +297,9 @@ Zetta.prototype._run = function(callback) {
 };
 
 Zetta.prototype._initScouts = function(callback) {
-  async.each(this._scouts, function(scout, next) {
+  async.each(this._scouts, (scout, next) => {
     scout.init(next);
-  }, function(err) {
+  }, err => {
     callback(err);
   });
 
@@ -308,7 +308,7 @@ Zetta.prototype._initScouts = function(callback) {
 
 Zetta.prototype._initApps = function(callback) {
   const self = this;
-  this._apps.forEach(function(app) {
+  this._apps.forEach(app => {
     const args = app.args;
     args.unshift(self.runtime);
     app.app.apply(null, args);
@@ -329,13 +329,13 @@ Zetta.prototype._initHttpServer = function(callback) {
 // set all peers to disconnected
 Zetta.prototype._cleanupPeers = function(callback) {
   const self = this;
-  this.peerRegistry.find(Query.of('peers'), function(err, results) {
+  this.peerRegistry.find(Query.of('peers'), (err, results) => {
     if(err) {
       callback(err);
       return;
     }
 
-    async.forEach(results, function(peer, next) {
+    async.forEach(results, (peer, next) => {
       peer.status = 'disconnected';
       self.peerRegistry.save(peer, next);
     }, callback);
@@ -351,13 +351,13 @@ Zetta.prototype._initPeers = function(peers, callback) {
     peers = [peers];
   }
 
-  this.peerRegistry.find(Query.of('peers'), function(err, results) {
+  this.peerRegistry.find(Query.of('peers'), (err, results) => {
     if(err) {
       callback(err);
       return;
     }
 
-    results.forEach(function(peer) {
+    results.forEach(peer => {
       peer.status = 'disconnected';
       if (peer.direction === 'initiator' && peer.url) {
         allPeers.push(peer);
@@ -367,20 +367,18 @@ Zetta.prototype._initPeers = function(peers, callback) {
     });
 
     // peers added through js api to registry peers if they don't already exist
-    allPeers = allPeers.concat(peers.filter(function(peer) {
-      return existingUrls.indexOf(peer) === -1;
-    }));
+    allPeers = allPeers.concat(peers.filter(peer => existingUrls.indexOf(peer) === -1));
 
-    allPeers.forEach(function(obj) {
+    allPeers.forEach(obj => {
       const existing = (typeof obj === 'object');
       if (existing) {
         if(!obj.fromLink || peers.indexOf(obj.url) > -1) {
-          self.peerRegistry.save(obj, function() {
+          self.peerRegistry.save(obj, () => {
             self._runPeer(obj);
           });
         } else {
           //Delete
-          self.peerRegistry.remove(obj, function(err){
+          self.peerRegistry.remove(obj, err => {
             if(err) {
               console.error(err);
             }
@@ -392,7 +390,7 @@ Zetta.prototype._initPeers = function(peers, callback) {
           direction: 'initiator',
           fromLink:true
         };
-        self.peerRegistry.add(peerData, function(err, newPeer) {
+        self.peerRegistry.add(peerData, (err, newPeer) => {
           self._runPeer(newPeer);
         });
       }
@@ -424,8 +422,8 @@ Zetta.prototype._runPeer = function(peer) {
   self._peerClients.push(peerClient);
 
   // when websocket is established
-  peerClient.on('connecting', function() {
-    self.peerRegistry.get(peer.id, function(err, result) {
+  peerClient.on('connecting', () => {
+    self.peerRegistry.get(peer.id, (err, result) => {
       result.status = 'connecting';
       result.connectionId = peerClient.connectionId;
       self.peerRegistry.save(result);
@@ -433,8 +431,8 @@ Zetta.prototype._runPeer = function(peer) {
   });
 
   // when peer handshake is made
-  peerClient.on('connected', function() {
-    self.peerRegistry.get(peer.id, function(err, result) {
+  peerClient.on('connected', () => {
+    self.peerRegistry.get(peer.id, (err, result) => {
       result.status = 'connected';
       result.connectionId = peerClient.connectionId;
       self.peerRegistry.save(result);
@@ -444,9 +442,9 @@ Zetta.prototype._runPeer = function(peer) {
     });
   });
 
-  peerClient.on('error', function(error) {
+  peerClient.on('error', error => {
 
-    self.peerRegistry.get(peer.id, function(err, result) {
+    self.peerRegistry.get(peer.id, (err, result) => {
       result.status = 'failed';
       result.error = error;
       result.connectionId = peerClient.connectionId;
@@ -457,8 +455,8 @@ Zetta.prototype._runPeer = function(peer) {
     });
   });
 
-  peerClient.on('closed', function() {
-    self.peerRegistry.get(peer.id, function(err, result) {
+  peerClient.on('closed', () => {
+    self.peerRegistry.get(peer.id, (err, result) => {
       result.status = 'disconnected';
       result.connectionId = peerClient.connectionId;
 

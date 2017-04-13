@@ -17,7 +17,7 @@ function TestDriver() {
 }
 util.inherits(TestDriver, Device);
 
-TestDriver.prototype.init = function(config) {
+TestDriver.prototype.init = config => {
   config
     .name('Test')
     .type('test')
@@ -26,12 +26,12 @@ TestDriver.prototype.init = function(config) {
 
 const dbPath = path.join(__dirname, './.registry');
 
-describe('DeviceRegistry', function() {
+describe('DeviceRegistry', () => {
   let db = null;
   let machine = null;
   let opts = null;
 
-  beforeEach(function(done) {
+  beforeEach(done => {
     db = levelup(dbPath, { db: memdown });
     machine = Scientist.create(TestDriver);
     Scientist.init(machine);
@@ -39,7 +39,7 @@ describe('DeviceRegistry', function() {
     done();
   });
 
-  it('should call the callback on close', function(done) {
+  it('should call the callback on close', done => {
     const reg = new DeviceRegistry(opts);
     reg.close(function() {
       assert.equal(arguments.length, 0);
@@ -47,21 +47,21 @@ describe('DeviceRegistry', function() {
     });
   });
 
-  it('should save a configured device to the database.', function(done) {
+  it('should save a configured device to the database.', done => {
     const reg = new DeviceRegistry(opts);
-    reg.save(machine, function(err) {
+    reg.save(machine, err => {
       assert.ok(!err);
       reg.close();
       done();
     });
   });
 
-  describe('#find', function() {
-    it('should find a device by it\'s id.', function(done) {
+  describe('#find', () => {
+    it('should find a device by it\'s id.', done => {
       const reg = new DeviceRegistry(opts);
-      reg.save(machine, function(err) {
+      reg.save(machine, err => {
         if(!err) {
-          reg.get('123456789', function(err, value) {
+          reg.get('123456789', (err, value) => {
             assert.ok(!err);
             assert.ok(value);
             const data = value;
@@ -75,11 +75,11 @@ describe('DeviceRegistry', function() {
       });
     });
 
-    it('should have a callback return results in the callback of find.', function(done) {
+    it('should have a callback return results in the callback of find.', done => {
       const reg = new DeviceRegistry(opts);
-      reg.save(machine, function(err) {
+      reg.save(machine, err => {
         if(!err) {
-          reg.find({ type: 'test' }, function(err, results) {
+          reg.find({ type: 'test' }, (err, results) => {
             assert.ok(!err);
             assert.ok(results);
             assert.equal(results.length, 1);
@@ -94,11 +94,11 @@ describe('DeviceRegistry', function() {
       });
     });
 
-    it('should return no results in the callback of find with a query that does not match.', function(done) {
+    it('should return no results in the callback of find with a query that does not match.', done => {
       const reg = new DeviceRegistry(opts);
-      reg.save(machine, function(err) {
+      reg.save(machine, err => {
         if(!err) {
-          reg.find({ type: 'foobar' }, function(err, results) {
+          reg.find({ type: 'foobar' }, (err, results) => {
             assert.ok(!err);
             assert.ok(results);
             assert.equal(results.length, 0);
@@ -109,11 +109,11 @@ describe('DeviceRegistry', function() {
       });
     });
 
-    it('should return results with a query language query', function(done) {
+    it('should return results with a query language query', done => {
         const reg = new DeviceRegistry(opts);
-        reg.save(machine, function(err) {
+        reg.save(machine, err => {
           if(!err) {
-            reg.find('where type="test"', function(err, results) {
+            reg.find('where type="test"', (err, results) => {
               assert.ok(!err);
               assert.ok(results);
               assert.equal(results.length, 1);
@@ -128,14 +128,14 @@ describe('DeviceRegistry', function() {
         });
     });
 
-    it('should return results with a Query object', function(done) {
+    it('should return results with a Query object', done => {
         const reg = new DeviceRegistry(opts);
-        reg.save(machine, function(err) {
+        reg.save(machine, err => {
           if(!err) {
             const query = Query.of('devices')
               .where('type', { eq: 'test' });
 
-            reg.find(query, function(err, results) {
+            reg.find(query, (err, results) => {
               assert.ok(!err);
               assert.ok(results);
               assert.equal(results.length, 1);
@@ -150,15 +150,15 @@ describe('DeviceRegistry', function() {
         });
     });
 
-    it('should return results with a parameterized Query object', function(done) {
+    it('should return results with a parameterized Query object', done => {
         const reg = new DeviceRegistry(opts);
-        reg.save(machine, function(err) {
+        reg.save(machine, err => {
           if(!err) {
             const query = Query.of('devices')
               .ql('where type=@type')
               .params({ type: 'test' });
 
-            reg.find(query, function(err, results) {
+            reg.find(query, (err, results) => {
               assert.ok(!err);
               assert.ok(results);
               assert.equal(results.length, 1);

@@ -1,6 +1,6 @@
 const Zetta = require('./zetta');
 
-const exp = function(options) {
+const exp = options => {
   const zetta = new Zetta(options);
   return zetta;
 };

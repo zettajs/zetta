@@ -14,75 +14,75 @@ Ws.prototype.send = function(data, options, cb) {
 
 
 
-describe('EventSocket', function() {
+describe('EventSocket', () => {
 
-  it('it should initialization with topic set', function() {
+  it('it should initialization with topic set', () => {
     const ws = new Ws();
     const client = new EventSocket(ws, { topic: 'some-topic' });
     assert.equal(client.query[0].topic, 'some-topic');
   });
 
-  it('EventSocket.send should pass data/options/callback to ws send', function(done) {
+  it('EventSocket.send should pass data/options/callback to ws send', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic');
 
-    ws.on('onsend', function(data, options, cb) {
+    ws.on('onsend', (data, options, cb) => {
       assert.equal(data, 'somedata');
       assert.deepEqual(options, {opt: 1});
       assert.equal(cb, callback);
       done();
     });
 
-    var callback = function() {};
+    var callback = () => {};
     client.send('sometopic', 'somedata', {opt: 1}, callback);
   });
 
-  it('websocket error event should trigger close on EventSocket', function(done) {
+  it('websocket error event should trigger close on EventSocket', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic');
     let triggered = false;
 
-    client.on('close', function(){
+    client.on('close', () => {
       triggered = true;
     });
     ws.emit('error', new Error('some error'));
-    setTimeout(function(){
+    setTimeout(() => {
       assert(triggered);
       done();
     },1);
   });
 
-  it('websocket close event should trigger close on EventSocket', function(done) {
+  it('websocket close event should trigger close on EventSocket', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic');
     let triggered = false;
 
-    client.on('close', function(){
+    client.on('close', () => {
       triggered = true;
     });
     ws.emit('close');
-    setTimeout(function(){
+    setTimeout(() => {
       assert(triggered);
       done();
     },1);
   });
 
-  it('should init parser if passed streaming flag', function() {
+  it('should init parser if passed streaming flag', () => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
     assert(client._parser)
   })
 
-  it('should pass filterMultiple flag to EventSocket', function() {
+  it('should pass filterMultiple flag to EventSocket', () => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic', { filterMultiple: true });
     assert(client.filterMultiple, true);
   })
 
-  it('should emit subscribe event when subscribe message is parsed', function(done) {
+  it('should emit subscribe event when subscribe message is parsed', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
-    client.on('subscribe', function(subscription) {
+    client.on('subscribe', subscription => {
       assert(subscription.subscriptionId);
       assert(subscription.topic);
       assert.equal(subscription.limit, 10);
@@ -93,20 +93,20 @@ describe('EventSocket', function() {
     ws.emit('message', new Buffer(JSON.stringify(msg)));
   })
 
-  it('should not fail when sending null object with streamEnabled=true', function(done) {
+  it('should not fail when sending null object with streamEnabled=true', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic', { streamEnabled: true });
-    ws.on('onsend', function(data, options, cb) {
+    ws.on('onsend', (data, options, cb) => {
       assert.equal(data, '{"data":null}');
       done();
     });
     client.send('some/topic', { data: null });
   })
 
-  it('should not fail when sending null object with streamEnabled=false', function(done) {
+  it('should not fail when sending null object with streamEnabled=false', done => {
     const ws = new Ws();
     const client = new EventSocket(ws, 'some-topic', { streamEnabled: false });
-    ws.on('onsend', function(data, options, cb) {
+    ws.on('onsend', (data, options, cb) => {
       assert.equal(data, '{"data":null}');
       done();
     });

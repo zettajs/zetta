@@ -7,7 +7,7 @@ const SensorDriver = module.exports = function(){
 };
 util.inherits(SensorDriver, Device);
 
-SensorDriver.prototype.init = function(config) {
+SensorDriver.prototype.init = config => {
   config
     .type('sensordriver');
 };
