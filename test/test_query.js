@@ -1,35 +1,35 @@
-var Query = require('../lib/query');
-var assert = require('assert');
+const Query = require('../lib/query');
+const assert = require('assert');
 
-describe('Query', function() {
-  describe('Constructor', function() {
-    it('implements the .match() prototype.', function() {
-      var q = new Query({});
+describe('Query', () => {
+  describe('Constructor', () => {
+    it('implements the .match() prototype.', () => {
+      const q = new Query({});
       assert.ok(q.match);
     });
   });
 
-  describe('match()', function() {
-    it('matches on matching parameters', function() {
-      var q = new Query({test: 'foo', baz: 'bar'});
+  describe('match()', () => {
+    it('matches on matching parameters', () => {
+      const q = new Query({test: 'foo', baz: 'bar'});
 
-      var obj = { test: 'foo', baz: 'bar' };
+      const obj = { test: 'foo', baz: 'bar' };
 
       assert.ok(q.match(obj));
     });
 
-    it('will not matching on non-matching parameters', function() {
-      var q = new Query({test: 'foo', baz: 'bar'});
+    it('will not matching on non-matching parameters', () => {
+      const q = new Query({test: 'foo', baz: 'bar'});
 
-      var obj = { test: 'quux', bar: 'baz' };
+      const obj = { test: 'quux', bar: 'baz' };
 
       assert.ok(!q.match(obj));
     });
 
-    it('will match everything when an asterisk is the only parameter provided.', function() {
-      var q = new Query('*');
-      var obj = { test: 'quux', bar: 'baz' };
-      var obj2 = { test: 'foo', baz: 'bar' };
+    it('will match everything when an asterisk is the only parameter provided.', () => {
+      const q = new Query('*');
+      const obj = { test: 'quux', bar: 'baz' };
+      const obj2 = { test: 'foo', baz: 'bar' };
       assert.ok(q.match(obj));
       assert.ok(q.match(obj2));
     });

@@ -1,103 +1,103 @@
-var assert = require('assert');
-var http = require('http');
-var WebSocket = require('ws');
-var zetta = require('../');
-var zettacluster = require('zetta-cluster');
-var Scout = require('./fixture/example_scout');
-var VirtualDevice = require('../lib/virtual_device');
-var LedJSON = require('./fixture/virtual_device.json');
+const assert = require('assert');
+const http = require('http');
+const WebSocket = require('ws');
+const zetta = require('../');
+const zettacluster = require('zetta-cluster');
+const Scout = require('./fixture/example_scout');
+const VirtualDevice = require('../lib/virtual_device');
+const LedJSON = require('./fixture/virtual_device.json');
 
-var mockSocket = {
-  on: function(){},
-  subscribe: function(topic, cb){
+const mockSocket = {
+  on() {},
+  subscribe(topic, cb) {
     if(cb) {
       cb();
     }
   },
-  unsubscribe: function(){}
+  unsubscribe() {}
 };
 
-describe('Virtual Device', function() {
-  var base = null;
-  var cluster = null;
-  var device = null;
-  var socket = null;
-  var deviceJson = null;
-  var vdevice = null;
+describe('Virtual Device', () => {
+  let base = null;
+  let cluster = null;
+  let device = null;
+  let socket = null;
+  let deviceJson = null;
+  let vdevice = null;
 
-  var startPort = 2600;
+  const startPort = 2600;
 
-  beforeEach(function(done) {
-    cluster = zettacluster({ zetta: zetta })
+  beforeEach(done => {
+    cluster = zettacluster({ zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud'])
-      .on('ready', function() {
+      .on('ready', () => {
         socket = cluster.servers['cloud'].httpServer.peers['detroit1'];        
         if (!socket) {
           done(new Error('socket not found'));
         }
 
-        var did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
+        const did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit1'].runtime._jsDevices[did];
-        var id = cluster.servers['detroit1'].id;
-        base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer(id) + '/devices/' + did;
+        const id = cluster.servers['detroit1'].id;
+        base = `localhost:${cluster.servers['cloud']._testPort}/servers/${cluster.servers['cloud'].locatePeer(id)}/devices/${did}`;
 
-        http.get('http://' + base, function(res) {
-          var buffer = [];
-          var len = 0;
-          res.on('readable', function() {
-            var data;
+        http.get(`http://${base}`, res => {
+          const buffer = [];
+          let len = 0;
+          res.on('readable', () => {
+            let data;
             while (data = res.read()) {
               buffer.push(data);
               len += data.length;
             }
           });
-          res.on('end', function() {
-            var buf = Buffer.concat(buffer, len);
+          res.on('end', () => {
+            const buf = Buffer.concat(buffer, len);
             deviceJson = JSON.parse(buf.toString());
             vdevice = new VirtualDevice(deviceJson, socket);
-            vdevice.on('ready', function() {
+            vdevice.on('ready', () => {
               setTimeout(done, 100);
             });
           });
-          res.on('error', function(err) {
+          res.on('error', err => {
             done(err);
           });
         })
       })
-      .run(function(err){
+      .run(err => {
         if (err) {
           return done(err);
         }
       });
   });
 
-  afterEach(function(done) {
+  afterEach(done => {
     cluster.stop();
     setTimeout(done, 10); // fix issues with server not being closed before a new one starts
   });
   
-  describe('.call method', function() {
+  describe('.call method', () => {
 
-    it('call should work without a callback function', function(done) {
+    it('call should work without a callback function', done => {
       vdevice.call('change')
-      var timer = setTimeout(function() {
+      const timer = setTimeout(() => {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
-      device.on('change', function() {
+      device.on('change', () => {
         clearTimeout(timer);
         done();
       });
     });
 
-    it('_update should always be called with data.actions in proper format', function(done) {
-      var called = 0;
-      var orig = vdevice._update;
+    it('_update should always be called with data.actions in proper format', done => {
+      let called = 0;
+      const orig = vdevice._update;
       vdevice._update = function(data) {
         called++;
         assert(Array.isArray(data.actions));
-        data.actions.forEach(function(action) {
+        data.actions.forEach(action => {
           assert(action.class);
           assert(action.name);
           assert(action.method);
@@ -116,59 +116,59 @@ describe('Virtual Device', function() {
       vdevice.call('change');
     });
     
-    it('call should work without arguments', function(done) {
-      vdevice.call('change', function(err) {
+    it('call should work without arguments', done => {
+      vdevice.call('change', err => {
         assert.equal(err, null);
       });
-      var timer = setTimeout(function() {
+      const timer = setTimeout(() => {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
-      device.on('change', function() {
+      device.on('change', () => {
         clearTimeout(timer);
         done();
       });
     });
 
-    it('call should work with arguments', function(done) {
-      vdevice.call('test', 321, function(err) {
+    it('call should work with arguments', done => {
+      vdevice.call('test', 321, err => {
         assert.equal(err, null);
       });
-      var timer = setTimeout(function() {
+      const timer = setTimeout(() => {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 100);
 
-      device.on('test', function() {
+      device.on('test', () => {
         clearTimeout(timer);
         assert.equal(device.value, 321);
         done();
       });
     });
 
-    it('call should work with arguments, after peer reconnects', function(done) {
+    it('call should work with arguments, after peer reconnects', done => {
 
-      var timer = setTimeout(function() {
+      const timer = setTimeout(() => {
         done(new Error('Faied to recv transition call on detroit device'));
       }, 1500);
 
-      vdevice.call('test', 999, function(err) {
+      vdevice.call('test', 999, err => {
         assert.equal(err, null);
 
         clearTimeout(timer);
         assert.equal(device.value, 999);
 
-        var socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
+        const socket = cluster.servers['cloud'].httpServer.peers['detroit1'];
         socket.close();
 
-        setTimeout(function() {
-          vdevice.call('test', 222, function(err) {
+        setTimeout(() => {
+          vdevice.call('test', 222, err => {
             assert.equal(err, null);
           });
-          var timer = setTimeout(function() {
+          const timer = setTimeout(() => {
             done(new Error('Faied to recv transition call on detroit device'));
           }, 1500);
 
-          device.on('test', function() {
+          device.on('test', () => {
             clearTimeout(timer);
             assert.equal(device.value, 222);
             done();
@@ -179,24 +179,24 @@ describe('Virtual Device', function() {
     });
   });
 
-  describe('Device log monitor stream', function() {
+  describe('Device log monitor stream', () => {
 
-    it('should update virtual devices state when detroit device updates', function(done) {    
+    it('should update virtual devices state when detroit device updates', done => {    
       assert.equal(vdevice.state, 'ready');
-      device.call('change', function() {
+      device.call('change', () => {
         assert.equal(device.state, 'changed');
-        setTimeout(function() {
+        setTimeout(() => {
           assert.equal(vdevice.state, 'changed');
           done();
         }, 100);
       });
     });
 
-    it('should update virtual devices state when virtual device calls transition', function(done) {    
+    it('should update virtual devices state when virtual device calls transition', done => {    
       assert.equal(vdevice.state, 'ready');
-      vdevice.call('change', function() {
+      vdevice.call('change', () => {
         assert.equal(device.state, 'changed');
-        setTimeout(function() {
+        setTimeout(() => {
           assert.equal(vdevice.state, 'changed');
           done();
         }, 100);
@@ -207,67 +207,67 @@ describe('Virtual Device', function() {
 
 
 
-  describe('Device monitor streams on properties', function() {
+  describe('Device monitor streams on properties', () => {
 
-    it('should update virtual device when value increments locally', function(done) {    
+    it('should update virtual device when value increments locally', done => {    
       assert.equal(vdevice.bar, 0);
       assert.equal(device.bar, 0);
       device.incrementStreamValue();
       assert.equal(device.bar, 1);
-      setTimeout(function() {
+      setTimeout(() => {
         assert.equal(vdevice.bar, 1);
         done();
       }, 100);
     });
 
-    it('should implement .createReadStream() for object stream', function(done) {
-      vdevice.createReadStream('bar').on('data', function(msg) {
+    it('should implement .createReadStream() for object stream', done => {
+      vdevice.createReadStream('bar').on('data', msg => {
         assert.equal(msg.data, 1);
         done();
       });
 
-      setTimeout(function(){
+      setTimeout(() => {
         device.incrementStreamValue();
       }, 10);
     })
 
-    it('should implement .createReadStream() for binary stream', function(done) {
-      vdevice.createReadStream('foobar').on('data', function(buf) {
+    it('should implement .createReadStream() for binary stream', done => {
+      vdevice.createReadStream('foobar').on('data', buf => {
         assert.deepEqual(buf, new Buffer([1]));
         done();
       });
-      setTimeout(function(){
+      setTimeout(() => {
         device.incrementFooBar();
       }, 10);
     })
 
-    it('should recv data event after a client ws disconnected on the same topic', function(done) {
+    it('should recv data event after a client ws disconnected on the same topic', done => {
       
-      var url = 'ws://localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1/events?topic=testdriver%2F' + device.id + '%2Fbar';
+      const url = `ws://localhost:${cluster.servers['cloud']._testPort}/servers/detroit1/events?topic=testdriver%2F${device.id}%2Fbar`;
 
-      var recv = 0;
-      var wsRecv = 0;
-      vdevice.streams.bar.on('data', function(data) {
+      let recv = 0;
+      let wsRecv = 0;
+      vdevice.streams.bar.on('data', data => {
         recv++;
       });
       
       device.incrementStreamValue();
 
-      setTimeout(function() {
+      setTimeout(() => {
         assert.equal(recv, 1);
-        var socket = new WebSocket(url);
-        socket.on('message', function() {
+        const socket = new WebSocket(url);
+        socket.on('message', () => {
           wsRecv++;
         });
-        socket.on('open', function() {
+        socket.on('open', () => {
           device.incrementStreamValue();
-          setTimeout(function() {
+          setTimeout(() => {
             assert.equal(recv, 2);
             assert.equal(wsRecv, 1);
 
             socket.close();
             device.incrementStreamValue();
-            setTimeout(function() {
+            setTimeout(() => {
               assert.equal(recv, 3);
               assert.equal(wsRecv, 1);
               done();
@@ -281,31 +281,31 @@ describe('Virtual Device', function() {
 
   });
 
-  describe('Device binary streams', function() {
+  describe('Device binary streams', () => {
 
-    it('should only subscribe to a binary stream if used', function(done) {    
-      var topic = device.type + '/' + device.id + '/foobar';
+    it('should only subscribe to a binary stream if used', done => {    
+      const topic = `${device.type}/${device.id}/foobar`;
       assert.equal(cluster.servers['detroit1'].pubsub._listeners[topic], undefined);
-      vdevice.streams.foobar.on('data', function() {});
-      setTimeout(function() {
+      vdevice.streams.foobar.on('data', () => {});
+      setTimeout(() => {
         assert.notEqual(cluster.servers['detroit1'].pubsub._listeners[topic], undefined);
         done();
       }, 100);
     });
 
-    it('should pass binary data from local device to virtual', function(done) {    
-      var recv = 0;
-      vdevice.streams.foobar.on('data', function(data) {
+    it('should pass binary data from local device to virtual', done => {    
+      let recv = 0;
+      vdevice.streams.foobar.on('data', data => {
         recv++;
         assert.deepEqual(data, new Buffer([recv]));
       });
 
-      setTimeout(function() {
+      setTimeout(() => {
         device.incrementFooBar();
         device.incrementFooBar();
         device.incrementFooBar();
 
-        setTimeout(function() {          
+        setTimeout(() => {          
           assert.equal(recv, 3);
           done();
         }, 100);
@@ -316,60 +316,60 @@ describe('Virtual Device', function() {
 
 
 
-  describe('basic unit tests', function() {
+  describe('basic unit tests', () => {
 
-    var device = null;
-    beforeEach(function() {
+    let device = null;
+    beforeEach(() => {
       device = new VirtualDevice(LedJSON , mockSocket);
     });
       
-    it('wires up logs, properties, and actions', function() {
+    it('wires up logs, properties, and actions', () => {
       assert.equal(device.state, 'off');
       assert.equal(Object.keys(device.streams).length, 2);
     });
 
-    it('will change properties with update.', function() {
+    it('will change properties with update.', () => {
       device._update({ properties: {state: 'on'}});
       assert.equal(device.state, 'on');
     });
 
-    it('will return the proper action given a name', function() {
-      var action = device._getAction('turn-on');
+    it('will return the proper action given a name', () => {
+      const action = device._getAction('turn-on');
       assert.ok(action);
       assert.equal(action.name, 'turn-on');
       assert.equal(action.fields.length, 1);
     });
 
-    it('will return link given a title', function() {
-      var link = device._getLinkWithTitle('state');
+    it('will return link given a title', () => {
+      const link = device._getLinkWithTitle('state');
       assert.ok(link);
       assert.equal(link.title, 'state');
       assert.equal(link.rel[0], 'monitor');
       assert.equal(link.rel[1], 'http://rels.zettajs.io/object-stream');
     });
 
-    it('will return an array of links if searched for by rel', function() {
-      var links = device._getLinksWithRel('http://rels.zettajs.io/object-stream');
+    it('will return an array of links if searched for by rel', () => {
+      const links = device._getLinksWithRel('http://rels.zettajs.io/object-stream');
       assert.ok(links);
       assert.equal(links.length, 2);
       assert.ok(Array.isArray(links));
     });
 
-    it('will parse out a topic for a particular link', function() {
-      var link = device._getLinkWithTitle('state');
-      var topic = device._getTopic(link);
+    it('will parse out a topic for a particular link', () => {
+      const link = device._getLinkWithTitle('state');
+      const topic = device._getTopic(link);
       assert.equal(topic, 'led/0eaf8607-5b8c-45ee-afae-9a5f9e1f34e2/state');
     });
 
-    it('will encode transition arguments into an object', function() {
-      var action = device._getAction('turn-on');
-      var data = device._encodeData(action, {});
+    it('will encode transition arguments into an object', () => {
+      const action = device._getAction('turn-on');
+      const data = device._encodeData(action, {});
       assert.ok(data);
       assert.equal(Object.keys(data)[0], 'action');
       assert.equal(data.action, 'turn-on');
     });
 
-    it('exposes .available() method', function() {
+    it('exposes .available() method', () => {
       assert.equal(typeof device.available, 'function');
       assert.equal(device.available('turn-on'), true);
       assert.equal(device.available('turn-off'), false);

@@ -1,48 +1,48 @@
-var assert = require('assert');
-var path = require('path');
-var Registry = require('../lib/registry');
-var Query = require('calypso').Query;
-var memdown = require('memdown');
-var levelup = require('levelup');
+const assert = require('assert');
+const path = require('path');
+const Registry = require('../lib/registry');
+const Query = require('calypso').Query;
+const memdown = require('memdown');
+const levelup = require('levelup');
 
-var dbPath = path.join(__dirname, './.peers');
+const dbPath = path.join(__dirname, './.peers');
 
-describe('Registry Compaction', function() {
-  describe('custom database', function() {
-    var db, opts;
-    
-    beforeEach(function(done) {
+describe('Registry Compaction', () => {
+  describe('custom database', () => {
+    let db;
+    let opts;
+
+    beforeEach(done => {
       db = levelup(dbPath, { db: memdown });
-      opts = { db: db, collection: 'peers' };
+      opts = { db, collection: 'peers' };
       done();
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
       if (db) {
         db.close(done);
       }
     });
 
-    it('should not have a compactor property with a custom db.', function() {
-      var reg = new Registry(opts);
+    it('should not have a compactor property with a custom db.', () => {
+      const reg = new Registry(opts);
       assert.ok(!reg.compactor); 
-    });  
-    
+    });
   });
   
-  describe('standard medea database', function() {
-    var reg;
-    var opts = {
+  describe('standard medea database', () => {
+    let reg;
+    const opts = {
       collection: 'peer',
       path: './.peers'
     };
 
-    beforeEach(function(done) {
+    beforeEach(done => {
       reg = new Registry(opts); 
       done();
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
       if(reg.db) {
         reg.close(done);
       } else {
@@ -50,66 +50,66 @@ describe('Registry Compaction', function() {
       }
     });
 
-    it('should have a compactor property without a custom db.', function() { 
+    it('should have a compactor property without a custom db.', () => { 
       assert.ok(reg.compactor);
     });
 
-    it('should call open before compact.', function(done) {
-      var compactor = {};
+    it('should call open before compact.', done => {
+      const compactor = {};
 
-      compactor.open = function(path, cb) {
+      compactor.open = (path, cb) => {
         assert.ok(path);
         assert.ok(cb);
         done();
       };
 
       reg.compactor = compactor;
-      reg._init(function(e) {
+      reg._init(e => {
           
       });
     });
 
-    it('should call compact.', function(done) { 
-      var compactor = {};
+    it('should call compact.', done => { 
+      const compactor = {};
 
-      compactor.open = function(path, cb) {
+      compactor.open = (path, cb) => {
         assert.ok(path);
         assert.ok(cb);
         done();
       };
 
-      compactor.compact = function(cb) {
+      compactor.compact = cb => {
         assert.ok(cb);
         done();
       };
 
       reg.compactor = compactor;
-      reg._init(function(e) {
+      reg._init(e => {
           
       });
     });  
 
-    it('should call close.', function(done) {
-      var compactor = {};
+    it('should call close.', done => {
+      const compactor = {};
 
-      compactor.open = function(path, cb) {
+      compactor.open = (path, cb) => {
         assert.ok(path);
         assert.ok(cb);
         done();
       };
 
-      compactor.compact = function(cb) {
+      compactor.compact = cb => {
         assert.ok(cb);
         done();
       };
 
-      compactor.close = function(cb) {
+      compactor.close = cb => {
         assert.ok(cb);
         done();
       };
 
       reg.compactor = compactor;
-      reg._init(function(e) {
+      reg._init(e => {
           
       });
     });

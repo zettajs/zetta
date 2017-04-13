@@ -1,11 +1,13 @@
-var util = require('util');
-var levelup = require('levelup');
-var memdown = require('memdown');
-var DeviceRegistry = require('../../lib/device_registry');
+const util = require('util');
+const levelup = require('levelup');
+const memdown = require('memdown');
+const DeviceRegistry = require('../../lib/device_registry');
 
-var MemRegistry = module.exports = function() {
-  var db = levelup({ db: memdown });
-  DeviceRegistry.call(this, { db: db, collection: 'devices' });
+class MemRegistry extends DeviceRegistry {
+  constructor() {
+    const db = levelup({ db: memdown });
+    super({ db, collection: 'devices' });
+  }
 }
-util.inherits(MemRegistry, DeviceRegistry);
 
+module.exports = MemRegistry;

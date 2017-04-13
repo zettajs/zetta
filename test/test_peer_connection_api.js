@@ -1,41 +1,41 @@
-var assert = require('assert');
-var http = require('http');
-var zetta = require('../zetta');
-var MemRegistry = require('./fixture/mem_registry');
-var MemPeerRegistry = require('./fixture/mem_peer_registry');
-var request = require('supertest');
-var PeerRegistry = require('../lib/peer_registry');
-var Query = require('calypso').Query;
-var querystring = require('querystring');
+const assert = require('assert');
+const http = require('http');
+const zetta = require('../zetta');
+const MemRegistry = require('./fixture/mem_registry');
+const MemPeerRegistry = require('./fixture/mem_peer_registry');
+const request = require('supertest');
+const PeerRegistry = require('../lib/peer_registry');
+const Query = require('calypso').Query;
+const querystring = require('querystring');
 
 function deleteRequest(port, connectionId) {
-  var opts = {
+  const opts = {
     host: 'localhost',
-    port: port,
+    port,
     method: 'DELETE',
-    path: '/peer-management/' + connectionId
-  }
+    path: `/peer-management/${connectionId}`
+  };
   
-  var req = http.request(opts);
+  const req = http.request(opts);
   req.end(); 
 }
 
 function putRequest(port, connectionId, url) {
-  var qs = {
-    url: url  
+  const qs = {
+    url  
   };
-  var string = querystring.stringify(qs);
-  var opts = {
+  const string = querystring.stringify(qs);
+  const opts = {
     host: 'localhost',
-    port: port,
+    port,
     method: 'PUT',
-    path: '/peer-management/' + connectionId,
+    path: `/peer-management/${connectionId}`,
     headers: {
       'Content-Length': string.length  
     }
   };
 
-  var req = http.request(opts);
+  const req = http.request(opts);
   req.write(string);
   req.end();
 }
@@ -46,7 +46,7 @@ function getHttpServer(app) {
 }
 
 function getBody(fn) {
-  return function(res) {
+  return res => {
     try {
       if(res.text) {
         var body = JSON.parse(res.text);
@@ -58,17 +58,17 @@ function getBody(fn) {
     }
 
     fn(res, body);
-  }
+  };
 }
 
-describe('Peer Connection API', function() {
-  describe('/peer-management embedded entities', function() {
-    var peerRegistry = null;
-    var app = null;
+describe('Peer Connection API', () => {
+  describe('/peer-management embedded entities', () => {
+    let peerRegistry = null;
+    let app = null;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
       peerRegistry = new MemPeerRegistry();
-      app = zetta({ registry: new MemRegistry(), peerRegistry: peerRegistry })
+      app = zetta({ registry: new MemRegistry(), peerRegistry })
         .silent()
         .name('local')
         ._run(done);
@@ -80,23 +80,23 @@ describe('Peer Connection API', function() {
     checkPeersActionsForState('acceptor', 'disconnected', 0);
     
     function checkPeersActionsForState(direction, status, numberOfActionsExpected) {
-      it('exposes ' + numberOfActionsExpected + ' actions on the embedded entity when ' + status + ' and ' + direction, function(done) {
+      it(`exposes ${numberOfActionsExpected} actions on the embedded entity when ${status} and ${direction}`, done => {
 
-        var peer = {
+        const peer = {
           id:'foo',
           connectionId:'12345',
-          direction: direction,
-          status: status
+          direction,
+          status
         };
         
-        peerRegistry.save(peer, function() {
-          var url = '/peer-management';
+        peerRegistry.save(peer, () => {
+          const url = '/peer-management';
           request(getHttpServer(app))
             .get(url)
-            .expect(getBody(function(res, body) {
+            .expect(getBody((res, body) => {
               assert.equal(body.entities.length, 1);
               assert.equal(body.entities[0].actions.length, numberOfActionsExpected);
-              body.entities[0].actions.forEach(function(action) {
+              body.entities[0].actions.forEach(action => {
                 assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
               })
             }))
@@ -111,20 +111,20 @@ describe('Peer Connection API', function() {
     checkPeersActionsOnFullEntity('acceptor', 'disconnected', 0);
     
     function checkPeersActionsOnFullEntity(direction, status, numberOfActionsExpected) {
-      it('when ' + direction + ' exposes ' + numberOfActionsExpected + ' actions on the full entity when ' + status, function(done) {
-        var peer = {
+      it(`when ${direction} exposes ${numberOfActionsExpected} actions on the full entity when ${status}`, done => {
+        const peer = {
           id:'foo',
           connectionId:'12345',
-          direction: direction,
-          status: status
+          direction,
+          status
         };
-        peerRegistry.save(peer, function() {
-          var url = '/peer-management/foo';
+        peerRegistry.save(peer, () => {
+          const url = '/peer-management/foo';
           request(getHttpServer(app))
             .get(url)
-            .expect(getBody(function(res, body) {
+            .expect(getBody((res, body) => {
               assert.equal(body.actions.length, numberOfActionsExpected);
-              body.actions.forEach(function(action) {
+              body.actions.forEach(action => {
                 assert.ok(action.href.indexOf('/peer-management/12345') !== -1);
               });
             }))
@@ -134,49 +134,49 @@ describe('Peer Connection API', function() {
     }
   }); 
 
-  describe('Root API for peers', function() {
-    var cloud = null;
-    var cloudUrl = null;
-    var cloudPort = null;
-    var db1 = null;
-    var db2 = null;
+  describe('Root API for peers', () => {
+    let cloud = null;
+    let cloudUrl = null;
+    let cloudPort = null;
+    const db1 = null;
+    const db2 = null;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
       
       cloud = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       cloud.name('cloud');
       cloud.silent();
       
-      cloud.listen(0, function(err) {
+      cloud.listen(0, err => {
         if(err) {
           return done(err);
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        cloudUrl = 'http://localhost:' + cloudPort;
+        cloudUrl = `http://localhost:${cloudPort}`;
         done();  
       });  
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
       cloud.httpServer.server.close();
       done();
     });
 
     it('will have rel of server on peer', function(done) {
       this.timeout(10000);
-      var connected = false;
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      const connected = false;
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.name('local');
 
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
-        setImmediate(function() {
-          var url = '/';
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
+        setImmediate(() => {
+          const url = '/';
           request(getHttpServer(cloud))
             .get(url)
-            .expect(getBody(function(res, body) {
-              var peerLinks = body.links.filter(function(link) { return link.rel.indexOf('http://rels.zettajs.io/peer') !== -1; });
-              var peerLink = peerLinks[0];
+            .expect(getBody((res, body) => {
+              const peerLinks = body.links.filter(link => link.rel.indexOf('http://rels.zettajs.io/peer') !== -1);
+              const peerLink = peerLinks[0];
               assert.ok(peerLink.rel.indexOf('http://rels.zettajs.io/server') !== -1);
             }))
             .end(done); 
@@ -192,37 +192,37 @@ describe('Peer Connection API', function() {
     
   });
 
-  describe('/peer-management disconnection API', function() {
-    var cloud = null;
-    var cloudUrl = null;
-    var cloudPort = null;
-    var db1 = null;
-    var db2 = null;
+  describe('/peer-management disconnection API', () => {
+    let cloud = null;
+    let cloudUrl = null;
+    let cloudPort = null;
+    const db1 = null;
+    const db2 = null;
 
-    beforeEach(function(done) {
+    beforeEach(done => {
       
       cloud = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       cloud.name('cloud');
       cloud.silent();
       
-      cloud.listen(0, function(err) {
+      cloud.listen(0, err => {
         if(err) {
           return done(err);
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        cloudUrl = 'http://localhost:' + cloudPort;
+        cloudUrl = `http://localhost:${cloudPort}`;
         done();  
       });  
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
       cloud.httpServer.server.close();
       done();
     });
 
-    it('will return 404 if connection does not exist', function(done) {
-      var url = '/peer-management/1234';
+    it('will return 404 if connection does not exist', done => {
+      const url = '/peer-management/1234';
       request(getHttpServer(cloud))
         .del(url)
         .expect(404, done);
@@ -231,22 +231,22 @@ describe('Peer Connection API', function() {
     it('will proxy a disconnection between two peers', function(done) {
       //Had to increase the timeout. The standard two seconds may not be long enough for a connection to be established.
       this.timeout(10000);
-      var connected = false;
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      let connected = false;
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.name('local');
-      var connectionId = null;
+      let connectionId = null;
 
-      z.pubsub.subscribe('_peer/disconnect', function(topic, data) {
+      z.pubsub.subscribe('_peer/disconnect', (topic, data) => {
         assert.equal(connectionId, data.peer.connectionId);
         done();
       });
 
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
         assert.equal(connected, true);
         connectionId = data.peer.connectionId;
         deleteRequest(cloudPort, connectionId);
       });
-      z.pubsub.subscribe('_peer/connect', function(topic, data) {
+      z.pubsub.subscribe('_peer/connect', (topic, data) => {
         connected = true; 
       });
         
@@ -259,31 +259,31 @@ describe('Peer Connection API', function() {
     
     it('will disconnect two peers', function(done) {
       this.timeout(10000);
-      var connected = false;
-      var localPort = null;
-      var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      let connected = false;
+      let localPort = null;
+      const z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       z.name('local');
       
-      var connectionId = null;
+      let connectionId = null;
       
-      z.pubsub.subscribe('_peer/disconnect', function(topic, data) {
+      z.pubsub.subscribe('_peer/disconnect', (topic, data) => {
         assert.equal(connectionId, data.peer.connectionId);
         done();  
       });  
 
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
         assert.equal(connected, true);
         connectionId = data.peer.connectionId;
         deleteRequest(localPort, connectionId);  
       });
 
-      z.pubsub.subscribe('_peer/connect', function(topic, data) {
+      z.pubsub.subscribe('_peer/connect', (topic, data) => {
         connected = true;  
       });
 
       z.silent();
       z.link(cloudUrl);
-      z.listen(0, function(err) {
+      z.listen(0, err => {
         if(err) {
           done(err);  
         }
@@ -294,13 +294,13 @@ describe('Peer Connection API', function() {
     });  
   });
 
-  describe('/peer-management update API', function() {
-    var cloud = null;
-    var localOne = null;
-    var localPort = null;
-    var cloudPort = null;
-    var localOnePort = null;
-    var connectionId = null;
+  describe('/peer-management update API', () => {
+    let cloud = null;
+    let localOne = null;
+    let localPort = null;
+    let cloudPort = null;
+    const localOnePort = null;
+    let connectionId = null;
 
 
     beforeEach(function(done) {
@@ -313,21 +313,21 @@ describe('Peer Connection API', function() {
       localOne.name('localOne');
       localOne.silent();
       
-      cloud.pubsub.subscribe('_peer/connect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/connect', (topic, data) => {
         connectionId = data.peer.connectionId;  
         done();
       });
        
-      cloud.listen(0, function(err) {
+      cloud.listen(0, err => {
         if(err) {
           return done(err);
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        var cloudUrl = 'http://localhost:' + cloudPort;
+        const cloudUrl = `http://localhost:${cloudPort}`;
 
         localOne.link(cloudUrl);
-        localOne.listen(0, function(err) {
+        localOne.listen(0, err => {
           if(err) {
             done(err);  
           }  
@@ -337,14 +337,14 @@ describe('Peer Connection API', function() {
       });    
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
       cloud.httpServer.server.close();
       localOne.httpServer.server.close();
       done();  
     });
     
-    it('will return 404 if connection does not exist', function(done) {
-      var url = '/peer-management/1234';
+    it('will return 404 if connection does not exist', done => {
+      const url = '/peer-management/1234';
       request(getHttpServer(cloud))
         .put(url)
         .set('Content-Type', 'application/x-www-form-urlencoded')
@@ -354,52 +354,52 @@ describe('Peer Connection API', function() {
 
     it('will proxy a connection update between two peers', function(done) {
       this.timeout(10000);
-      var localTwoPort = null;
-      var localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      let localTwoPort = null;
+      const localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       localTwo.name('localTwo');
       localTwo.silent();
 
-      var url = 'http://localhost:';
+      const url = 'http://localhost:';
 
-      cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
+      cloud.pubsub.subscribe('_peer/disconnect', (topic, data) => {
         assert.equal(connectionId, data.peer.connectionId); 
       }); 
 
-      localTwo.pubsub.subscribe('_peer/connect', function(topic, data) {
+      localTwo.pubsub.subscribe('_peer/connect', (topic, data) => {
         done();
       });
 
-      localTwo.listen(0, function(err) {
+      localTwo.listen(0, err => {
         if(err) {
           return done(err);  
         }  
 
         localTwoPort = localTwo.httpServer.server.address().port;
-        var serverUrl = url + localTwoPort;
+        const serverUrl = url + localTwoPort;
         putRequest(cloudPort, connectionId, serverUrl);
       });
     });
 
     it('will update a connection between two peers', function(done) {
       this.timeout(10000);
-      var localTwoPort = null;
-      var localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
+      let localTwoPort = null;
+      const localTwo = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() });
       localTwo.name('localTwo');
       localTwo.silent();
 
-      var url = 'http://localhost:';
-      var serverUrl = null;
-      cloud.pubsub.subscribe('_peer/disconnect', function(topic, data) {
+      const url = 'http://localhost:';
+      let serverUrl = null;
+      cloud.pubsub.subscribe('_peer/disconnect', (topic, data) => {
         assert.equal(connectionId, data.peer.connectionId); 
       }); 
 
-      localTwo.pubsub.subscribe('_peer/connect', function(topic, data) {
+      localTwo.pubsub.subscribe('_peer/connect', (topic, data) => {
         // make sure there is only one peer in /peer-management list
         // PUT Should not add a new peer
         request(getHttpServer(localOne))
           .get('/peer-management')
           .expect(200)
-          .expect(getBody(function(res, body) {
+          .expect(getBody((res, body) => {
             assert.equal(body.entities.length, 1);
             // url should be updated to new peer
             assert.equal(body.entities[0].properties.url, serverUrl);
@@ -407,7 +407,7 @@ describe('Peer Connection API', function() {
           .end(done);
       });
 
-      localTwo.listen(0, function(err) {
+      localTwo.listen(0, err => {
         if(err) {
           done(err);  
         }  

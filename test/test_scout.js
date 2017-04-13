@@ -1,87 +1,87 @@
-var assert = require('assert');
-var mocks = require('./fixture/scout_test_mocks');
-var zetta = require('../zetta_runtime');
-var Runtime = require('../lib/runtime');
-var GoodScout = mocks.GoodScout;
-var GoodDevice = mocks.GoodDevice;
-var MockRegistry = require('./fixture/mem_registry');
+const assert = require('assert');
+const mocks = require('./fixture/scout_test_mocks');
+const zetta = require('../zetta_runtime');
+const Runtime = require('../lib/runtime');
+const GoodScout = mocks.GoodScout;
+const GoodDevice = mocks.GoodDevice;
+const MockRegistry = require('./fixture/mem_registry');
 
 
-describe('Scout', function() {
+describe('Scout', () => {
 
-  it('runtime should export zetta.Scout', function() {
+  it('runtime should export zetta.Scout', () => {
     assert.ok(zetta.Scout);
   });
 
-  describe('initialization of scout', function() {
+  describe('initialization of scout', () => {
 
-    var scout = null;
+    let scout = null;
 
-    beforeEach(function(){
+    beforeEach(() => {
       scout = new GoodScout();
     });
 
-    it('it should implement discover prototype', function() {
+    it('it should implement discover prototype', () => {
       assert.ok(scout.discover);
     });
 
-    it('it should implement provision prototype', function() {
+    it('it should implement provision prototype', () => {
       assert.ok(scout.provision);
     });
 
   });
 
 
-  describe('#discover()', function() {
+  describe('#discover()', () => {
 
-    var runtime = null;
+    let runtime = null;
 
-    beforeEach(function(){
-      var registry = new MockRegistry();
-      runtime = new Runtime({registry: registry});
+    beforeEach(() => {
+      const registry = new MockRegistry();
+      runtime = new Runtime({registry});
     });
 
-    it('it should pass arguments to device', function(done) {
+    it('it should pass arguments to device', done => {
 
-      var scout = new GoodScout();
+      const scout = new GoodScout();
       scout.server = runtime;
 
-      runtime.on('deviceready', function(machine){
+      runtime.on('deviceready', machine => {
         assert.equal(machine.foo, 'foo');
         assert.equal(machine.bar, 'bar');
         done();
       });
 
-      scout.init(function(){});
+      scout.init(() => {});
 
     });
 
-    it('it should add a new device to the registry', function(done) {
-      var scout = new GoodScout();
+    it('it should add a new device to the registry', done => {
+      const scout = new GoodScout();
       scout.server = runtime;
 
-      runtime.on('deviceready', function(machine){
+      runtime.on('deviceready', machine => {
         assert.ok(machine);
         assert.equal(machine.type, 'test');
         assert.equal(machine.vendorId, '1234567');
         done();
       });
 
-      scout.init(function(){});
+      scout.init(() => {});
     });
   });
 
 
-  describe('#provision()', function() {
+  describe('#provision()', () => {
 
-    var runtime = null;
+    let runtime = null;
 
-    beforeEach(function(done){
+    beforeEach(done => {
 
       GoodScout.prototype.init = function(cb){
-        var query = this.server.where({type:'test', vendorId:'1234567'});
-        var self = this;
-        this.server.find(query, function(err, results){
+        const query = this.server.where({type:'test', vendorId:'1234567'});
+        const self = this;
+        this.server.find(query, (err, results) => {
           if(!err) {
             if(results.length) {
               self.provision(results[0], GoodDevice, 'foo1', 'foo2');
@@ -95,52 +95,52 @@ describe('Scout', function() {
         });
       };
 
-      var registry = new MockRegistry();
+      const registry = new MockRegistry();
       
-      registry.db.put('BC2832FD-9437-4473-A4A8-AC1D56B12C6F', {id:'BC2832FD-9437-4473-A4A8-AC1D56B12C6F',type:'test', vendorId:'1234567', foo:'foo', bar:'bar', name:'Test Device'}, {valueEncoding: 'json'}, function(err) {
+      registry.db.put('BC2832FD-9437-4473-A4A8-AC1D56B12C6F', {id:'BC2832FD-9437-4473-A4A8-AC1D56B12C6F',type:'test', vendorId:'1234567', foo:'foo', bar:'bar', name:'Test Device'}, {valueEncoding: 'json'}, err => {
         if (err) {
           done(err);
           return;
         }
-        runtime = new Runtime({registry: registry});
+        runtime = new Runtime({registry});
         done();
       });
     });
 
 
-    it('it should pass arguments to device', function(done) {
+    it('it should pass arguments to device', done => {
 
-      var scout = new GoodScout();
+      const scout = new GoodScout();
       scout.server = runtime;
 
-      runtime.on('deviceready', function(machine){
+      runtime.on('deviceready', machine => {
         assert.equal(machine.foo, 'foo1');
         assert.equal(machine.bar, 'foo2');
         done();
       });
 
-      scout.init(function(){});
+      scout.init(() => {});
 
     });
 
-    it('it should initiate device with registry information', function(done) {
-      var scout = new GoodScout();
+    it('it should initiate device with registry information', done => {
+      const scout = new GoodScout();
       scout.server = runtime;
 
-      runtime.on('deviceready', function(machine){
+      runtime.on('deviceready', machine => {
         assert.equal(machine.name, 'Good Device:foo1');
         assert.equal(machine.type, 'test');
         done();
       });
 
-      scout.init(function(){});
+      scout.init(() => {});
     });
 
-    it('should not return a device that has been already initialized', function(done) {
+    it('should not return a device that has been already initialized', done => {
       GoodScout.prototype.init = function(cb){
-        var query = this.server.where({type:'test', vendorId:'1234567'});
-        var self = this;
-        this.server.find(query, function(err, results){
+        const query = this.server.where({type:'test', vendorId:'1234567'});
+        const self = this;
+        this.server.find(query, (err, results) => {
           if(!err) {
             if(results.length) {
               assert.ok(self.provision(results[0], GoodDevice, 'foo1', 'foo2'));
@@ -156,27 +156,27 @@ describe('Scout', function() {
         });
       };
 
-      var scout = new GoodScout();
+      const scout = new GoodScout();
       scout.server = runtime;
-      scout.init(function(){
+      scout.init(() => {
       });
     });
 
 
-    it('device init.name() should take presedence over registry value', function(done) {
+    it('device init.name() should take presedence over registry value', done => {
       GoodScout.prototype.init = function(cb){
-        var query = this.server.where({type:'test', vendorId:'1234567'});
-        var self = this;
-        this.server.find(query, function(err, results){
-          var device = self.provision(results[0], GoodDevice, 'foo1', 'foo2');
+        const query = this.server.where({type:'test', vendorId:'1234567'});
+        const self = this;
+        this.server.find(query, (err, results) => {
+          const device = self.provision(results[0], GoodDevice, 'foo1', 'foo2');
           assert.equal(device.name, 'Good Device:foo1');
           done();
         });
       };
 
-      var scout = new GoodScout();
+      const scout = new GoodScout();
       scout.server = runtime;
-      scout.init(function(){});
+      scout.init(() => {});
     });
 
   });

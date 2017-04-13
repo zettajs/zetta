@@ -1,14 +1,12 @@
-var portscanner = require('portscanner');
-var async = require('async');
+const portscanner = require('portscanner');
+const async = require('async');
 
 module.exports = find;
 function find(obj, cb) {
-  var startPort = obj.startingPort || 3000;
-  var ports = [];
-  async.until(function(){
-    return ports.length > obj.count;
-  }, function(next) {
-    portscanner.findAPortNotInUse(startPort, 650000, '127.0.0.1', function(error, port) {
+  let startPort = obj.startingPort || 3000;
+  const ports = [];
+  async.until(() => ports.length > obj.count, next => {
+    portscanner.findAPortNotInUse(startPort, 650000, '127.0.0.1', (error, port) => {
       if (!error) {
         startPort = ++port;
         ports.push(port);
@@ -16,7 +14,7 @@ function find(obj, cb) {
       
       next();
     });
-  }, function(err) {
+  }, err => {
     cb(err, ports);
   });
 }

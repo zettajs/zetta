@@ -1,24 +1,24 @@
-var assert = require('assert');
-var http = require('http');
-var os = require('os');
-var request = require('supertest');
-var spdy = require('spdy');
-var zetta = require('../');
-var Query = require('calypso').Query;
-var rels = require('zetta-rels');
-var zettacluster = require('zetta-cluster');
-var Scout = require('./fixture/example_scout');
-var Driver = require('./fixture/example_driver');
-var HttpDriver = require('./fixture/example_http_driver');
-var Registry = require('./fixture/mem_registry');
-var PeerRegistry = require('./fixture/mem_peer_registry');
+const assert = require('assert');
+const http = require('http');
+const os = require('os');
+const request = require('supertest');
+const spdy = require('spdy');
+const zetta = require('../');
+const Query = require('calypso').Query;
+const rels = require('zetta-rels');
+const zettacluster = require('zetta-cluster');
+const Scout = require('./fixture/example_scout');
+const Driver = require('./fixture/example_driver');
+const HttpDriver = require('./fixture/example_http_driver');
+const Registry = require('./fixture/mem_registry');
+const PeerRegistry = require('./fixture/mem_peer_registry');
 
 function getHttpServer(app) {
   return app.httpServer.server;
 }
 
 function getBody(fn) {
-  return function(res) {
+  return res => {
     try {
       if(res.text) {
         var body = JSON.parse(res.text);
@@ -30,7 +30,7 @@ function getBody(fn) {
     }
 
     fn(res, body);
-  }
+  };
 }
 
 function checkDeviceOnRootUri(entity) {
@@ -51,9 +51,9 @@ function checkDeviceOnRootUri(entity) {
 }
 
 function hasLinkRel(links, rel, title, href) {
-  var found = false;
+  let found = false;
 
-  links.forEach(function(link) {
+  links.forEach(link => {
     if(link.rel.indexOf(rel) != -1) {
       found = true;
 
@@ -68,25 +68,25 @@ function hasLinkRel(links, rel, title, href) {
   });
 
   if(!found) {
-    throw new Error('Link rel:'+rel+' not found in links');
+    throw new Error(`Link rel:${rel} not found in links`);
   }
 }
 
 
-describe('Zetta Api', function() {
-  var reg = null;
-  var peerRegistry = null;
+describe('Zetta Api', () => {
+  let reg = null;
+  let peerRegistry = null;
 
-  beforeEach(function() {
+  beforeEach(() => {
     reg = new Registry();
     peerRegistry = new PeerRegistry();
   });
 
-  it('updates href hosts using x-forwarded-host header', function(done) {
-    var app = zetta({ registry: reg, peerRegistry: peerRegistry  })
+  it('updates href hosts using x-forwarded-host header', done => {
+    const app = zetta({ registry: reg, peerRegistry  })
         .silent()
         .name('local')
-        ._run(function(err) {
+        ._run(err => {
           if (err) {
             return done(err);
           }
@@ -94,40 +94,40 @@ describe('Zetta Api', function() {
           request(getHttpServer(app))
             .get('/')
             .set('x-forwarded-host', 'google.com')
-            .expect(getBody(function(res, body) {
-              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
+            .expect(getBody((res, body) => {
+              const self = body.links.filter(link => link.rel.indexOf('self') >= 0)[0];
               assert.equal(self.href, 'http://google.com/');
             }))
             .end(done);
         });
   })
 
-  it('updates href path using x-forwarded-path header', function(done) {
-    var app = zetta({ registry: reg, peerRegistry: peerRegistry  })
+  it('updates href path using x-forwarded-path header', done => {
+    const app = zetta({ registry: reg, peerRegistry  })
         .silent()
         .name('local')
-        ._run(function(err) {
+        ._run(err => {
           if (err) {
             return done(err);
           }
-          var rootPath = '/api/v1';
+          const rootPath = '/api/v1';
           request(getHttpServer(app))
             .get('/')
             .set('x-forwarded-path', rootPath)
-            .expect(getBody(function(res, body) {
-              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
-              var resultPath = require('url').parse(self.href).pathname;
+            .expect(getBody((res, body) => {
+              const self = body.links.filter(link => link.rel.indexOf('self') >= 0)[0];
+              const resultPath = require('url').parse(self.href).pathname;
               assert.equal(resultPath.substr(0, rootPath.length), rootPath);
             }))
             .end(done);
         });
   })
 
-  it('allow for x-forwarded-host header to be disabled', function(done) {
-    var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedHostHeader: false  })
+  it('allow for x-forwarded-host header to be disabled', done => {
+    const app = zetta({ registry: reg, peerRegistry, useXForwardedHostHeader: false  })
         .silent()
         .name('local')
-        ._run(function(err) {
+        ._run(err => {
           if (err) {
             return done(err);
           }
@@ -135,32 +135,32 @@ describe('Zetta Api', function() {
           request(getHttpServer(app))
             .get('/')
             .set('x-forwarded-host', 'google.com')
-            .expect(getBody(function(res, body) {
-              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
+            .expect(getBody((res, body) => {
+              const self = body.links.filter(link => link.rel.indexOf('self') >= 0)[0];
               assert.notEqual(self.href, 'http://google.com/');
             }))
             .end(done);
         });
   })
 
-  it('allow for x-forwarded-path header to be disabled', function(done) {
-    var app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedPathHeader: false  })
+  it('allow for x-forwarded-path header to be disabled', done => {
+    const app = zetta({ registry: reg, peerRegistry, useXForwardedPathHeader: false  })
         .silent()
         .name('local')
-        ._run(function(err) {
+        ._run(err => {
           if (err) {
             return done(err);
           }
 
-          var rootPath = '/api/v1';
+          const rootPath = '/api/v1';
 
           request(getHttpServer(app))
             .get('/')
             .set('x-forwarded-path', rootPath)
-            .expect(getBody(function(res, body) {
-              var self = body.links.filter(function(link) { return link.rel.indexOf('self') >= 0; })[0];
-              var resultPath = require('url').parse(self.href).pathname;
-              var resultPathSub = resultPath.substr(0,rootPath.length);
+            .expect(getBody((res, body) => {
+              const self = body.links.filter(link => link.rel.indexOf('self') >= 0)[0];
+              const resultPath = require('url').parse(self.href).pathname;
+              const resultPathSub = resultPath.substr(0,rootPath.length);
               assert.notEqual(resultPathSub, rootPath);
               assert.equal(resultPathSub, '/');
             }))
@@ -168,12 +168,12 @@ describe('Zetta Api', function() {
         });
   })
 
-  describe('/servers/<peer id> ', function() {
-    var app = null;
-    var url = null;
+  describe('/servers/<peer id> ', () => {
+    let app = null;
+    let url = null;
 
-    beforeEach(function(done) {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+    beforeEach(done => {
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .properties({ custom: 123 })
         .use(Scout)
@@ -182,53 +182,53 @@ describe('Zetta Api', function() {
         .expose('*')
         ._run(done);
 
-      url = '/servers/'+app._name;
+      url = `/servers/${app._name}`;
     });
 
-    it('should have content type application/vnd.siren+json', function(done) {
+    it('should have content type application/vnd.siren+json', done => {
       request(getHttpServer(app))
         .get(url)
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
 
-    it('should return status code 200', function(done) {
+    it('should return status code 200', done => {
       request(getHttpServer(app))
         .get(url)
         .expect(200, done);
     });
 
-    it('should have class ["server"]', function(done) {
+    it('should have class ["server"]', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.deepEqual(body.class, ['server']);
         }))
         .end(done);
     });
 
-    it('should have proper name and id property', function(done) {
+    it('should have proper name and id property', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.properties.name, 'local');
         }))
         .end(done);
     });
 
-    it('should have custom properties in resp', function(done) {
+    it('should have custom properties in resp', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.properties.name, 'local');
           assert.equal(body.properties.custom, 123);
         }))
         .end(done);
     });
 
-    it('should have self link and log link', function(done) {
+    it('should have self link and log link', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.links);
           hasLinkRel(body.links, 'self');
           hasLinkRel(body.links, 'monitor');
@@ -236,36 +236,34 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should have a metadata link', function(done) {
+    it('should have a metadata link', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.links);
           hasLinkRel(body.links, rels.metadata);
         }))
         .end(done);
     });
 
-    it('should have monitor log link formatted correctly for HTTP requests', function(done) {
+    it('should have monitor log link formatted correctly for HTTP requests', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
-          var link = body.links.filter(function(l) {
-            return l.rel.indexOf('monitor') > -1;
-          })[0];
-          var obj = require('url').parse(link.href, true);
+        .expect(getBody((res, body) => {
+          const link = body.links.filter(l => l.rel.indexOf('monitor') > -1)[0];
+          const obj = require('url').parse(link.href, true);
           assert.equal(obj.protocol, 'ws:');
           assert(obj.query.topic);
         }))
         .end(done);
     });
 
-    it('should have monitor log link formatted correctly for SPDY requests', function(done) {
-      var a = getHttpServer(app);
+    it('should have monitor log link formatted correctly for SPDY requests', done => {
+      const a = getHttpServer(app);
 
       if (!a.address()) a.listen(0);
 
-      var agent = spdy.createAgent({
+      const agent = spdy.createAgent({
         host: '127.0.0.1',
         port: a.address().port,
         spdy: {
@@ -274,27 +272,25 @@ describe('Zetta Api', function() {
         }
       });
 
-      var request = http.get({
+      const request = http.get({
         host: '127.0.0.1',
         port: a.address().port,
         path: url,
-        agent: agent
-      }, function(response) {
+        agent
+      }, response => {
 
-        var buffers = [];
-        response.on('readable', function() {
-          var data;
+        const buffers = [];
+        response.on('readable', () => {
+          let data;
           while ((data = response.read()) !== null) {
             buffers.push(data);
           }
         });
 
-        response.on('end', function() {
-          var body = JSON.parse(Buffer.concat(buffers));
-          var link = body.links.filter(function(l) {
-            return l.rel.indexOf('monitor') > -1;
-          })[0];
-          var obj = require('url').parse(link.href, true);
+        response.on('end', () => {
+          const body = JSON.parse(Buffer.concat(buffers));
+          const link = body.links.filter(l => l.rel.indexOf('monitor') > -1)[0];
+          const obj = require('url').parse(link.href, true);
           assert.equal(obj.protocol, 'http:');
           assert(obj.query.topic);
           agent.close();
@@ -304,12 +300,12 @@ describe('Zetta Api', function() {
       }).end();
     });
 
-    it('should not have an events link for SPDY requests', function(done) {
-      var a = getHttpServer(app);
+    it('should not have an events link for SPDY requests', done => {
+      const a = getHttpServer(app);
 
       if (!a.address()) a.listen(0);
 
-      var agent = spdy.createAgent({
+      const agent = spdy.createAgent({
         host: '127.0.0.1',
         port: a.address().port,
         spdy: {
@@ -318,26 +314,24 @@ describe('Zetta Api', function() {
         }
       });
 
-      var request = http.get({
+      const request = http.get({
         host: '127.0.0.1',
         port: a.address().port,
         path: '/',
-        agent: agent
-      }, function(response) {
+        agent
+      }, response => {
 
-        var buffers = [];
-        response.on('readable', function() {
-          var data;
+        const buffers = [];
+        response.on('readable', () => {
+          let data;
           while ((data = response.read()) !== null) {
             buffers.push(data);
           }
         });
 
-        response.on('end', function() {
-          var body = JSON.parse(Buffer.concat(buffers));
-          var links = body.links.filter(function(l) {
-            return l.rel.indexOf('http://rels.zettajs.io/events') > -1;
-          });
+        response.on('end', () => {
+          const body = JSON.parse(Buffer.concat(buffers));
+          const links = body.links.filter(l => l.rel.indexOf('http://rels.zettajs.io/events') > -1);
           assert.equal(links.length, 0);
           agent.close();
         });
@@ -346,10 +340,10 @@ describe('Zetta Api', function() {
       }).end();
     });
 
-    it('should have valid entities', function(done) {
+    it('should have valid entities', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.entities);
           assert.equal(body.entities.length, 1);
           checkDeviceOnRootUri(body.entities[0]);
@@ -357,25 +351,25 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should have one action', function(done) {
+    it('should have one action', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.actions);
           assert.equal(body.actions.length, 1);
         }))
         .end(done);
     });
 
-    it('should accept remote devices of type testdriver', function(done) {
+    it('should accept remote devices of type testdriver', done => {
       request(getHttpServer(app))
-        .post(url + '/devices')
+        .post(`${url}/devices`)
         .send('type=testdriver')
-        .end(function(err, res) {
-          getBody(function(res, body) {
+        .end((err, res) => {
+          getBody((res, body) => {
             assert.equal(res.statusCode, 201);
-            var query = Query.of('devices');
-            reg.find(query, function(err, machines) {
+            const query = Query.of('devices');
+            reg.find(query, (err, machines) => {
               assert.equal(machines.length, 2);
               assert.equal(machines[1].type, 'testdriver');
               done();
@@ -384,25 +378,25 @@ describe('Zetta Api', function() {
         });
     });
 
-    it('should not accept a remote device of type foo', function(done) {
+    it('should not accept a remote device of type foo', done => {
       request(getHttpServer(app))
-        .post(url + '/devices')
+        .post(`${url}/devices`)
         .send('type=foo')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 404);
         }))
         .end(done);
     });
 
-    it('should accept remote devices of type testdriver, and allow them to set their own id properties', function(done) {
+    it('should accept remote devices of type testdriver, and allow them to set their own id properties', done => {
       request(getHttpServer(app))
-        .post(url + '/devices')
+        .post(`${url}/devices`)
         .send('type=testdriver&id=12345&name=test')
-        .end(function(err, res) {
-          getBody(function(res, body) {
+        .end((err, res) => {
+          getBody((res, body) => {
             assert.equal(res.statusCode, 201);
-            var query = Query.of('devices').where('id', { eq: '12345'});
-            reg.find(query, function(err, machines) {
+            const query = Query.of('devices').where('id', { eq: '12345'});
+            reg.find(query, (err, machines) => {
               assert.equal(machines.length, 1);
               assert.equal(machines[0].type, 'testdriver');
               assert.equal(machines[0].id, '12345');
@@ -412,10 +406,10 @@ describe('Zetta Api', function() {
         });
     });
 
-    it('query for device should respond with properly formated api response', function(done) {
+    it('query for device should respond with properly formated api response', done => {
       request(getHttpServer(app))
-        .get(url+'?server=local&ql=where%20type="testdriver"')
-        .expect(getBody(function(res, body) {
+        .get(`${url}?server=local&ql=where%20type="testdriver"`)
+        .expect(getBody((res, body) => {
           assert(body.entities);
           assert.equal(body.entities.length, 1);
           checkDeviceOnRootUri(body.entities[0]);
@@ -424,11 +418,11 @@ describe('Zetta Api', function() {
     });
   });
 
-  describe('/', function() {
-    var app = null;
+  describe('/', () => {
+    let app = null;
 
-    beforeEach(function() {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+    beforeEach(() => {
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -436,65 +430,63 @@ describe('Zetta Api', function() {
         ._run();
     });
 
-    it('should have content type application/vnd.siren+json', function(done) {
+    it('should have content type application/vnd.siren+json', done => {
       request(getHttpServer(app))
         .get('/')
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
 
-    it('should have status code 200', function(done) {
+    it('should have status code 200', done => {
       request(getHttpServer(app))
         .get('/')
         .expect(200, done);
     });
 
-    it('body should contain class ["root"]', function(done) {
+    it('body should contain class ["root"]', done => {
       request(getHttpServer(app))
         .get('/')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.deepEqual(body.class, ['root']);
       }))
       .end(done)
     });
 
 
-    it('body should contain links property', function(done) {
+    it('body should contain links property', done => {
       request(getHttpServer(app))
         .get('/')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.links.length, 4);
           hasLinkRel(body.links, 'self');
         }))
         .end(done)
     });
 
-    it('links should contain rel to server', function(done) {
+    it('links should contain rel to server', done => {
       request(getHttpServer(app))
         .get('/')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           hasLinkRel(body.links, rels.server);
         }))
         .end(done)
     });
 
-    it('should contain link for event stream', function(done) {
+    it('should contain link for event stream', done => {
       request(getHttpServer(app))
         .get('/')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           hasLinkRel(body.links, rels.events);
         }))
         .end(done)
     });
 
-    it('should use a default server name if none has been provided', function(done) {
-      var app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent()._run();
+    it('should use a default server name if none has been provided', done => {
+      const app = zetta({ registry: reg, peerRegistry }).silent()._run();
 
       request(getHttpServer(app))
         .get('/')
-        .expect(getBody(function(res, body) {
-          var self = body.links.filter(function(link) {
-            return link.rel.indexOf(rels.server) !== -1;
-          })[0];
+        .expect(getBody((res, body) => {
+          const self = body.links.filter(link => link.rel.indexOf(rels.server) !== -1)[0];
 
           assert.equal(self.title, os.hostname());
         }))
@@ -502,18 +494,18 @@ describe('Zetta Api', function() {
     });
   });
 
-  describe('/peer-management', function() {
-    var app = null;
+  describe('/peer-management', () => {
+    let app = null;
 
-    before(function(done) {
+    before(done => {
       peerRegistry.save({
         id: '12341234',
         name: 'test-peer'
       }, done);
     });
 
-    beforeEach(function(done) {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+    beforeEach(done => {
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -521,33 +513,33 @@ describe('Zetta Api', function() {
         ._run(done);
     });
 
-    it('should have content type application/vnd.siren+json', function(done) {
+    it('should have content type application/vnd.siren+json', done => {
       request(getHttpServer(app))
         .get('/peer-management')
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
 
-    it('should return status code 200', function(done) {
+    it('should return status code 200', done => {
       request(getHttpServer(app))
         .get('/peer-management')
         .expect(200, done);
     });
 
-    it('should have class ["peer-management"]', function(done) {
+    it('should have class ["peer-management"]', done => {
       request(getHttpServer(app))
         .get('/peer-management')
-        .expect(getBody(function(err, body) {
+        .expect(getBody((err, body) => {
           assert.deepEqual(body.class, ['peer-management']);
         }))
         .end(done);
     });
 
-    it('subentities should have rel ["item"]', function(done) {
-      peerRegistry.save({ id: '0' }, function() {
+    it('subentities should have rel ["item"]', done => {
+      peerRegistry.save({ id: '0' }, () => {
         request(getHttpServer(app))
           .get('/peer-management')
-          .expect(getBody(function(err, body) {
-            body.entities.forEach(function(entity) {
+          .expect(getBody((err, body) => {
+            body.entities.forEach(entity => {
               assert(entity.rel.indexOf('item') >= 0)
             })
           }))
@@ -555,39 +547,39 @@ describe('Zetta Api', function() {
       });
     });
 
-    it('should list saved peers', function(done) {
-      peerRegistry.save({ id: '0' }, function() {
+    it('should list saved peers', done => {
+      peerRegistry.save({ id: '0' }, () => {
         request(getHttpServer(app))
           .get('/peer-management')
-          .expect(getBody(function(err, body) {
+          .expect(getBody((err, body) => {
             assert.equal(body.entities.length, 1);
           }))
           .end(done);
       });
     });
 
-    it('should allow the querying of peers with the ql parameter', function(done) {
-      peerRegistry.save({ id: '1', type: 'initiator'}, function() {
+    it('should allow the querying of peers with the ql parameter', done => {
+      peerRegistry.save({ id: '1', type: 'initiator'}, () => {
         request(getHttpServer(app))
           .get('/peer-management?ql=where%20type%3D%22initiator%22')
-          .expect(getBody(function(err, body) {
+          .expect(getBody((err, body) => {
             assert.equal(body.entities.length, 1);
-            var entity = body.entities[0];
+            const entity = body.entities[0];
             assert.equal(entity.properties.id, '1');
           }))
           .end(done);
       });
     });
 
-    describe('#link', function() {
-      it('should return status code 202', function(done) {
+    describe('#link', () => {
+      it('should return status code 202', done => {
         request(getHttpServer(app))
           .post('/peer-management')
           .send('url=http://testurl')
           .expect(202, done);
       });
 
-      it('should return a Location header', function(done) {
+      it('should return a Location header', done => {
         request(getHttpServer(app))
           .post('/peer-management')
           .send('url=http://testurl')
@@ -595,53 +587,53 @@ describe('Zetta Api', function() {
           .end(done);
       });
 
-      it('should return Location header whose value honors forwarded host', function(done) {
+      it('should return Location header whose value honors forwarded host', done => {
         request(getHttpServer(app))
           .post('/peer-management')
           .set('x-forwarded-host', 'google.com')
           .send('url=http://testurl')
           .expect('Location', /^http.+/)
-          .expect(function(res){
-            var loc = res.headers['location'];
-            var locHost = require('url').parse(loc).hostname;
+          .expect(res => {
+            const loc = res.headers['location'];
+            const locHost = require('url').parse(loc).hostname;
             assert.equal(locHost, 'google.com');
           })
           .end(done);
       });
 
-      it('should return Location header whose value honors forwarded path', function(done) {
-        var rootPath = '/ipa/1v';
+      it('should return Location header whose value honors forwarded path', done => {
+        const rootPath = '/ipa/1v';
         request(getHttpServer(app))
           .post('/peer-management')
           .set('x-forwarded-path', rootPath)
           .send('url=http://testurl')
           .expect('Location', /^http.+/)
-          .expect(function(res){
-            var loc = res.headers['location'];
-            var locPath = require('url').parse(loc).pathname;
+          .expect(res => {
+            const loc = res.headers['location'];
+            const locPath = require('url').parse(loc).pathname;
             assert.equal(locPath.substr(0,rootPath.length), rootPath);
           })
           .end(done);
       });
     });
 
-    describe('#show', function() {
-      it('should return the peer item representation', function(done) {
-        var id = '1234-5678-9ABCD';
-        peerRegistry.save({ id: id }, function() {
+    describe('#show', () => {
+      it('should return the peer item representation', done => {
+        const id = '1234-5678-9ABCD';
+        peerRegistry.save({ id }, () => {
           request(getHttpServer(app))
-            .get('/peer-management/' + id)
+            .get(`/peer-management/${id}`)
             .expect(200, done);
         });
       });
     });
   });
 
-  describe('/devices of server', function() {
-    var app = null;
+  describe('/devices of server', () => {
+    let app = null;
 
-    beforeEach(function(done) {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+    beforeEach(done => {
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -649,31 +641,31 @@ describe('Zetta Api', function() {
         ._run(done);
     });
 
-    it('should have content type application/vnd.siren+json', function(done) {
+    it('should have content type application/vnd.siren+json', done => {
       request(getHttpServer(app))
         .get('/devices')
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
 
-    it('should return status code 200', function(done) {
+    it('should return status code 200', done => {
       request(getHttpServer(app))
         .get('/devices')
         .expect(200, done);
     });
 
-    it('should have class ["devices"]', function(done) {
+    it('should have class ["devices"]', done => {
       request(getHttpServer(app))
         .get('/devices')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.deepEqual(body.class, ['devices']);
         }))
         .end(done);
     });
 
-    it('should have one valid entity', function(done) {
+    it('should have one valid entity', done => {
       request(getHttpServer(app))
         .get('/devices')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.entities);
           assert.equal(body.entities.length, 1);
           checkDeviceOnRootUri(body.entities[0]);
@@ -682,28 +674,28 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should replace url host in all device links using forwarded host', function(done) {
-      var rootPath = '/alpha/v1';
+    it('should replace url host in all device links using forwarded host', done => {
+      const rootPath = '/alpha/v1';
       request(getHttpServer(app))
         .get('/devices')
         .set('x-forwarded-host', 'google.ca')
-        .expect(getBody(function(res, body) {
-          body.links.forEach(function(link){
-            var linkHost = require('url').parse(link.href).hostname;
+        .expect(getBody((res, body) => {
+          body.links.forEach(link => {
+            const linkHost = require('url').parse(link.href).hostname;
             assert.equal(linkHost, 'google.ca');
           });
         }))
         .end(done);
     });
 
-    it('should inject path in all device links using forwared root path', function(done) {
-      var rootPath = '/alpha/v1';
+    it('should inject path in all device links using forwared root path', done => {
+      const rootPath = '/alpha/v1';
       request(getHttpServer(app))
         .get('/devices')
         .set('x-forwarded-path', rootPath)
-        .expect(getBody(function(res, body) {
-          body.links.forEach(function(link){
-            var linkPath = require('url').parse(link.href).pathname;
+        .expect(getBody((res, body) => {
+          body.links.forEach(link => {
+            const linkPath = require('url').parse(link.href).pathname;
             assert.equal(linkPath.substr(0,rootPath.length), rootPath);
           });
         }))
@@ -714,34 +706,34 @@ describe('Zetta Api', function() {
 
 
 
-  describe('/servers/:id/devices/:id', function() {
-    var app = null;
-    var url = null;
-    var device = null;
+  describe('/servers/:id/devices/:id', () => {
+    let app = null;
+    let url = null;
+    let device = null;
 
-    beforeEach(function(done) {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+    beforeEach(done => {
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
         .expose('*')
-        ._run(function() {
+        ._run(() => {
           device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
-          url = '/servers/' + app._name + '/devices/' + device.id;
+          url = `/servers/${app._name}/devices/${device.id}`;
           done();
         });
     });
 
-    it('should have content type application/vnd.siren+json', function(done) {
+    it('should have content type application/vnd.siren+json', done => {
       request(getHttpServer(app))
         .get(url)
         .expect('Content-Type', 'application/vnd.siren+json', done);
     });
 
-    it('class should be ["device", ":type"]', function(done) {
+    it('class should be ["device", ":type"]', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.class.indexOf('device') >= 0);
           assert(body.class.indexOf(body.properties.type) >= 0);
         }))
@@ -754,10 +746,10 @@ describe('Zetta Api', function() {
 
      */
 
-    it('properties should match expected', function(done) {
+    it('properties should match expected', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.properties);
           assert.equal(body.properties.name, device.name);
           assert.equal(body.properties.type, device.type);
@@ -767,12 +759,12 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('device should have action change', function(done) {
+    it('device should have action change', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.actions.length, 8);
-          var action = body.actions[0];
+          const action = body.actions[0];
           assert.equal(action.name, 'change');
           assert.equal(action.method, 'POST');
           assert(action.href);
@@ -781,12 +773,12 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('device actions should have class "transition"', function(done) {
+    it('device actions should have class "transition"', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.actions.length, 8);
-          body.actions.forEach(function(action) {
+          body.actions.forEach(action => {
             assert(action.class.indexOf('transition') >= 0);
           })
         }))
@@ -794,63 +786,61 @@ describe('Zetta Api', function() {
     });
 
 
-    it('device should have self link', function(done) {
+    it('device should have self link', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           hasLinkRel(body.links, 'self');
         }))
         .end(done);
     });
 
-    it('device should have edit link', function(done) {
+    it('device should have edit link', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           hasLinkRel(body.links, 'edit');
         }))
         .end(done);
     });
 
-    it('device should have up link to server', function(done) {
+    it('device should have up link to server', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           hasLinkRel(body.links, 'up', 'local');
         }))
         .end(done);
     });
 
-    it('device should have monitor link for bar', function(done) {
+    it('device should have monitor link for bar', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           hasLinkRel(body.links, 'monitor');
         }))
         .end(done);
     });
 
-    it('disabling a stream should remove it from the API.', function(done) {
-      Object.keys(app.runtime._jsDevices).forEach(function(name) {
-        var device = app.runtime._jsDevices[name];
+    it('disabling a stream should remove it from the API.', done => {
+      Object.keys(app.runtime._jsDevices).forEach(name => {
+        const device = app.runtime._jsDevices[name];
         device.disableStream('foo');
       });
 
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
-          var foo = body.links.filter(function(link) {
-            return link.title === 'foo';
-          });
+        .expect(getBody((res, body) => {
+          const foo = body.links.filter(link => link.title === 'foo');
 
           assert.equal(foo.length, 0);
         }))
         .end(done);
     });
 
-    it('enabling a stream should show it in the API.', function(done) {
-      var device = null;
-      Object.keys(app.runtime._jsDevices).forEach(function(name) {
+    it('enabling a stream should show it in the API.', done => {
+      let device = null;
+      Object.keys(app.runtime._jsDevices).forEach(name => {
         device = app.runtime._jsDevices[name];
         device.disableStream('foo');
         device.enableStream('foo');
@@ -858,37 +848,33 @@ describe('Zetta Api', function() {
 
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
-          var foo = body.links.filter(function(link) {
-            return link.title === 'foo';
-          });
+        .expect(getBody((res, body) => {
+          const foo = body.links.filter(link => link.title === 'foo');
 
           assert.equal(foo.length, 1);
         }))
         .end(done);
     });
 
-    it('device should have monitor link for bar formatted correctly for HTTP requests', function(done) {
+    it('device should have monitor link for bar formatted correctly for HTTP requests', done => {
       request(getHttpServer(app))
         .get(url)
-        .expect(getBody(function(res, body) {
-          var fooBar = body.links.filter(function(link) {
-            return link.title === 'foobar';
-          });
+        .expect(getBody((res, body) => {
+          const fooBar = body.links.filter(link => link.title === 'foobar');
 
           hasLinkRel(fooBar, rels.binaryStream);
-          var parsed = require('url').parse(fooBar[0].href);
+          const parsed = require('url').parse(fooBar[0].href);
           assert.equal(parsed.protocol, 'ws:');
         }))
         .end(done);
     });
 
-    it('should have a monitor link for bar formatted correctly for SPDY requests', function(done) {
-      var a = getHttpServer(app);
+    it('should have a monitor link for bar formatted correctly for SPDY requests', done => {
+      const a = getHttpServer(app);
 
       if (!a.address()) a.listen(0);
 
-      var agent = spdy.createAgent({
+      const agent = spdy.createAgent({
         host: '127.0.0.1',
         port: a.address().port,
         spdy: {
@@ -897,29 +883,27 @@ describe('Zetta Api', function() {
         }
       });
 
-      var request = http.get({
+      const request = http.get({
         host: '127.0.0.1',
         port: a.address().port,
         path: url,
-        agent: agent
-      }, function(response) {
+        agent
+      }, response => {
 
-        var buffers = [];
-        response.on('readable', function() {
-          var data;
+        const buffers = [];
+        response.on('readable', () => {
+          let data;
           while ((data = response.read()) !== null) {
             buffers.push(data);
           }
         });
 
-        response.on('end', function() {
-          var body = JSON.parse(Buffer.concat(buffers));
-          var fooBar = body.links.filter(function(link) {
-            return link.title === 'foobar';
-          });
+        response.on('end', () => {
+          const body = JSON.parse(Buffer.concat(buffers));
+          const fooBar = body.links.filter(link => link.title === 'foobar');
 
           hasLinkRel(fooBar, rels.binaryStream);
-          var parsed = require('url').parse(fooBar[0].href);
+          const parsed = require('url').parse(fooBar[0].href);
           assert.equal(parsed.protocol, 'http:');
           agent.close();
         });
@@ -928,55 +912,55 @@ describe('Zetta Api', function() {
       }).end();
     });
 
-    it('device action should return a 400 status code on a missing request body', function(done) {
+    it('device action should return a 400 status code on a missing request body', done => {
       request(getHttpServer(app))
         .post(url)
         .send()
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 400);
         }))
         .end(done);
     });
 
-    it('device action should return a 400 status code on an invalid request body', function(done) {
+    it('device action should return a 400 status code on an invalid request body', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .send('{ "what": "invalid" }')
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 400);
         }))
         .end(done);
     });
 
-    it('device action should work', function(done) {
+    it('device action should work', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .send({ action: 'test', value: 123 })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.properties.value, 123);
           hasLinkRel(body.links, 'monitor');
         }))
         .end(done);
     });
 
-    it('device action should support extended characters', function(done) {
+    it('device action should support extended characters', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .send({ action: 'test-text', value: "🙌💸🙌" })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.properties.message, "🙌💸🙌");
         }))
         .end(done);
     });
 
-    var createTransitionArgTest = function(action, testType, input) {
-      it('api should decode transition args to ' + testType + ' for ' + action, function(done) {
-        var device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
+    const createTransitionArgTest = (action, testType, input) => {
+      it(`api should decode transition args to ${testType} for ${action}`, done => {
+        const device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
 
-        var orig = device._transitions[action].handler;
+        const orig = device._transitions[action].handler;
         device._transitions[action].handler = function(x) {
           assert.equal(typeof x, testType);
           orig.apply(device, arguments);
@@ -986,7 +970,7 @@ describe('Zetta Api', function() {
           .post(url)
           .type('form')
           .expect(200)
-          .send({ action: action, value: input })
+          .send({ action, value: input })
           .end(done);
       });
     };
@@ -996,12 +980,12 @@ describe('Zetta Api', function() {
     createTransitionArgTest('test-none', 'string', 'Anything');
     createTransitionArgTest('test-date', 'object', '2015-01-02');
 
-    it('api should respond with 400 when argument is not expected number', function(done) {
+    it('api should respond with 400 when argument is not expected number', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .expect(400)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.class.indexOf('input-error') > -1);
           assert.equal(body.properties.errors.length, 1);
         }))
@@ -1009,12 +993,12 @@ describe('Zetta Api', function() {
         .end(done);
     })
 
-    it('api should respond with 400 when argument is not expected Date', function(done) {
+    it('api should respond with 400 when argument is not expected Date', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .expect(400)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert(body.class.indexOf('input-error') > -1);
           assert.equal(body.properties.errors.length, 1);
         }))
@@ -1022,23 +1006,23 @@ describe('Zetta Api', function() {
         .end(done);
     })
 
-    it('device action should return 400 when not available.', function(done) {
+    it('device action should return 400 when not available.', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .send({ action: 'prepare' })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 400);
         }))
         .end(done);
     });
 
-    it('should return 500 when a error is passed in a callback of device driver', function(done) {
+    it('should return 500 when a error is passed in a callback of device driver', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .send({ action: 'error', error: 'some error' })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 500);
           assert(body.class.indexOf('action-error') >= 0);
           assert(body.properties.message);
@@ -1049,12 +1033,12 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should return custom error information when a error is passed in a callback of device driver', function(done) {
+    it('should return custom error information when a error is passed in a callback of device driver', done => {
       request(getHttpServer(app))
         .post(url)
         .type('form')
         .send({action: 'test-custom-error'})
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 401);
           assert(body.class.indexOf('action-error') >= 0);
 
@@ -1066,12 +1050,12 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should support device updates using PUT', function(done) {
+    it('should support device updates using PUT', done => {
       request(getHttpServer(app))
         .put(url)
         .type('json')
         .send({ bar: 2, value: 3 })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 200);
           assert.equal(body.properties.bar, 2);
           assert.equal(body.properties.value, 3);
@@ -1079,10 +1063,10 @@ describe('Zetta Api', function() {
         .end(done);
     });
 
-    it('should support device deletes using DELETE', function(done) {
+    it('should support device deletes using DELETE', done => {
       request(getHttpServer(app))
         .del(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 204);
           assert.equal(Object.keys(app.runtime._jsDevices).length, 0);
         }))
@@ -1090,19 +1074,19 @@ describe('Zetta Api', function() {
 
     });
 
-    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE', function(done) {
-      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
-      var device = app.runtime._jsDevices[deviceKey];
+    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE', done => {
+      const deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      const device = app.runtime._jsDevices[deviceKey];
 
-      var remoteDestroy = function(cb) {
+      const remoteDestroy = cb => {
         cb(null, false);
-      }
+      };
 
       device._remoteDestroy = remoteDestroy.bind(device);
 
       request(getHttpServer(app))
         .del(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 500);
           assert.equal(Object.keys(app.runtime._jsDevices).length, 1);
         }))
@@ -1110,19 +1094,19 @@ describe('Zetta Api', function() {
 
     });
 
-    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE if callback has an error', function(done) {
-      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
-      var device = app.runtime._jsDevices[deviceKey];
+    it('remoteDestroy hook should prevent the device from being destroyed with a DELETE if callback has an error', done => {
+      const deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      const device = app.runtime._jsDevices[deviceKey];
 
-      var remoteDestroy = function(cb) {
+      const remoteDestroy = cb => {
         cb(new Error('Oof! Ouch!'));
-      }
+      };
 
       device._remoteDestroy = remoteDestroy.bind(device);
 
       request(getHttpServer(app))
         .del(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 500);
           assert.equal(Object.keys(app.runtime._jsDevices).length, 1);
         }))
@@ -1130,19 +1114,19 @@ describe('Zetta Api', function() {
 
     });
 
-    it('remoteDestroy hook should allow the device to be destroyed when callback is called with true', function(done) {
-      var deviceKey = Object.keys(app.runtime._jsDevices)[0];
-      var device = app.runtime._jsDevices[deviceKey];
+    it('remoteDestroy hook should allow the device to be destroyed when callback is called with true', done => {
+      const deviceKey = Object.keys(app.runtime._jsDevices)[0];
+      const device = app.runtime._jsDevices[deviceKey];
 
-      var remoteDestroy = function(cb) {
+      const remoteDestroy = cb => {
         cb(null, true);
-      }
+      };
 
       device._remoteDestroy = remoteDestroy.bind(device);
 
       request(getHttpServer(app))
         .del(url)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 204);
           assert.equal(Object.keys(app.runtime._jsDevices).length, 0);
         }))
@@ -1150,61 +1134,61 @@ describe('Zetta Api', function() {
 
     });
 
-    it('should not overwrite monitor properties using PUT', function(done) {
+    it('should not overwrite monitor properties using PUT', done => {
       request(getHttpServer(app))
         .put(url)
         .type('json')
         .send({ foo: 1 })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 200);
           assert.equal(body.properties.foo, 0);
         }))
         .end(done);
      });
 
-    it('should return a 404 when updating a non-existent device', function(done) {
+    it('should return a 404 when updating a non-existent device', done => {
       request(getHttpServer(app))
-        .put(url + '1234567890')
+        .put(`${url}1234567890`)
         .type('json')
         .send({ foo: 1, bar: 2, value: 3 })
-        .expect(function(res) {
+        .expect(res => {
           assert.equal(res.statusCode, 404);
         })
         .end(done);
     });
 
-    it('should return a 400 when updating with a Content-Range header', function(done) {
+    it('should return a 400 when updating with a Content-Range header', done => {
       request(getHttpServer(app))
         .put(url)
         .set('Content-Range', 'bytes 0-499/1234')
         .type('json')
         .send({ foo: 1, bar: 2, value: 3 })
-        .expect(function(res) {
+        .expect(res => {
           assert.equal(res.statusCode, 400);
         })
         .end(done);
     });
 
-    it('should return a 400 when receiving invalid JSON input', function(done) {
+    it('should return a 400 when receiving invalid JSON input', done => {
       request(getHttpServer(app))
         .put(url)
         .type('json')
         .send('{"name":}')
-        .expect(function(res) {
+        .expect(res => {
           assert.equal(res.statusCode, 400);
         })
         .end(done);
     });
 
-    it('should not include reserved fields on device updates', function(done) {
-      var input = { foo: 1, bar: 2, value: 3, id: 'abcdef',
+    it('should not include reserved fields on device updates', done => {
+      const input = { foo: 1, bar: 2, value: 3, id: 'abcdef',
         _x: 4, type: 'h', state: 'yo', streams: 's' };
 
       request(getHttpServer(app))
         .put(url)
         .type('json')
         .send(input)
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(res.statusCode, 200);
           assert.notEqual(body.properties.id, 'abcdef');
           assert.notEqual(body.properties._x, 4);
@@ -1216,22 +1200,22 @@ describe('Zetta Api', function() {
     });
  });
 
-  describe('Proxied requests', function() {
-    var base = null;
-    var cloudUrl = null;
-    var cluster = null;
+  describe('Proxied requests', () => {
+    let base = null;
+    let cloudUrl = null;
+    let cluster = null;
 
-    beforeEach(function(done) {
-      cluster = zettacluster({ zetta: zetta })
+    beforeEach(done => {
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server('detroit', [Scout], ['cloud'])
         .server('sanjose', [Scout], ['cloud'])
-        .on('ready', function(){
-          cloudUrl = 'localhost:' + cluster.servers['cloud']._testPort;
-          base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer('detroit');
+        .on('ready', () => {
+          cloudUrl = `localhost:${cluster.servers['cloud']._testPort}`;
+          base = `localhost:${cluster.servers['cloud']._testPort}/servers/${cluster.servers['cloud'].locatePeer('detroit')}`;
           setTimeout(done, 300);
         })
-        .run(function(err) {
+        .run(err => {
           console.log(err)
           if (err) {
             done(err);
@@ -1239,46 +1223,46 @@ describe('Zetta Api', function() {
         });
     });
 
-    afterEach(function(done) {
+    afterEach(done => {
       cluster.stop();
       setTimeout(done, 10); // fix issues with server not being closed before a new one starts
     });
 
-    it('zetta should not crash when req to hub is pending and hub disconnects', function(done) {
-      http.get('http://' + base, function(res) {
+    it('zetta should not crash when req to hub is pending and hub disconnects', done => {
+      http.get(`http://${base}`, res => {
         assert.equal(res.statusCode, 502);
         done();
-      }).on('socket', function(socket) {
-        socket.on('connect', function() {
+      }).on('socket', socket => {
+        socket.on('connect', () => {
           cluster.servers['cloud'].httpServer.peers['detroit'].close();
         });
       })
     })
 
-    it('zetta should return 404 on non-existent peer', function(done) {
-      http.get('http://' + cloudUrl + '/servers/some-peer', function(res) {
+    it('zetta should return 404 on non-existent peer', done => {
+      http.get(`http://${cloudUrl}/servers/some-peer`, res => {
         assert.equal(res.statusCode, 404);
         done();
       })
     })
 
-    it('zetta should return 404 on disconnected peer', function(done) {
+    it('zetta should return 404 on disconnected peer', done => {
       cluster.servers['detroit']._peerClients[0].close()
-      http.get('http://' + cloudUrl + '/servers/detroit', function(res) {
+      http.get(`http://${cloudUrl}/servers/detroit`, res => {
         assert.equal(res.statusCode, 404);
         done();
       })
     })
 
-    it('device action should support extended characters throw a proxied connection', function(done) {
+    it('device action should support extended characters throw a proxied connection', done => {
 
-      var device = cluster.servers['detroit'].runtime._jsDevices[Object.keys(cluster.servers['detroit'].runtime._jsDevices)[0]];
+      const device = cluster.servers['detroit'].runtime._jsDevices[Object.keys(cluster.servers['detroit'].runtime._jsDevices)[0]];
 
       request(getHttpServer(cluster.servers['cloud']))
-        .post('/servers/detroit/devices/' + device.id)
+        .post(`/servers/detroit/devices/${device.id}`)
         .type('form')
         .send({ action: 'test-text', value: "🙌💸🙌" })
-        .expect(getBody(function(res, body) {
+        .expect(getBody((res, body) => {
           assert.equal(body.properties.message, "🙌💸🙌");
         }))
         .end(done);
@@ -1287,43 +1271,41 @@ describe('Zetta Api', function() {
 
   })
 
-  describe('Server name issues', function() {
-    var cluster;
-    var hubName = 'hub 1';
-    var getServer = function(peerName) {
-      return cluster.servers[peerName].httpServer.server;
-    };
-    beforeEach(function(done) {
-      cluster = zettacluster({ zetta: zetta })
+  describe('Server name issues', () => {
+    let cluster;
+    const hubName = 'hub 1';
+    const getServer = peerName => cluster.servers[peerName].httpServer.server;
+    beforeEach(done => {
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server(hubName, [Scout], ['cloud'])
         .on('ready', done)
-        .run(function(err) {
+        .run(err => {
           if (err) {
             done(err);
           }
         });
     });
 
-    it('server name with space has correct path to root of server', function(done) {
+    it('server name with space has correct path to root of server', done => {
       request(getServer('cloud'))
         .get('/')
-        .expect(getBody(function(res, body) {
-          var link = body.links.filter(function(link) { return link.title === hubName})[0];
-          var parsed = require('url').parse(link.href);
-          assert.equal(decodeURI(parsed.path), '/servers/' + hubName);
+        .expect(getBody((res, body) => {
+          const link = body.links.filter(link => link.title === hubName)[0];
+          const parsed = require('url').parse(link.href);
+          assert.equal(decodeURI(parsed.path), `/servers/${hubName}`);
         }))
         .end(done);
     })
 
-    it('server name with space has correct path to device', function(done) {
+    it('server name with space has correct path to device', done => {
       request(getServer('cloud'))
-        .get('/servers/' + hubName)
-        .expect(getBody(function(res, body) {
-          body.entities.forEach(function(entity) {
-            entity.links.forEach(function(link) {
-              var parsed = require('url').parse(link.href);
-              assert.equal(decodeURI(parsed.path).indexOf('/servers/' + hubName), 0);
+        .get(`/servers/${hubName}`)
+        .expect(getBody((res, body) => {
+          body.entities.forEach(entity => {
+            entity.links.forEach(link => {
+              const parsed = require('url').parse(link.href);
+              assert.equal(decodeURI(parsed.path).indexOf(`/servers/${hubName}`), 0);
             });
           });
         }))

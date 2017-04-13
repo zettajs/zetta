@@ -1,11 +1,13 @@
-var util = require('util');
-var levelup = require('levelup');
-var memdown = require('memdown');
-var PeerRegistry = require('../../lib/peer_registry');
+const util = require('util');
+const levelup = require('levelup');
+const memdown = require('memdown');
+const PeerRegistry = require('../../lib/peer_registry');
 
-var MemPeerRegistry = module.exports = function() {
-  var db = levelup({ db: memdown });
-  PeerRegistry.call(this, { db: db, collection: 'peers' });
+class MemPeerRegistry extends PeerRegistry {
+  constructor() {
+    const db = levelup({ db: memdown });
+    super({ db, collection: 'peers' });
+  }
 }
-util.inherits(MemPeerRegistry, PeerRegistry);
 
+module.exports = MemPeerRegistry;

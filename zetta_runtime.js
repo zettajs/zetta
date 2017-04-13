@@ -1,9 +1,9 @@
-var Zetta = require('./zetta');
+const Zetta = require('./zetta');
 
-var exp = function(options) {
-  var zetta = new Zetta(options);
+const exp = options => {
+  const zetta = new Zetta(options);
   return zetta;
-}
+};
 
 exp.Device = require('zetta-device');
 exp.HttpDevice = require('zetta-http-device');

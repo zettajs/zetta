@@ -29,7 +29,7 @@
     "zetta-events-stream-protocol": "^5.0.0",
     "zetta-http-device": "^0.6.0",
     "zetta-rels": "^0.5.0",
-    "zetta-scientist": "^0.7.0",
+    "zetta-scientist": "^0.8.0",
     "zetta-scout": "^0.7.0",
     "zetta-streams": "^0.3.0"
   },
