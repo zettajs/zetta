@@ -16,7 +16,7 @@ describe('Event Websocket Proxied Through Peer', function() {
       .server('detroit 1', [Scout], ['cloud deploy'])
       .on('ready', function(){
         const id = cluster.servers['detroit 1'].id;
-        base = 'localhost:' + cluster.servers['cloud deploy']._testPort + '/servers/' + cluster.servers['cloud deploy'].locatePeer(id);
+        base = `localhost:${cluster.servers['cloud deploy']._testPort}/servers/${cluster.servers['cloud deploy'].locatePeer(id)}`;
         const did = Object.keys(cluster.servers['detroit 1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit 1'].runtime._jsDevices[did];
         setTimeout(done, 300);
@@ -36,14 +36,14 @@ describe('Event Websocket Proxied Through Peer', function() {
   describe('Basic Connection', function() {
 
     it('http resource should exist with statusCode 200', function(done) {
-      http.get('http://' + base + '/devices/' + device.id, function(res) {
+      http.get(`http://${base}/devices/${device.id}`, function(res) {
         assert.equal(res.statusCode, 200);
         done();
       }).on('error', done);
     });
 
     it('websocket should connect', function(done) {
-      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
+      const url = `ws://${base}/events?topic=testdriver/${device.id}/bar`;
       const socket = new WebSocket(url);
       socket.on('open', done);
     });
@@ -54,7 +54,7 @@ describe('Event Websocket Proxied Through Peer', function() {
   describe('Receive json messages', function() {
 
     it('websocket should connect and recv data in json form', function(done) {
-      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
+      const url = `ws://${base}/events?topic=testdriver/${device.id}/bar`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         let recv = 0;
@@ -78,7 +78,7 @@ describe('Event Websocket Proxied Through Peer', function() {
     });
 
     it('websocket should recv only one set of messages when reconnecting', function(done) {
-      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/bar';
+      const url = `ws://${base}/events?topic=testdriver/${device.id}/bar`;
 
       function openAndClose(cb) {
         const s1 = new WebSocket(url);
@@ -101,7 +101,7 @@ describe('Event Websocket Proxied Through Peer', function() {
             device.incrementStreamValue();
 
             setTimeout(function() {
-              assert.equal(count, 1, 'Should have only received 1 message. Received: ' + count);
+              assert.equal(count, 1, `Should have only received 1 message. Received: ${count}`);
               done();
             }, 500);
           }, 100);
@@ -113,7 +113,7 @@ describe('Event Websocket Proxied Through Peer', function() {
 
 
     it('websocket should connect and recv device log events', function(done) {
-      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/logs';
+      const url = `ws://${base}/events?topic=testdriver/${device.id}/logs`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         socket.on('message', function(buf, flags) {
@@ -124,7 +124,7 @@ describe('Event Websocket Proxied Through Peer', function() {
             return action.name === 'prepare';
           }).length > 0);
           
-          assert.equal(msg.actions[0].href.replace('http://',''), base + '/devices/' + device.id)
+          assert.equal(msg.actions[0].href.replace('http://',''), `${base}/devices/${device.id}`)
           done();
         });
         
@@ -144,7 +144,7 @@ describe('Event Websocket Proxied Through Peer', function() {
   describe('Receive binary messages', function() {
 
     it('websocket should connect and recv data in binary form', function(done) {
-      const url = 'ws://' + base + '/events?topic=testdriver/'+device.id+'/foobar';
+      const url = `ws://${base}/events?topic=testdriver/${device.id}/foobar`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         let recv = 0;

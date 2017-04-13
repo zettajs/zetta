@@ -13,7 +13,7 @@ function deleteRequest(port, connectionId) {
     host: 'localhost',
     port: port,
     method: 'DELETE',
-    path: '/peer-management/' + connectionId
+    path: `/peer-management/${connectionId}`
   };
   
   const req = http.request(opts);
@@ -29,7 +29,7 @@ function putRequest(port, connectionId, url) {
     host: 'localhost',
     port: port,
     method: 'PUT',
-    path: '/peer-management/' + connectionId,
+    path: `/peer-management/${connectionId}`,
     headers: {
       'Content-Length': string.length  
     }
@@ -80,7 +80,7 @@ describe('Peer Connection API', function() {
     checkPeersActionsForState('acceptor', 'disconnected', 0);
     
     function checkPeersActionsForState(direction, status, numberOfActionsExpected) {
-      it('exposes ' + numberOfActionsExpected + ' actions on the embedded entity when ' + status + ' and ' + direction, function(done) {
+      it(`exposes ${numberOfActionsExpected} actions on the embedded entity when ${status} and ${direction}`, function(done) {
 
         const peer = {
           id:'foo',
@@ -111,7 +111,7 @@ describe('Peer Connection API', function() {
     checkPeersActionsOnFullEntity('acceptor', 'disconnected', 0);
     
     function checkPeersActionsOnFullEntity(direction, status, numberOfActionsExpected) {
-      it('when ' + direction + ' exposes ' + numberOfActionsExpected + ' actions on the full entity when ' + status, function(done) {
+      it(`when ${direction} exposes ${numberOfActionsExpected} actions on the full entity when ${status}`, function(done) {
         const peer = {
           id:'foo',
           connectionId:'12345',
@@ -153,7 +153,7 @@ describe('Peer Connection API', function() {
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        cloudUrl = 'http://localhost:' + cloudPort;
+        cloudUrl = `http://localhost:${cloudPort}`;
         done();  
       });  
     });
@@ -211,7 +211,7 @@ describe('Peer Connection API', function() {
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        cloudUrl = 'http://localhost:' + cloudPort;
+        cloudUrl = `http://localhost:${cloudPort}`;
         done();  
       });  
     });
@@ -324,7 +324,7 @@ describe('Peer Connection API', function() {
         }
         
         cloudPort = cloud.httpServer.server.address().port;
-        const cloudUrl = 'http://localhost:' + cloudPort;
+        const cloudUrl = `http://localhost:${cloudPort}`;
 
         localOne.link(cloudUrl);
         localOne.listen(0, function(err) {

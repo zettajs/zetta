@@ -44,7 +44,7 @@ describe('Metadata API', function() {
       .name('local')
       ._run(function() {
         device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
-        url = '/servers/' + app._name + '/devices/' + device.id;
+        url = `/servers/${app._name}/devices/${device.id}`;
         done();
       });
   });

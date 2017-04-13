@@ -68,7 +68,7 @@ function hasLinkRel(links, rel, title, href) {
   });
 
   if(!found) {
-    throw new Error('Link rel:'+rel+' not found in links');
+    throw new Error(`Link rel:${rel} not found in links`);
   }
 }
 
@@ -182,7 +182,7 @@ describe('Zetta Api', function() {
         .expose('*')
         ._run(done);
 
-      url = '/servers/'+app._name;
+      url = `/servers/${app._name}`;
     });
 
     it('should have content type application/vnd.siren+json', function(done) {
@@ -369,7 +369,7 @@ describe('Zetta Api', function() {
 
     it('should accept remote devices of type testdriver', function(done) {
       request(getHttpServer(app))
-        .post(url + '/devices')
+        .post(`${url}/devices`)
         .send('type=testdriver')
         .end(function(err, res) {
           getBody(function(res, body) {
@@ -386,7 +386,7 @@ describe('Zetta Api', function() {
 
     it('should not accept a remote device of type foo', function(done) {
       request(getHttpServer(app))
-        .post(url + '/devices')
+        .post(`${url}/devices`)
         .send('type=foo')
         .expect(getBody(function(res, body) {
           assert.equal(res.statusCode, 404);
@@ -396,7 +396,7 @@ describe('Zetta Api', function() {
 
     it('should accept remote devices of type testdriver, and allow them to set their own id properties', function(done) {
       request(getHttpServer(app))
-        .post(url + '/devices')
+        .post(`${url}/devices`)
         .send('type=testdriver&id=12345&name=test')
         .end(function(err, res) {
           getBody(function(res, body) {
@@ -414,7 +414,7 @@ describe('Zetta Api', function() {
 
     it('query for device should respond with properly formated api response', function(done) {
       request(getHttpServer(app))
-        .get(url+'?server=local&ql=where%20type="testdriver"')
+        .get(`${url}?server=local&ql=where%20type="testdriver"`)
         .expect(getBody(function(res, body) {
           assert(body.entities);
           assert.equal(body.entities.length, 1);
@@ -630,7 +630,7 @@ describe('Zetta Api', function() {
         const id = '1234-5678-9ABCD';
         peerRegistry.save({ id: id }, function() {
           request(getHttpServer(app))
-            .get('/peer-management/' + id)
+            .get(`/peer-management/${id}`)
             .expect(200, done);
         });
       });
@@ -727,7 +727,7 @@ describe('Zetta Api', function() {
         .expose('*')
         ._run(function() {
           device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
-          url = '/servers/' + app._name + '/devices/' + device.id;
+          url = `/servers/${app._name}/devices/${device.id}`;
           done();
         });
     });
@@ -973,7 +973,7 @@ describe('Zetta Api', function() {
     });
 
     const createTransitionArgTest = function(action, testType, input) {
-      it('api should decode transition args to ' + testType + ' for ' + action, function(done) {
+      it(`api should decode transition args to ${testType} for ${action}`, function(done) {
         const device = app.runtime._jsDevices[Object.keys(app.runtime._jsDevices)[0]];
 
         const orig = device._transitions[action].handler;
@@ -1164,7 +1164,7 @@ describe('Zetta Api', function() {
 
     it('should return a 404 when updating a non-existent device', function(done) {
       request(getHttpServer(app))
-        .put(url + '1234567890')
+        .put(`${url}1234567890`)
         .type('json')
         .send({ foo: 1, bar: 2, value: 3 })
         .expect(function(res) {
@@ -1227,8 +1227,8 @@ describe('Zetta Api', function() {
         .server('detroit', [Scout], ['cloud'])
         .server('sanjose', [Scout], ['cloud'])
         .on('ready', function(){
-          cloudUrl = 'localhost:' + cluster.servers['cloud']._testPort;
-          base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer('detroit');
+          cloudUrl = `localhost:${cluster.servers['cloud']._testPort}`;
+          base = `localhost:${cluster.servers['cloud']._testPort}/servers/${cluster.servers['cloud'].locatePeer('detroit')}`;
           setTimeout(done, 300);
         })
         .run(function(err) {
@@ -1245,7 +1245,7 @@ describe('Zetta Api', function() {
     });
 
     it('zetta should not crash when req to hub is pending and hub disconnects', function(done) {
-      http.get('http://' + base, function(res) {
+      http.get(`http://${base}`, function(res) {
         assert.equal(res.statusCode, 502);
         done();
       }).on('socket', function(socket) {
@@ -1256,7 +1256,7 @@ describe('Zetta Api', function() {
     })
 
     it('zetta should return 404 on non-existent peer', function(done) {
-      http.get('http://' + cloudUrl + '/servers/some-peer', function(res) {
+      http.get(`http://${cloudUrl}/servers/some-peer`, function(res) {
         assert.equal(res.statusCode, 404);
         done();
       })
@@ -1264,7 +1264,7 @@ describe('Zetta Api', function() {
 
     it('zetta should return 404 on disconnected peer', function(done) {
       cluster.servers['detroit']._peerClients[0].close()
-      http.get('http://' + cloudUrl + '/servers/detroit', function(res) {
+      http.get(`http://${cloudUrl}/servers/detroit`, function(res) {
         assert.equal(res.statusCode, 404);
         done();
       })
@@ -1275,7 +1275,7 @@ describe('Zetta Api', function() {
       const device = cluster.servers['detroit'].runtime._jsDevices[Object.keys(cluster.servers['detroit'].runtime._jsDevices)[0]];
 
       request(getHttpServer(cluster.servers['cloud']))
-        .post('/servers/detroit/devices/' + device.id)
+        .post(`/servers/detroit/devices/${device.id}`)
         .type('form')
         .send({ action: 'test-text', value: "🙌💸🙌" })
         .expect(getBody(function(res, body) {
@@ -1311,19 +1311,19 @@ describe('Zetta Api', function() {
         .expect(getBody(function(res, body) {
           const link = body.links.filter(function(link) { return link.title === hubName})[0];
           const parsed = require('url').parse(link.href);
-          assert.equal(decodeURI(parsed.path), '/servers/' + hubName);
+          assert.equal(decodeURI(parsed.path), `/servers/${hubName}`);
         }))
         .end(done);
     })
 
     it('server name with space has correct path to device', function(done) {
       request(getServer('cloud'))
-        .get('/servers/' + hubName)
+        .get(`/servers/${hubName}`)
         .expect(getBody(function(res, body) {
           body.entities.forEach(function(entity) {
             entity.links.forEach(function(link) {
               const parsed = require('url').parse(link.href);
-              assert.equal(decodeURI(parsed.path).indexOf('/servers/' + hubName), 0);
+              assert.equal(decodeURI(parsed.path).indexOf(`/servers/${hubName}`), 0);
             });
           });
         }))

@@ -64,8 +64,8 @@ describe('Zetta', function() {
 
   it('support tls options for https server', function(done) {
     const options = {
-      key: fs.readFileSync(__dirname + '/fixture/keys/key.pem'),
-      cert: fs.readFileSync(__dirname + '/fixture/keys/cert.pem')
+      key: fs.readFileSync(`${__dirname}/fixture/keys/key.pem`),
+      cert: fs.readFileSync(`${__dirname}/fixture/keys/cert.pem`)
     };
     
     const z = zetta({ registry: reg, peerRegistry: peerRegistry, tls: options })
@@ -391,7 +391,7 @@ describe('Zetta', function() {
         const port = z.httpServer.server.address().port;
         zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
           .silent()
-          .link('http://localhost:' + port)
+          .link(`http://localhost:${port}`)
           .listen(0);
       })
     })
@@ -476,7 +476,7 @@ describe('Zetta', function() {
               done();
             })
           })
-          .link('http://localhost:' + port)
+          .link(`http://localhost:${port}`)
           .listen(0);
       })
     })
@@ -493,7 +493,7 @@ describe('Zetta', function() {
       })
       z.listen(0, function() {
         const port = z.httpServer.server.address().port;
-        const ws = new WebSocket('ws://localhost:' + port + '/events');
+        const ws = new WebSocket(`ws://localhost:${port}/events`);
         ws.once('open', function() {
           assert.equal(fired, true);
           done();
@@ -525,7 +525,7 @@ describe('Zetta', function() {
               done();
             })
           })
-          .link('http://localhost:' + port)
+          .link(`http://localhost:${port}`)
           .listen(0);
       })
     })
@@ -546,7 +546,7 @@ describe('Zetta', function() {
       })
       z.listen(0, function() {
         const port = z.httpServer.server.address().port;
-        const ws = new WebSocket('ws://localhost:' + port + '/events');
+        const ws = new WebSocket(`ws://localhost:${port}/events`);
         ws.once('open', function() {
           assert.deepEqual(fired, [1, 2]);
           done();
@@ -575,7 +575,7 @@ describe('Zetta', function() {
               });
             });
           })
-          .link('http://localhost:' + port)
+          .link(`http://localhost:${port}`)
           .listen(0);
       })
     })
@@ -590,7 +590,7 @@ describe('Zetta', function() {
       })
       z.listen(0, function() {
         const port = z.httpServer.server.address().port;
-        const ws = new WebSocket('ws://localhost:' + port + '/events');
+        const ws = new WebSocket(`ws://localhost:${port}/events`);
         ws.once('error', function(err) {
           assert.equal(err.message, 'unexpected server response (500)');
           done();

@@ -40,9 +40,9 @@ describe('Virtual Device', function() {
         const did = Object.keys(cluster.servers['detroit1'].runtime._jsDevices)[0];
         device = cluster.servers['detroit1'].runtime._jsDevices[did];
         const id = cluster.servers['detroit1'].id;
-        base = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/' + cluster.servers['cloud'].locatePeer(id) + '/devices/' + did;
+        base = `localhost:${cluster.servers['cloud']._testPort}/servers/${cluster.servers['cloud'].locatePeer(id)}/devices/${did}`;
 
-        http.get('http://' + base, function(res) {
+        http.get(`http://${base}`, function(res) {
           const buffer = [];
           let len = 0;
           res.on('readable', function() {
@@ -243,7 +243,7 @@ describe('Virtual Device', function() {
 
     it('should recv data event after a client ws disconnected on the same topic', function(done) {
       
-      const url = 'ws://localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1/events?topic=testdriver%2F' + device.id + '%2Fbar';
+      const url = `ws://localhost:${cluster.servers['cloud']._testPort}/servers/detroit1/events?topic=testdriver%2F${device.id}%2Fbar`;
 
       let recv = 0;
       let wsRecv = 0;
@@ -284,7 +284,7 @@ describe('Virtual Device', function() {
   describe('Device binary streams', function() {
 
     it('should only subscribe to a binary stream if used', function(done) {    
-      const topic = device.type + '/' + device.id + '/foobar';
+      const topic = `${device.type}/${device.id}/foobar`;
       assert.equal(cluster.servers['detroit1'].pubsub._listeners[topic], undefined);
       vdevice.streams.foobar.on('data', function() {});
       setTimeout(function() {

@@ -83,7 +83,7 @@ function hasLinkRel(links, rel, title, href) {
   });
 
   if(!found) {
-    throw new Error('Link rel:'+rel+' not found in links');
+    throw new Error(`Link rel:${rel} not found in links`);
   }
 }
 

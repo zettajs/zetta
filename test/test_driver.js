@@ -154,7 +154,7 @@ describe('Driver', function() {
     });
 
     it('should publish transitions to pubsub', function(done) {
-      const topic = machine.type + '/' + machine.id + '/logs';
+      const topic = `${machine.type}/${machine.id}/logs`;
       
       let recv = 0;
       pubsub.subscribe(topic, function(topic, msg) {

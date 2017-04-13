@@ -14,7 +14,7 @@ describe('Peer Client Websocket', function() {
       if (err) {
         return done(err);
       }
-      const address = 'ws://localhost:' + server.address().port;
+      const address = `ws://localhost:${server.address().port}`;
       const ws = new Websocket(address);
       ws.on('error', done);
       ws.on('open', function() {
@@ -38,7 +38,7 @@ describe('Peer Client Websocket', function() {
         return done(err);
       }
 
-      const address = 'wss://localhost:' + server.address().port;
+      const address = `wss://localhost:${server.address().port}`;
       const ws = new Websocket(address, { rejectUnauthorized: false});
       ws.on('error', done);
       ws.on('open', function() {

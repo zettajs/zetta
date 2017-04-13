@@ -125,7 +125,7 @@ describe('Stream Topic', function() {
 
 
   function checkSpecial(topic) {
-    it('will correctly parse special topic ' + topic, function() {
+    it(`will correctly parse special topic ${topic}`, function() {
       const t = new StreamTopic();
       t.parse(topic);
       assert.equal(t.serverName(), null);
@@ -151,7 +151,7 @@ describe('Stream Topic', function() {
   describe('.match()', function() {
 
     function matchTest(query, topic, eval_) {
-      it('should return ' + eval_ + ' for query ' + query + ' on topic ' + topic, function() {
+      it(`should return ${eval_} for query ${query} on topic ${topic}`, function() {
         const t = StreamTopic.parse(query);
         assert.equal(t.match(topic), eval_);
       })

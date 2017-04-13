@@ -221,17 +221,17 @@ Zetta.prototype.listen = function() {
         host = args[0]; // UNIX socket
       } else if (typeof args[0] === 'number') {
         if (args.length > 1 && typeof args[1] === 'string') {
-          host = 'http://' + args[1] + ':' + args[0]; // host + port
+          host = `http://${args[1]}:${args[0]}`; // host + port
         } else {
-          host = 'http://127.0.0.1:' + args[0]; // just port
+          host = `http://127.0.0.1:${args[0]}`; // just port
         }
       } else if (typeof args[0] === 'object' && args[0].fd) {
-        host = 'fd: ' + args[0].fd; // handle
+        host = `fd: ${args[0].fd}`; // handle
       } else {
         host = '<unknown>';
       }
 
-      self.log.emit('log', 'server', 'Server (' + self._name + ') ' + self.id + ' listening on ' + host);
+      self.log.emit('log', 'server', `Server (${self._name}) ${self.id} listening on ${host}`);
 
       if (callback) {
         callback(err);

@@ -55,8 +55,8 @@ describe('Event Websocket', function() {
       app.use(GoodScout);
       app.listen(0, function(err){
         port = app.httpServer.server.address().port;
-        deviceUrl = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
-        deviceUrlHttp = 'localhost:' + port + '/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/devices/BC2832FD-9437-4473-A4A8-AC1D56B12C6F';
+        deviceUrl = `localhost:${port}/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/events?topic=testdriver/BC2832FD-9437-4473-A4A8-AC1D56B12C6F`;
+        deviceUrlHttp = `localhost:${port}/servers/BC2832FD-9437-4473-A4A8-AC1D56B12C61/devices/BC2832FD-9437-4473-A4A8-AC1D56B12C6F`;
         device = app.runtime._jsDevices['BC2832FD-9437-4473-A4A8-AC1D56B12C6F'];
         done(err);
       });
@@ -72,14 +72,14 @@ describe('Event Websocket', function() {
   describe('Basic Connection', function() {
     this.timeout(6000);
     it('http resource should exist with statusCode 200', function(done) {
-      http.get('http://'+deviceUrlHttp, function(res) {
+      http.get(`http://${deviceUrlHttp}`, function(res) {
         assert.equal(res.statusCode, 200);
         done();
       }).on('error', done);
     });
 
     it('websocket should connect', function(done) {
-      const url = 'ws://' + deviceUrl + '/bar';
+      const url = `ws://${deviceUrl}/bar`;
       const socket = new WebSocket(url);
 
       socket.on('open', function(err) {
@@ -90,7 +90,7 @@ describe('Event Websocket', function() {
     });
 
     it('will return a 404 on non ws urls', function(done) {
-      const url = 'ws://localhost:' + port + '/not-a-endpoint';
+      const url = `ws://localhost:${port}/not-a-endpoint`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
@@ -102,7 +102,7 @@ describe('Event Websocket', function() {
     });
 
     it('will return a 404 on non ws urls for /events123123', function(done) {
-      const url = 'ws://localhost:' + port + '/events123123';
+      const url = `ws://localhost:${port}/events123123`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
@@ -138,14 +138,14 @@ describe('Event Websocket', function() {
     });
 
     it('can connect to the custom server', function(done) {
-      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket(`ws://localhost:${port}/foo`);  
       ws.on('open', function open() {
         done();  
       });
     });
 
     it('will fire the connection event on the server', function(done) {
-      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket(`ws://localhost:${port}/foo`);  
       ws.on('open', function open() {
       });
       wss.on('connection', function(ws) {
@@ -154,7 +154,7 @@ describe('Event Websocket', function() {
     });
     
     it('can send data down the server websocket', function(done) {
-      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket(`ws://localhost:${port}/foo`);  
       ws.on('open', function open() {
       });
 
@@ -167,7 +167,7 @@ describe('Event Websocket', function() {
     });
 
     it('can send data up the server websocket', function(done) {
-      const ws = new WebSocket('ws://localhost:'+port+'/foo');  
+      const ws = new WebSocket(`ws://localhost:${port}/foo`);  
       wss.on('connection', function(ws) {
         ws.on('message', function() {
           done();  
@@ -180,7 +180,7 @@ describe('Event Websocket', function() {
     });
 
     it('will return a 404 on non ws urls', function(done) {
-      const url = 'ws://localhost:' + port + '/not-a-endpoint';
+      const url = `ws://localhost:${port}/not-a-endpoint`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
@@ -200,7 +200,7 @@ describe('Event Websocket', function() {
   describe('Receive json messages', function() {
 
     it('websocket should recv only one set of messages when reconnecting', function(done) {
-      const url = 'ws://' + deviceUrl + '/bar';
+      const url = `ws://${deviceUrl}/bar`;
 
       function openAndClose(cb) {
         const s1 = new WebSocket(url);
@@ -229,7 +229,7 @@ describe('Event Websocket', function() {
 
 
     it('websocket should connect and recv data in json form', function(done) {
-      const url = 'ws://' + deviceUrl + '/bar';
+      const url = `ws://${deviceUrl}/bar`;
       const socket = new WebSocket(url);
 
       socket.on('open', function(err) {
@@ -254,10 +254,10 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should connect and recv device log events from property API updates', function(done) {
-      const url = 'ws://' + deviceUrl + '/logs';
+      const url = `ws://${deviceUrl}/logs`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
-        deviceUrlHttp = 'http://' + deviceUrlHttp; 
+        deviceUrlHttp = `http://${deviceUrlHttp}`; 
         const parsed = urlParse(deviceUrlHttp); 
         const reqOpts = {
           hostname: 'localhost',
@@ -292,7 +292,7 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should connect and recv device log events', function(done) {
-      const url = 'ws://' + deviceUrl + '/logs';
+      const url = `ws://${deviceUrl}/logs`;
       const socket = new WebSocket(url);
 
       socket.on('open', function(err) {
@@ -320,7 +320,7 @@ describe('Event Websocket', function() {
     });
 
     it('websocket should recv connect and disconnect message for /peer-management', function(done) {
-      const url = 'ws://localhost:' + port + '/peer-management';
+      const url = `ws://localhost:${port}/peer-management`;
       const socket = new WebSocket(url);
       let peer = null;
       
@@ -349,7 +349,7 @@ describe('Event Websocket', function() {
         peer = zetta({registry: new MockRegistry(), peerRegistry: new PeerRegistry() });
         peer.name('some-peer');
         peer.silent();
-        peer.link('http://localhost:' + port);
+        peer.link(`http://localhost:${port}`);
         peer.listen(0);
       });
       socket.on('error', done);
@@ -364,7 +364,7 @@ describe('Event Websocket', function() {
   describe('Receive binary messages', function() {
 
     it('websocket should connect and recv data in binary form', function(done) {
-      const url = 'ws://' + deviceUrl + '/foobar';
+      const url = `ws://${deviceUrl}/foobar`;
       const socket = new WebSocket(url);
       socket.on('open', function(err) {
         let recv = 0;

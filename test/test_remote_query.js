@@ -47,9 +47,9 @@ describe('Remote queries', function() {
       .server('detroit1', [Scout], ['cloud'])
       .server('chicago', [Scout], ['cloud'])
       .on('ready', function() {
-        urlRoot = 'localhost:' + cluster.servers['cloud']._testPort;
-        urlProxied = 'localhost:' + cluster.servers['cloud']._testPort + '/servers/detroit1';
-        urlLocal = 'localhost:' + cluster.servers['detroit1']._testPort + '/servers/detroit1';
+        urlRoot = `localhost:${cluster.servers['cloud']._testPort}`;
+        urlProxied = `localhost:${cluster.servers['cloud']._testPort}/servers/detroit1`;
+        urlLocal = `localhost:${cluster.servers['detroit1']._testPort}/servers/detroit1`;
 
         detroit1 = cluster.servers['detroit1'];
         chicago = cluster.servers['chicago'];
@@ -99,14 +99,14 @@ describe('Remote queries', function() {
         .name('Z1')
         .use(Scout)
         .silent()
-        .link('http://' + urlRoot)
+        .link(`http://${urlRoot}`)
         .listen(0);
 
       var z = zetta({ registry: new MemRegistry(), peerRegistry: new MemPeerRegistry() })
         .name('Z2')
         .use(Scout)
         .silent()
-        .link('http://' + urlRoot)
+        .link(`http://${urlRoot}`)
         .listen(0);
     })
 
@@ -135,7 +135,7 @@ describe('Remote queries', function() {
         .name('local')
         .use(Scout)
         .silent()
-        .link('http://' + urlRoot)
+        .link(`http://${urlRoot}`)
         .listen(0);
     })
 
@@ -245,7 +245,7 @@ describe('Remote queries', function() {
 
 
     it('should send back 1 result for peer after a reconnet', function(done) {
-      const socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlProxied}/events?topic=query/where type = "testdriver"`);
       let recv = 0;
 
       const socketP = cluster.servers['cloud'].httpServer.peers['detroit1'];
@@ -279,7 +279,7 @@ describe('Remote queries', function() {
   describe('Websocket Local Queries', function() {
 
     it('should send back 1 result for local device', function(done) {
-      const socket = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlLocal}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         socket.on('message', function(data) {
           const json = JSON.parse(data);
@@ -295,7 +295,7 @@ describe('Remote queries', function() {
     });
 
     it('should send back 2 results for local device after a device is added', function(done) {
-      const socket = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlLocal}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         let recv = 0;
 
@@ -320,14 +320,14 @@ describe('Remote queries', function() {
     });
 
     it('reconnecting should only have 1 result', function(done) {
-      const socket = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlLocal}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         socket.on('message', function(data) {
           const json = JSON.parse(data);
           assert.equal(json.properties.type, 'testdriver');
           socket.close();
 
-          const socket2 = new WebSocket("ws://" + urlLocal + '/events?topic=query/where type = "testdriver"');
+          const socket2 = new WebSocket(`ws://${urlLocal}/events?topic=query/where type = "testdriver"`);
           socket2.on('open', function(err) {
             socket2.on('message', function(data) {
               const json = JSON.parse(data);
@@ -349,7 +349,7 @@ describe('Remote queries', function() {
   describe('Websocket Proxied Queries', function() {
 
     it('should send back 1 result for local device', function(done) {
-      const socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlProxied}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         socket.on('message', function(data) {
           const json = JSON.parse(data);
@@ -366,7 +366,7 @@ describe('Remote queries', function() {
     });
 
     it('should send back 2 results for local device after a device is added', function(done) {
-      const socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlProxied}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         let recv = 0;
 
@@ -391,14 +391,14 @@ describe('Remote queries', function() {
     });
 
     it('reconnecting should only have 1 result', function(done) {
-      const socket = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlProxied}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         socket.on('message', function(data) {
           const json = JSON.parse(data);
           assert.equal(json.properties.type, 'testdriver');
           socket.close();
 
-          const socket2 = new WebSocket("ws://" + urlProxied + '/events?topic=query/where type = "testdriver"');
+          const socket2 = new WebSocket(`ws://${urlProxied}/events?topic=query/where type = "testdriver"`);
           socket2.on('open', function(err) {
             socket2.on('message', function(data) {
               const json = JSON.parse(data);
@@ -416,7 +416,7 @@ describe('Remote queries', function() {
   describe('Websocket Cross-Server Queries', function() {
 
     it('should send back 2 results', function(done) {
-      const socket = new WebSocket("ws://" + urlRoot + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlRoot}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         let count = 0;
         socket.on('message', function(data) {
@@ -438,7 +438,7 @@ describe('Remote queries', function() {
     });
 
     it('should send back 3 results after a device is added', function(done) {
-      const socket = new WebSocket("ws://" + urlRoot + '/events?topic=query/where type = "testdriver"');
+      const socket = new WebSocket(`ws://${urlRoot}/events?topic=query/where type = "testdriver"`);
       socket.on('open', function(err) {
         let recv = 0;
 

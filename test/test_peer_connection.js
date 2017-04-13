@@ -32,7 +32,7 @@ describe('Peer Connection Logic', function() {
         return done(err);
       }
 
-      cloudUrl = 'ws://localhost:' + cloud.httpServer.server.address().port;
+      cloudUrl = `ws://localhost:${cloud.httpServer.server.address().port}`;
       done();
     })
   });
