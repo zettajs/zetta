@@ -8,7 +8,8 @@ const Query = require('calypso').Query;
 const dbPath = path.join(__dirname, './.peers');
 
 describe('Peer Registry', () => {
-  let db, opts;
+  let db;
+  let opts;
 
   beforeEach(done => {
     db = levelup(dbPath, { db: memdown });

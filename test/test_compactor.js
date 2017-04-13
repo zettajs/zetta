@@ -9,8 +9,9 @@ const dbPath = path.join(__dirname, './.peers');
 
 describe('Registry Compaction', () => {
   describe('custom database', () => {
-    let db, opts;
-    
+    let db;
+    let opts;
+
     beforeEach(done => {
       db = levelup(dbPath, { db: memdown });
       opts = { db, collection: 'peers' };
@@ -26,8 +27,7 @@ describe('Registry Compaction', () => {
     it('should not have a compactor property with a custom db.', () => {
       const reg = new Registry(opts);
       assert.ok(!reg.compactor); 
-    });  
-    
+    });
   });
   
   describe('standard medea database', () => {
