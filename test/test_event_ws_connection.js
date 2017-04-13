@@ -49,7 +49,7 @@ describe('Event Websocket', () => {
         done(err);
         return;
       }
-      app = zetta({registry: registry, peerRegistry: peerRegistry});
+      app = zetta({registry, peerRegistry});
       app.silent();
       app.name('BC2832FD-9437-4473-A4A8-AC1D56B12C61');
       app.use(GoodScout);
@@ -125,11 +125,11 @@ describe('Event Websocket', () => {
     beforeEach(done => {
       const peerRegistry = new PeerRegistry();
       const registry = new MockRegistry();
-      app = zetta({registry: registry, peerRegistry: peerRegistry});
+      app = zetta({registry, peerRegistry});
       app.silent();
       app.use(server => {
         var server = server.httpServer.server;
-        wss = new WebSocketServer({server: server, path: '/foo'});  
+        wss = new WebSocketServer({server, path: '/foo'});  
       });
       app.listen(0, err => {
         port = app.httpServer.server.address().port;

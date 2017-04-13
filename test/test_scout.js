@@ -38,7 +38,7 @@ describe('Scout', () => {
 
     beforeEach(() => {
       const registry = new MockRegistry();
-      runtime = new Runtime({registry: registry});
+      runtime = new Runtime({registry});
     });
 
     it('it should pass arguments to device', done => {
@@ -102,7 +102,7 @@ describe('Scout', () => {
           done(err);
           return;
         }
-        runtime = new Runtime({registry: registry});
+        runtime = new Runtime({registry});
         done();
       });
     });

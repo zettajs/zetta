@@ -12,7 +12,7 @@ describe('Peer Registry', () => {
 
   beforeEach(done => {
     db = levelup(dbPath, { db: memdown });
-    opts = { db: db, collection: 'peers' };
+    opts = { db, collection: 'peers' };
     done();
   });
 

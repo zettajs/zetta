@@ -213,7 +213,7 @@ describe('Event Streams', () => {
     urls = [];
     devices = [];
     validTopics = [];
-    cluster = zettacluster({ zetta: zetta })
+    cluster = zettacluster({ zetta })
       .server('cloud')
       .server('hub', [Driver, Driver], ['cloud'])
       .server('hub2', [Driver, Driver], ['cloud'])
@@ -330,7 +330,7 @@ describe('Event Streams', () => {
       let subscriptionId = null;
       const topic = validTopics[0];
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -367,7 +367,7 @@ describe('Event Streams', () => {
 
       const ws1 = new WebSocket(`ws://${endpoint}${baseUrl}`);
       ws1.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws1.send(JSON.stringify(msg));
         let subscriptionId = null;
         ws1.on('message', buffer => {
@@ -395,7 +395,7 @@ describe('Event Streams', () => {
 
       const ws2 = new WebSocket(`ws://${endpoint}${baseUrl}`);
       ws2.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws2.send(JSON.stringify(msg));
         let subscriptionId = null;
         ws2.on('message', buffer => {
@@ -430,7 +430,7 @@ describe('Event Streams', () => {
 
       const ws1 = new WebSocket(`ws://${endpoint}${baseUrl}`);
       ws1.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws1.send(JSON.stringify(msg));
         let subscriptionId = null;
         ws1.on('message', buffer => {
@@ -491,7 +491,7 @@ describe('Event Streams', () => {
       let topic = validTopics[0];
       topic = topic.replace('hub', '*');
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -565,7 +565,7 @@ describe('Event Streams', () => {
       runtime.observe(query, device => {
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         ws.on('open', () => {
-          const msg = { type: 'subscribe', topic: topic };
+          const msg = { type: 'subscribe', topic };
           ws.send(JSON.stringify(msg));
           ws.on('message', buffer => {
             const json = JSON.parse(buffer);
@@ -603,7 +603,7 @@ describe('Event Streams', () => {
       runtime.observe(query, device => {
         const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
         ws.on('open', () => {
-          const msg = { type: 'subscribe', topic: topic };
+          const msg = { type: 'subscribe', topic };
           ws.send(JSON.stringify(msg));
           ws.on('message', buffer => {
             const json = JSON.parse(buffer);
@@ -637,7 +637,7 @@ describe('Event Streams', () => {
       let subscriptionId = null;
       const topic = '*/testdriver/*/state';
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         let recv = 0;
         ws.on('message', buffer => {
@@ -683,7 +683,7 @@ describe('Event Streams', () => {
       });
 
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -732,7 +732,7 @@ describe('Event Streams', () => {
       }
 
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -775,7 +775,7 @@ describe('Event Streams', () => {
       const topic = 'hub/testdriver/*/state';
       let lastTopic = null;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -816,7 +816,7 @@ describe('Event Streams', () => {
       const topic = 'hub/testdriver/**';
       let lastTopic = null;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -855,7 +855,7 @@ describe('Event Streams', () => {
       let subscriptionId = null;
       const topic = validTopics[0].replace('hub/', '**/');
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -889,7 +889,7 @@ describe('Event Streams', () => {
       let subscriptionId = null;
       const topic = validTopics[0].replace('hub/', '**/');
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -923,7 +923,7 @@ describe('Event Streams', () => {
       let subscriptionId = null;
       const topic = validTopics[0].replace('hub/', '**/');
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -958,7 +958,7 @@ describe('Event Streams', () => {
       const topic = 'hub/testdriver/*/logs';
       let lastTopic = null;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -997,7 +997,7 @@ describe('Event Streams', () => {
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       const topic = 'blah/foo/1/blah';
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1016,7 +1016,7 @@ describe('Event Streams', () => {
       const topic = 'hub/**';
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       ws.on('open', () => {
-        ws.send(JSON.stringify({ type: 'subscribe', topic: topic }));
+        ws.send(JSON.stringify({ type: 'subscribe', topic }));
         
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1116,7 +1116,7 @@ describe('Event Streams', () => {
       const topic = validTopics[0];
       const data = null;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic, limit: 10 };
+        const msg = { type: 'subscribe', topic, limit: 10 };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1160,7 +1160,7 @@ describe('Event Streams', () => {
       const topic = validTopics[0];
       const data = null;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic, limit: 10 };
+        const msg = { type: 'subscribe', topic, limit: 10 };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1202,7 +1202,7 @@ describe('Event Streams', () => {
       const topic = `hub/testdriver/${devices[0].id}/bar?select data where data >= 5`;
       const data = null;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic, limit: 10 };
+        const msg = { type: 'subscribe', topic, limit: 10 };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1243,7 +1243,7 @@ describe('Event Streams', () => {
       const count = 0;
       const topic = `hub/testdriver/${devices[0].id}/bar?select data where data >= 1`;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1277,7 +1277,7 @@ describe('Event Streams', () => {
       const topic = `hub/testdriver/${devices[0].id}/fooobject?select * where data.val >= 2`;
       const data = { foo: 'bar', val: 2 };
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1312,7 +1312,7 @@ describe('Event Streams', () => {
       const topic = `hub/testdriver/${devices[0].id}/fooobject?select data.val`;
       const data = { foo: 'bar', val: 2 };
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1344,7 +1344,7 @@ describe('Event Streams', () => {
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
       const topic = '**';
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1379,7 +1379,7 @@ describe('Event Streams', () => {
       const ws = new WebSocket(`ws://${endpoint}${baseUrl}?filterMultiple=true`);
       const topic = validTopics[0];
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         const msg2 = { type: 'subscribe', topic: 'hub/testdriver/*/state' };
         ws.send(JSON.stringify(msg));
         ws.send(JSON.stringify(msg2));
@@ -1418,7 +1418,7 @@ describe('Event Streams', () => {
       const topic = validTopics[0];
       const topic2 = 'hub/testdriver/*/state';
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic, limit: 2 };
+        const msg = { type: 'subscribe', topic, limit: 2 };
         const msg2 = { type: 'subscribe', topic: topic2, limit: 3 };
         ws.send(JSON.stringify(msg));
         ws.send(JSON.stringify(msg2));
@@ -1462,7 +1462,7 @@ describe('Event Streams', () => {
       const topic = `${validTopics[0]}?select *`;
       const topic2 = 'hub/testdriver/*/state';
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         const msg2 = { type: 'subscribe', topic: topic2 };
         ws.send(JSON.stringify(msg));
         ws.send(JSON.stringify(msg2));
@@ -1501,7 +1501,7 @@ describe('Event Streams', () => {
       let count = 0;
       const expected = (idx === 1) ? 2 : 2;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1536,7 +1536,7 @@ describe('Event Streams', () => {
       let count = 0;
       const expected = (idx === 1) ? 2 : 4; // cloud will have 4 devices
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1568,7 +1568,7 @@ describe('Event Streams', () => {
       let subscriptionId = null;
       const topic = `hub/testdriver/${devices[0].id}/bar`;
       ws.on('open', () => {
-        const msg = { type: 'subscribe', topic: topic };
+        const msg = { type: 'subscribe', topic };
         ws.send(JSON.stringify(msg));
         ws.on('message', buffer => {
           const json = JSON.parse(buffer);
@@ -1603,7 +1603,7 @@ describe('Event Streams', () => {
           const endpoint = urls[idx];
           const ws = new WebSocket(`ws://${endpoint}${baseUrl}`);
           ws.on('open', () => {
-            const msg = { type: 'subscribe', topic: topic };
+            const msg = { type: 'subscribe', topic };
             ws.send(JSON.stringify(msg));
             ws.on('message', buffer => {
               const json = JSON.parse(buffer);
@@ -1634,7 +1634,7 @@ describe('Event Streams', () => {
         const topic = `hub/testdriver/${devices[0].id}/fooobject?invalid stream query`;
         const data = { foo: 'bar', val: 2 };
         ws.on('open', () => {
-          const msg = { type: 'subscribe', topic: topic };
+          const msg = { type: 'subscribe', topic };
           ws.send(JSON.stringify(msg));
           ws.on('message', buffer => {
             const json = JSON.parse(buffer);

@@ -28,7 +28,7 @@ describe('Virtual Device', () => {
   const startPort = 2600;
 
   beforeEach(done => {
-    cluster = zettacluster({ zetta: zetta })
+    cluster = zettacluster({ zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud'])
       .on('ready', () => {

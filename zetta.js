@@ -125,7 +125,7 @@ Zetta.prototype.use = function() {
     machine._registry = self.runtime.registry;
 
     const config = scientist.config(machine);
-    return { config: config, instance: machine };
+    return { config, instance: machine };
   }
 
   function walk(proto) {
@@ -451,7 +451,7 @@ Zetta.prototype._runPeer = function(peer) {
       self.peerRegistry.save(result);
 
       // peer-event
-      self.pubsub.publish('_peer/disconnect', { peer: peerClient, error: error });
+      self.pubsub.publish('_peer/disconnect', { peer: peerClient, error });
     });
   });
 

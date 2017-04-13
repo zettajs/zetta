@@ -18,7 +18,7 @@ describe('Driver', () => {
   beforeEach(() => {
     reg = new MemRegistry();
     pubsub = new PubSub();
-    log = new Logger({pubsub: pubsub});
+    log = new Logger({pubsub});
     log.pubsub = pubsub;
     // create machine
     machine = Scientist.create(TestDriver);

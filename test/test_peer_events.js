@@ -9,7 +9,7 @@ describe('Peer Connection Events in Pubsub', () => {
   let cluster = null;
   const device = null;
   beforeEach(done => {
-    cluster = zettacluster({ zetta: zetta })
+    cluster = zettacluster({ zetta })
       .server('cloud')
       .server('detroit1', [Scout], ['cloud']);
     done();

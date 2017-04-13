@@ -35,7 +35,7 @@ describe('DeviceRegistry', () => {
     db = levelup(dbPath, { db: memdown });
     machine = Scientist.create(TestDriver);
     Scientist.init(machine);
-    opts = { db: db, collection: 'devices' };
+    opts = { db, collection: 'devices' };
     done();
   });
 

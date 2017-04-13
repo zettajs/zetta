@@ -13,7 +13,7 @@ describe('Registry Compaction', () => {
     
     beforeEach(done => {
       db = levelup(dbPath, { db: memdown });
-      opts = { db: db, collection: 'peers' };
+      opts = { db, collection: 'peers' };
       done();
     });
 

@@ -42,7 +42,7 @@ describe('Remote queries', () => {
   let urlRoot = null;
 
   beforeEach(done => {
-    cluster = zettacluster({ zetta: zetta })
+    cluster = zettacluster({ zetta })
       .server('cloud', [Scout])
       .server('detroit1', [Scout], ['cloud'])
       .server('chicago', [Scout], ['cloud'])

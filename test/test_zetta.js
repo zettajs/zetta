@@ -27,18 +27,18 @@ describe('Zetta', () => {
   });
 
   it('has the name set using the name() function.', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
+    const z = zetta({ registry: reg, peerRegistry }).name('local').silent();
     assert.equal(z._name, 'local');
   });
 
   it('should throw error if setting name to *', () => {
     assert.throws(() => {
-      const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('*').silent();
+      const z = zetta({ registry: reg, peerRegistry }).name('*').silent();
     }, Error);
   });
 
   it('has the silent() function to suppress logging.', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('local').silent();
+    const z = zetta({ registry: reg, peerRegistry }).name('local').silent();
   });
 
   it('errors thrown in zetta apps should propagate.', done => {
@@ -68,7 +68,7 @@ describe('Zetta', () => {
       cert: fs.readFileSync(`${__dirname}/fixture/keys/cert.pem`)
     };
     
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry, tls: options })
+    const z = zetta({ registry: reg, peerRegistry, tls: options })
       .silent()
       .listen(0, err => {
         if (err) return done(err);
@@ -76,7 +76,7 @@ describe('Zetta', () => {
         const port = z.httpServer.server.address().port;
         const req = https.get({
           host: 'localhost',
-          port: port,
+          port,
           path: '/',
           rejectUnauthorized: false
         }, res => {
@@ -88,7 +88,7 @@ describe('Zetta', () => {
   });
 
   it('has the logger() function to pass in custom logging.', done => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    const z = zetta({ registry: reg, peerRegistry });
     z.logger(log => {
       log.on('message', (level, event, msg, data) => {
         assert.equal(level, 'info');
@@ -104,7 +104,7 @@ describe('Zetta', () => {
 
 
   it('will load an app with the load() function', done => {
-    zetta({ registry: reg, peerRegistry: peerRegistry })
+    zetta({ registry: reg, peerRegistry })
       .silent()
       .load(server => {
         assert.ok(server);
@@ -114,7 +114,7 @@ describe('Zetta', () => {
   });
 
   it('will load an app with the use() function', done => {
-    zetta({ registry: reg, peerRegistry: peerRegistry })
+    zetta({ registry: reg, peerRegistry })
       .silent()
       .use(server => {
         assert.ok(server);
@@ -131,7 +131,7 @@ describe('Zetta', () => {
       done();  
     };
     
-    zetta({ registry: reg, peerRegistry: peerRegistry })
+    zetta({ registry: reg, peerRegistry })
       .silent()
       .use(app, { foo: 1})
       ._initApps(() => {
@@ -148,7 +148,7 @@ describe('Zetta', () => {
       done();  
     };
     
-    zetta({ registry: reg, peerRegistry: peerRegistry })
+    zetta({ registry: reg, peerRegistry })
       .silent()
       .use(app, 1, 2)
       ._initApps(() => {
@@ -157,7 +157,7 @@ describe('Zetta', () => {
 
   });
   it('will load a driver with the use() function', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     function TestDriver() {
       Device.call(this);
     }
@@ -171,7 +171,7 @@ describe('Zetta', () => {
   });
 
   it('will load an HTTP driver with the use() function', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     function TestDriver() {
       HttpDevice.call(this);
     }
@@ -185,7 +185,7 @@ describe('Zetta', () => {
   });
 
   it('will load a scout with the use() function', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     function TestScout() {
       Scout.call(this);
     }
@@ -197,7 +197,7 @@ describe('Zetta', () => {
   });
 
   it('will set the what query is used for expose()', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     z.expose('*');
 
     assert.ok(z._exposeQuery);
@@ -210,7 +210,7 @@ describe('Zetta', () => {
     };
     MockHttp.prototype.listen = port => {};
 
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0);
 
@@ -224,7 +224,7 @@ describe('Zetta', () => {
       done();
     };
 
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0);
 
@@ -238,7 +238,7 @@ describe('Zetta', () => {
       cb(null);
     };
 
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    const z = zetta({ registry: reg, peerRegistry }).silent();
     z.httpServer = new MockHttp();
     z.listen(0, err => {
       assert.ok(!err);
@@ -247,7 +247,7 @@ describe('Zetta', () => {
   });
 
   it('should initialize device with proper properties set.', done => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry })
+    const z = zetta({ registry: reg, peerRegistry })
       .silent()
       .use(ExampleDevice, 1, 'a')
       ._run(err => {
@@ -261,7 +261,7 @@ describe('Zetta', () => {
   });
 
   it('should initialize 3 devices with correct params when using multiple use', done => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry })
+    const z = zetta({ registry: reg, peerRegistry })
       .silent()
       .use(ExampleDevice, 1, 'a')
       .use(ExampleDevice, 2, 'b')
@@ -287,7 +287,7 @@ describe('Zetta', () => {
 
 
   it('should provision 3 devices already in registry with correct params when using multiple use', done => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry })
+    const z = zetta({ registry: reg, peerRegistry })
       .silent()
       .use(ExampleDevice, 1, 'a')
       .use(ExampleDevice, 2, 'b')
@@ -314,7 +314,7 @@ describe('Zetta', () => {
         assert(find(2, 'b'));
         assert(find(3, 'c'));
 
-        const z2 = zetta({ registry: reg, peerRegistry: peerRegistry })
+        const z2 = zetta({ registry: reg, peerRegistry })
           .silent()
           .use(ExampleDevice, 1, 'a')
           .use(ExampleDevice, 2, 'b')
@@ -345,7 +345,7 @@ describe('Zetta', () => {
       return oldInit.call(this, config);
     };
 
-    const app = zetta({ peerRegistry: peerRegistry, registry: reg });
+    const app = zetta({ peerRegistry, registry: reg });
     app.silent();
     app.use(ExampleDevice);
     app.listen(0);
@@ -358,7 +358,7 @@ describe('Zetta', () => {
 
   describe('peering', () => {
     it('.link should add to peers', done => {
-      const app = zetta({ peerRegistry: peerRegistry, registry: reg });
+      const app = zetta({ peerRegistry, registry: reg });
       app.silent();
       app.link('http://example.com/');
       app._initPeers(app._peers, err => {
@@ -395,7 +395,7 @@ describe('Zetta', () => {
     it('.link should not add to peers', done => {
 
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), err => {
-        const app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        const app = zetta({ peerRegistry, registry: reg });
         app.silent();
         app._initPeers(app._peers, err => {
           setTimeout(() => {
@@ -408,7 +408,7 @@ describe('Zetta', () => {
 
     it('will delete fromLink peers in the registry', done => {
       peerRegistry.db.put('1234567', JSON.stringify({ id:'1234567', direction: 'initiator', url: 'http://example.com/', fromLink: true}), err => {
-        const app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        const app = zetta({ peerRegistry, registry: reg });
         app._initPeers(app._peers, err => {
           setTimeout(() => {
            assert.equal(app._peerClients.length, 0);
@@ -425,7 +425,7 @@ describe('Zetta', () => {
   it('will init API peers.', done => {
 
       peerRegistry.db.put('1234567', JSON.stringify({id: '1234567', direction: 'initiator', url: 'http://example.com/'}), err => {
-        const app = zetta({ peerRegistry: peerRegistry, registry: reg });
+        const app = zetta({ peerRegistry, registry: reg });
         app.silent();
         app._initPeers(app._peers, err => {
           setTimeout(() => {
@@ -439,13 +439,13 @@ describe('Zetta', () => {
   });
 
   it('has the properties() function to add custom properties to the api.', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry });
+    const z = zetta({ registry: reg, peerRegistry });
     assert(typeof z.properties, 'function');
     z.properties({ test: 'abc' });
   });
 
   it('.getProperties() returns properties.', () => {
-    const z = zetta({ registry: reg, peerRegistry: peerRegistry }).name('test');
+    const z = zetta({ registry: reg, peerRegistry }).name('test');
     z.properties({ someKey: 123 });
     assert.deepEqual(z.getProperties(), { name: 'test', someKey: 123 });
   });

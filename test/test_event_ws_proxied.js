@@ -11,7 +11,7 @@ describe('Event Websocket Proxied Through Peer', () => {
   let device = null;
 
   beforeEach(done => {
-    cluster = zettacluster({ zetta: zetta })
+    cluster = zettacluster({ zetta })
       .server('cloud deploy')
       .server('detroit 1', [Scout], ['cloud deploy'])
       .on('ready', () => {

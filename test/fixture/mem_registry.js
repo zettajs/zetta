@@ -5,7 +5,7 @@ const DeviceRegistry = require('../../lib/device_registry');
 
 const MemRegistry = module.exports = function() {
   const db = levelup({ db: memdown });
-  DeviceRegistry.call(this, { db: db, collection: 'devices' });
+  DeviceRegistry.call(this, { db, collection: 'devices' });
 };
 util.inherits(MemRegistry, DeviceRegistry);
 

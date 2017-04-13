@@ -11,7 +11,7 @@ const querystring = require('querystring');
 function deleteRequest(port, connectionId) {
   const opts = {
     host: 'localhost',
-    port: port,
+    port,
     method: 'DELETE',
     path: `/peer-management/${connectionId}`
   };
@@ -22,12 +22,12 @@ function deleteRequest(port, connectionId) {
 
 function putRequest(port, connectionId, url) {
   const qs = {
-    url: url  
+    url  
   };
   const string = querystring.stringify(qs);
   const opts = {
     host: 'localhost',
-    port: port,
+    port,
     method: 'PUT',
     path: `/peer-management/${connectionId}`,
     headers: {
@@ -68,7 +68,7 @@ describe('Peer Connection API', () => {
 
     beforeEach(done => {
       peerRegistry = new MemPeerRegistry();
-      app = zetta({ registry: new MemRegistry(), peerRegistry: peerRegistry })
+      app = zetta({ registry: new MemRegistry(), peerRegistry })
         .silent()
         .name('local')
         ._run(done);
@@ -85,8 +85,8 @@ describe('Peer Connection API', () => {
         const peer = {
           id:'foo',
           connectionId:'12345',
-          direction: direction,
-          status: status
+          direction,
+          status
         };
         
         peerRegistry.save(peer, () => {
@@ -115,8 +115,8 @@ describe('Peer Connection API', () => {
         const peer = {
           id:'foo',
           connectionId:'12345',
-          direction: direction,
-          status: status
+          direction,
+          status
         };
         peerRegistry.save(peer, () => {
           const url = '/peer-management/foo';

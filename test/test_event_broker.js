@@ -30,7 +30,7 @@ describe('EventBroker', () => {
   beforeEach(() => {
     const reg = new Registry();
     peerRegistry = new PeerRegistry();
-    app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent();
+    app = zetta({ registry: reg, peerRegistry }).silent();
     query = { topic: '_peer/connect', name: app.id };
     broker = new EventBroker(app);
   });

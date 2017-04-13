@@ -101,7 +101,7 @@ describe('Zetta Query Api', () => {
     let app = null;
 
     beforeEach(() => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -141,7 +141,7 @@ describe('Zetta Query Api', () => {
     let app = null;
 
     beforeEach(() => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -194,7 +194,7 @@ describe('Zetta Query Api', () => {
     let app = null;
 
     beforeEach(() => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -247,7 +247,7 @@ describe('Zetta Query Api', () => {
     let cluster = null;
 
     beforeEach(done => {
-      cluster = zettacluster({ zetta: zetta })
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server('detroit1', [Scout], ['cloud'])
         .on('ready', () => {
@@ -305,7 +305,7 @@ describe('Zetta Query Api', () => {
     let cluster = null;
 
     beforeEach(done => {
-      cluster = zettacluster({ zetta: zetta })
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server('detroit1', [Scout], ['cloud'])
         .server('detroit2', [Scout], ['cloud'])
@@ -339,7 +339,7 @@ describe('Zetta Query Api', () => {
       Scientist.init(machine);
       reg.save(machine, err => {
         assert.ok(!err);
-        app = zetta({ registry: reg, peerRegistry: peerRegistry })
+        app = zetta({ registry: reg, peerRegistry })
           .silent()
           .use(Scout)
           .name('local')
@@ -402,7 +402,7 @@ describe('Zetta Query Api', () => {
     let app = null;
 
     beforeEach(() => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -452,7 +452,7 @@ describe('Zetta Query Api', () => {
 
 
     it('should return empty list if no devices are provisioned on server', done => {
-      const app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      const app = zetta({ registry: reg, peerRegistry })
         .silent()
         .name('local')
         ._run();
@@ -472,7 +472,7 @@ describe('Zetta Query Api', () => {
     let cluster = null;
 
     beforeEach(done => {
-      cluster = zettacluster({ zetta: zetta })
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server('detroit1', [Scout], ['cloud'])
         .on('ready', () => {

@@ -83,7 +83,7 @@ describe('Zetta Api', () => {
   });
 
   it('updates href hosts using x-forwarded-host header', done => {
-    const app = zetta({ registry: reg, peerRegistry: peerRegistry  })
+    const app = zetta({ registry: reg, peerRegistry  })
         .silent()
         .name('local')
         ._run(err => {
@@ -103,7 +103,7 @@ describe('Zetta Api', () => {
   })
 
   it('updates href path using x-forwarded-path header', done => {
-    const app = zetta({ registry: reg, peerRegistry: peerRegistry  })
+    const app = zetta({ registry: reg, peerRegistry  })
         .silent()
         .name('local')
         ._run(err => {
@@ -124,7 +124,7 @@ describe('Zetta Api', () => {
   })
 
   it('allow for x-forwarded-host header to be disabled', done => {
-    const app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedHostHeader: false  })
+    const app = zetta({ registry: reg, peerRegistry, useXForwardedHostHeader: false  })
         .silent()
         .name('local')
         ._run(err => {
@@ -144,7 +144,7 @@ describe('Zetta Api', () => {
   })
 
   it('allow for x-forwarded-path header to be disabled', done => {
-    const app = zetta({ registry: reg, peerRegistry: peerRegistry, useXForwardedPathHeader: false  })
+    const app = zetta({ registry: reg, peerRegistry, useXForwardedPathHeader: false  })
         .silent()
         .name('local')
         ._run(err => {
@@ -173,7 +173,7 @@ describe('Zetta Api', () => {
     let url = null;
 
     beforeEach(done => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .properties({ custom: 123 })
         .use(Scout)
@@ -276,7 +276,7 @@ describe('Zetta Api', () => {
         host: '127.0.0.1',
         port: a.address().port,
         path: url,
-        agent: agent
+        agent
       }, response => {
 
         const buffers = [];
@@ -318,7 +318,7 @@ describe('Zetta Api', () => {
         host: '127.0.0.1',
         port: a.address().port,
         path: '/',
-        agent: agent
+        agent
       }, response => {
 
         const buffers = [];
@@ -422,7 +422,7 @@ describe('Zetta Api', () => {
     let app = null;
 
     beforeEach(() => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -481,7 +481,7 @@ describe('Zetta Api', () => {
     });
 
     it('should use a default server name if none has been provided', done => {
-      const app = zetta({ registry: reg, peerRegistry: peerRegistry }).silent()._run();
+      const app = zetta({ registry: reg, peerRegistry }).silent()._run();
 
       request(getHttpServer(app))
         .get('/')
@@ -505,7 +505,7 @@ describe('Zetta Api', () => {
     });
 
     beforeEach(done => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -620,7 +620,7 @@ describe('Zetta Api', () => {
     describe('#show', () => {
       it('should return the peer item representation', done => {
         const id = '1234-5678-9ABCD';
-        peerRegistry.save({ id: id }, () => {
+        peerRegistry.save({ id }, () => {
           request(getHttpServer(app))
             .get(`/peer-management/${id}`)
             .expect(200, done);
@@ -633,7 +633,7 @@ describe('Zetta Api', () => {
     let app = null;
 
     beforeEach(done => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -712,7 +712,7 @@ describe('Zetta Api', () => {
     let device = null;
 
     beforeEach(done => {
-      app = zetta({ registry: reg, peerRegistry: peerRegistry })
+      app = zetta({ registry: reg, peerRegistry })
         .silent()
         .use(Scout)
         .name('local')
@@ -887,7 +887,7 @@ describe('Zetta Api', () => {
         host: '127.0.0.1',
         port: a.address().port,
         path: url,
-        agent: agent
+        agent
       }, response => {
 
         const buffers = [];
@@ -970,7 +970,7 @@ describe('Zetta Api', () => {
           .post(url)
           .type('form')
           .expect(200)
-          .send({ action: action, value: input })
+          .send({ action, value: input })
           .end(done);
       });
     };
@@ -1206,7 +1206,7 @@ describe('Zetta Api', () => {
     let cluster = null;
 
     beforeEach(done => {
-      cluster = zettacluster({ zetta: zetta })
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server('detroit', [Scout], ['cloud'])
         .server('sanjose', [Scout], ['cloud'])
@@ -1276,7 +1276,7 @@ describe('Zetta Api', () => {
     const hubName = 'hub 1';
     const getServer = peerName => cluster.servers[peerName].httpServer.server;
     beforeEach(done => {
-      cluster = zettacluster({ zetta: zetta })
+      cluster = zettacluster({ zetta })
         .server('cloud')
         .server(hubName, [Scout], ['cloud'])
         .on('ready', done)

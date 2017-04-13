@@ -9,7 +9,7 @@ describe('Peer Client Websocket', () => {
 
   it('it should connect to ws:// server', done => {
     const server = http.createServer();
-    const wss = new WebSocketServer({ server: server });
+    const wss = new WebSocketServer({ server });
     server.listen(0, err => {
       if (err) {
         return done(err);
@@ -32,7 +32,7 @@ describe('Peer Client Websocket', () => {
     };
 
     const server = https.createServer(opts);
-    const wss = new WebSocketServer({ server: server });
+    const wss = new WebSocketServer({ server });
     server.listen(0, err => {
       if (err) {
         return done(err);

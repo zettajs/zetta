@@ -38,7 +38,7 @@ describe('Metadata API', () => {
     reg = new Registry();
     peerRegistry = new PeerRegistry();
 
-    app = zetta({ registry: reg, peerRegistry: peerRegistry })
+    app = zetta({ registry: reg, peerRegistry })
       .silent()
       .use(Driver)
       .name('local')
