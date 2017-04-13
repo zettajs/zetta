@@ -355,10 +355,10 @@ describe('Driver', () => {
 
       class SomeDevice extends Device {
         constructor() {
+          super();
           this.ip = '1.2.3.4';
           this.mutable = 'abc';
           this.deleted = 'gone after update';
-          super();
         }
 
         init(config) {
@@ -387,10 +387,10 @@ describe('Driver', () => {
 
       class SomeDevice extends Device {
         constructor() {
+          super();
           this.ip = '1.2.3.4';
           this.mutable = 'abc';
           this.deleted = 'gone after update';
-          super();
         }
 
         init(config) {
