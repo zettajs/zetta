@@ -270,7 +270,8 @@ describe('Zetta Api', function() {
         port: a.address().port,
         spdy: {
           plain: true,
-          ssl: false
+          ssl: false,
+          protocol: 'h2'
         }
       });
 
@@ -314,7 +315,8 @@ describe('Zetta Api', function() {
         port: a.address().port,
         spdy: {
           plain: true,
-          ssl: false
+          ssl: false,
+          protocol: 'h2'
         }
       });
 
@@ -893,7 +895,8 @@ describe('Zetta Api', function() {
         port: a.address().port,
         spdy: {
           plain: true,
-          ssl: false
+          ssl: false,
+          protocol: 'h2'
         }
       });
 

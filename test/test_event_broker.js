@@ -9,17 +9,25 @@ var PeerRegistry = require('./fixture/scout_test_mocks').MockPeerRegistry;
 var PeerSocket = require('../lib/peer_socket');
 var Registry = require('./fixture/scout_test_mocks').MockRegistry;
 
-var Ws = function() {
-  EventEmitter.call(this)
-  this._socket = new net.Socket();
-  this.upgradeReq = { url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014'};
-};
-util.inherits(Ws, EventEmitter);
-Ws.prototype.send = function(data, options, cb) {
-  var r = this.emit('onsend', data, options, cb);
-};
-Ws.prototype.close = function() {};
+function getMocks() {
+  var Ws = function() {
+    EventEmitter.call(this)
+    this._socket = new net.Socket();
+  };
+  util.inherits(Ws, EventEmitter);
+  Ws.prototype.send = function(data, options, cb) {
+    var r = this.emit('onsend', data, options, cb);
+  };
+  Ws.prototype.close = function() {};
 
+  return {
+    ws: new Ws(),
+    req: {
+      url: '/peers/0ac7e9c2-f03f-478c-95f5-2028fc9c2b6e?connectionId=46f466b0-1017-430b-8993-d7a8c896e014',
+      headers: {}
+    }
+  }
+}
 
 describe('EventBroker', function() {
   var msg = JSON.stringify({topic: '_peer/connect', data: {somedata: 1}, timestamp: new Date().getTime()});
@@ -35,21 +43,18 @@ describe('EventBroker', function() {
     broker = new EventBroker(app);
   });
 
-
   it('it should add peer by server name', function() {
-    var ws = new Ws();
-    var peer = new PeerSocket(ws, 'some-peer', peerRegistry);
-    peer.name = 'some-peer2';
+    var peer = {name: 'some-peer2'};
     broker.peer(peer);
     assert.equal(peer, broker.peers['some-peer2']);
   });
 
   it('it should pass data from local pubsub to clients', function(done) {
-    var ws = new Ws();
-    var client = new EventSocket(ws, query);
+    var mocks = getMocks();
+    var client = new EventSocket(mocks.ws, query);
     broker.client(client);
 
-    ws.on('onsend', function(buf) {
+    mocks.ws.on('onsend', function(buf) {
       var msg = JSON.parse(buf);
       assert.equal(msg.topic, '_peer/connect');
       assert(msg.timestamp);
@@ -61,8 +66,9 @@ describe('EventBroker', function() {
   });
 
   it('should keep local pubsub subscription open when more than one client is active', function(done) {
-    var clientA = new EventSocket(new Ws(), query);
-    var clientB = new EventSocket(new Ws(), query);
+
+    var clientA = new EventSocket(getMocks().ws, query);
+    var clientB = new EventSocket(getMocks().ws, query);
     broker.client(clientA);
     broker.client(clientB);
 
