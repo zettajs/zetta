@@ -19,7 +19,7 @@
     "uuid": "^3.0.1",
     "revolt": "^0.9.0",
     "rx": "^4.1.0",
-    "spdy": "git@github.com:zettajs/node-spdy.git",
+    "spdy": "github:zettajs/node-spdy",
     "strftime": "^0.10.0",
     "titan": "^1.1.0",
     "ws": "^3.1.0",
