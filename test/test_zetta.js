@@ -45,7 +45,6 @@ describe('Zetta', function() {
     var d = require('domain').create();
     d.on('error', function(err) {
       assert.equal(err.message, '123');
-      d.dispose()
       done();
     });
     d.run(function() {
