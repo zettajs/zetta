@@ -102,7 +102,7 @@ describe('Event Websocket', function() {
     });
 
     // Returning 400 instead of 404.
-    it.skip('will return a 404 on non ws urls for /events123123', function(done) {
+    it('will return a 404 on non ws urls for /events123123', function(done) {
       var url = 'ws://localhost:' + port + '/events123123';
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
@@ -180,14 +180,16 @@ describe('Event Websocket', function() {
       });
     });
 
-    it.skip('will return a 404 on non ws urls', function(done) {
+    // This is now a 400 retrunred by ws. See:
+    // https://github.com/websockets/ws/blob/b9fad73f53c786bffc831e4cc7740da83b82f23b/lib/websocket-server.js#L189
+    it('will return a 400 on non ws urls', function(done) {
       var url = 'ws://localhost:' + port + '/not-a-endpoint';
       var socket = new WebSocket(url);
       socket.on('open', function(err) {
         done(new Error('Should not be open.'));
       });
       socket.on('error', function(err) {
-        assert.equal(err.message, 'unexpected server response (404)');
+        assert.equal(err.message, 'unexpected server response (400)');
         done();
       });
     });
