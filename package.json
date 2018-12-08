@@ -22,8 +22,7 @@
     "strftime": "^0.10.0",
     "titan": "^1.1.0",
     "uuid": "^3.3.2",
-    "wcat": "^0.1.1",
-    "ws": "^3.1.0",
+    "ws": "^3.3.0",
     "zetta-auto-scout": "^1.0.0",
     "zetta-device": "^1.0.0",
     "zetta-events-stream-protocol": "^5.0.0",
@@ -34,10 +33,10 @@
     "zetta-streams": "^1.0.0"
   },
   "devDependencies": {
-    "memdown": "^0.10.2",
-    "mocha": "^1.20.1",
-    "portscanner": "^1.0.0",
-    "supertest": "^0.13.0",
+    "memdown": "^3.0.0",
+    "mocha": "^5.2.0",
+    "portscanner": "^2.2.0",
+    "supertest": "^3.3.0",
     "zetta-cluster": "^6.3.0"
   },
   "scripts": {
