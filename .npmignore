@@ -1,7 +1,6 @@
 *.swo
 *.swp
 .DS_Store
-node_modules
 .tern-port
 argo-HEAD
 argo-jscoverage
@@ -14,4 +13,9 @@ zetta-runtime-jscoverage
 .registry
 .peers
 .devices
+.travis.yml
 .vscode
+
+test/
+bin/
+example/
