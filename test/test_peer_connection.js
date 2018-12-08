@@ -125,6 +125,7 @@ describe('Peer Connection Logic', function() {
     });
   })
 
+  // TODO(adammagaluk): Failing after test completes.
   describe.skip('Handle spdy agent errors', function() {
     it('should catch error event', function(done) {
       var mocks = getMocks();
