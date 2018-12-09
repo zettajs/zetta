@@ -129,7 +129,7 @@ describe('Peer Connection Logic', function() {
   describe.skip('Handle spdy agent errors', function() {
     it('should catch error event', function(done) {
       var mocks = getMocks();
-      var socket = new PeerSocket(mocks.ws, mocks.req, 'some-peer', new MemPeerRegistry);
+      var socket = new PeerSocket(mocks.ws, mocks.req, 'some-peer', new MemPeerRegistry, { protocol: 'h2'});
       socket.on('error', function(err) {
         if (err.message === 'spdy-error') {
           done();
