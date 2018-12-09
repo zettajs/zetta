@@ -40,7 +40,7 @@
     "zetta-cluster": "^6.3.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha -R spec",
+    "test": "./node_modules/.bin/mocha -R spec --exit",
     "coverage": "bin/_coverage",
     "tag": "bin/_tag"
   },
