@@ -2,6 +2,8 @@
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zettajs/zetta?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/zettajs/zetta.svg?branch=master)](https://travis-ci.org/zettajs/zetta) 
 
+UPDATE TO TEST TRAVIS
+
 # What is Zetta?
 
 Zetta is an open source, API-first, [Node.js](https://nodejs.org)-based platform for the Internet of Things. To learn more about Zetta now, jump to [Introduction to Zetta](https://github.com/zettajs/zetta/wiki/Overview) on the [Zetta doc wiki](https://github.com/zettajs/zetta/wiki). 
