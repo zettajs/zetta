@@ -1,12 +1,20 @@
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
+var http = require('http');
 var PeerClient = require('../lib/peer_client');
 var assert = require('assert');
+var zetta = require('../');
+var Registry = require('./fixture/mem_registry');
+var PeerRegistry = require('./fixture/mem_peer_registry');
 
-
-var MockServer = { _name: '1234', httpServer: { spdyServer: {}}, log: {
+var MockServer = { _name: '1234', httpServer: { spdyServer: {
+  on: function() {},
+  emit: function() {},
+  removeListener: function() {}
+}}, log: {
   emit: function() {}
 }};
+
 var MockSocket = function() {
   EventEmitter.call(this);
   this.setAddress = function() {};
@@ -64,4 +72,37 @@ describe('Peer Client', function() {
       client.ws.emit('close');
     }, 2);
   })
+
+  it('should reconnect on timeout waiting for http res from ws server', function(done) {
+    var httpServer = http.createServer(function(req, res) {
+      console.log('on request:', req.url)
+    }).on('upgrade', function(req, socket, upgradeHead) {
+      console.log('on upgrade')
+    }).listen(0, function(err) {
+      if (err) {
+        done(err);
+        return;
+      }
+
+      var address = 'http://localhost:' + httpServer.address().port;
+      var client = new PeerClient(address, MockServer);
+      client.pingTimeout = 50;
+
+      // monkey patch createSocket so we can watch the reconnect
+      var origCreateSocket = client._createSocket;
+      client._createSocket = function() {
+        // Successfuly reconnected
+        if (client.retryCount === 1) {
+          httpServer.close();
+          client.close();
+          done();
+          return;
+        }
+        origCreateSocket.apply(client, arguments);
+      };
+
+      client.start();
+    });
+  })
+
 });
