@@ -37,7 +37,7 @@
     "mocha": "^5.2.0",
     "portscanner": "^2.2.0",
     "supertest": "^3.3.0",
-    "zetta-cluster": "^6.3.0"
+    "zetta-cluster": "^6.4.1"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha -R spec --exit",
