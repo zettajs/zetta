@@ -43,9 +43,8 @@ describe('Zetta', function() {
 
   it('errors thrown in zetta apps should propagate.', function(done) {
     var d = require('domain').create();
-    d.on('error', function(err) {
+    d.once('error', function(err) {
       assert.equal(err.message, '123');
-      d.dispose()
       done();
     });
     d.run(function() {

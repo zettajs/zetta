@@ -150,7 +150,6 @@ describe('Event Websocket Proxied Through Peer', function() {
         var recv = 0;
         socket.on('message', function(buf, flags) {
           assert(Buffer.isBuffer(buf));
-          assert(flags.binary);
           recv++;
           assert.equal(buf[0], recv);
           if (recv === 3) {
