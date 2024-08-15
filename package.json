@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "memdown": "^3.0.0",
-    "mocha": "^5.2.0",
+    "mocha": "^10.7.3",
     "portscanner": "^2.2.0",
     "supertest": "^3.3.0",
     "zetta-cluster": "^6.4.1"
