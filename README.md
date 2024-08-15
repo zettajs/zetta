@@ -1,5 +1,3 @@
-[![Zetta](http://www.zettajs.org/images/logos/zetta-logo.svg)](http://www.zettajs.org/)
-
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zettajs/zetta?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/zettajs/zetta.svg?branch=master)](https://travis-ci.org/zettajs/zetta) 
 
 # What is Zetta?
@@ -34,8 +32,6 @@ npm install zetta
 # Docs
 
 * The [Zetta Doc Wiki](https://github.com/zettajs/zetta/wiki) is where you'll find all of the documentation for Zetta, including overviews, tutorials, and reference content. 
-
-* You can also visit the Zetta site at [http://zettajs.org/](http://zettajs.org/) project recipes, event information, community links, and more. 
 
 # Community
 
