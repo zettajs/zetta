@@ -21,7 +21,7 @@
     "spdy": "4.0.2",
     "strftime": "^0.10.0",
     "titan": "^1.1.0",
-    "uuid": "^3.3.2",
+    "uuid": "^14.0.0",
     "ws": "^3.3.0",
     "zetta-auto-scout": "^1.0.0",
     "zetta-device": "^1.0.0",
