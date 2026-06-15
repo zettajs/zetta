@@ -22,7 +22,7 @@
     "strftime": "^0.10.0",
     "titan": "^1.1.0",
     "uuid": "^3.3.2",
-    "ws": "^3.3.0",
+    "ws": "^5.2.5",
     "zetta-auto-scout": "^1.0.0",
     "zetta-device": "^1.0.0",
     "zetta-events-stream-protocol": "^5.0.0",
